@@ -3,7 +3,11 @@ const bcrypt = require('bcrypt');
 
 const UserSchema = new mongoose.Schema({
     nome: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true,
+        match: [ /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i,
+        "Invalid email format",
+        ],
+    },
     password: { type: String, required: true },
     criadoEm: { type: Date, default: Date.now }
 });
