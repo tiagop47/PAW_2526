@@ -19,7 +19,7 @@ router.get("/registar", (req, res) => {
  * Rota para recuperação de palavra-passe.
  */
 router.get("/recoverPassword", (req, res) => {
-    res.render("loginRegisto/recoverPassword");
+    res.render("loginRegisto/recuperarPassword");
 });
 
 module.exports = router;
