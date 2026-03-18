@@ -8,15 +8,14 @@ var logger = require('morgan');
 
 // Ligação ao MongoDB
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Ligado ao MongoDB com sucesso!'))
-  .catch(err => console.error('Erro ao ligar ao MongoDB:', err));
+    .then(() => console.log('Ligado ao MongoDB com sucesso!'))
+    .catch(err => console.error('Erro ao ligar ao MongoDB:', err));
 
 var authRouter = require('./routes/auth');
 var usersRouter = require('./routes/users');
 
 var app = express();
 
-// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
