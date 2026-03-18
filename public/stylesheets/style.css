@@ -40,13 +40,34 @@ body {
 .input-password-toggle {
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
+  padding-right: 4.8rem;
 }
 
 .btn-toggle-pass {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
   cursor: pointer;
-  background-color: #fff !important;
-  border-left: none !important;
   color: #6c757d;
+  z-index: 5;
+}
+
+.btn-toggle-pass:hover {
+  color: #495057;
+}
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-textfield-decoration-container {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* Rodapé de formulários */
