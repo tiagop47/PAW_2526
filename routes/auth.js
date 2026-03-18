@@ -1,23 +1,23 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
 /**
  * Rota para login de utilizadores.
  */
-router.get('/login', function (req, res, next) {
+router.get('/login', (req, res) => {
     res.render('loginRegisto/login', { errorMessage: null });
 });
 
 /**
  * Rota para registo de utilizadores.
  */
-router.get("/register", (req, res) => {
-    res.render("loginRegisto/register");
+router.get("/registar", (req, res) => {
+    res.render("loginRegisto/registar", { errorMessage: null });
 });
 
 /**
-* Rota para registo de utilizadores.
-*/
+ * Rota para recuperação de palavra-passe.
+ */
 router.get("/recoverPassword", (req, res) => {
     res.render("loginRegisto/recoverPassword");
 });
