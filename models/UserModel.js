@@ -28,6 +28,12 @@ const UserSchema = new mongoose.Schema({
             message: "A password deve ter pelo menos 8 caracteres, incluindo uma letra maiúscula, uma minúscula e um número"
         }
     },
+    phoneNumber: {
+        type: Number
+    },
+    age: {
+        type: Number
+    },
     criadoEm: { type: Date, default: Date.now }
 });
 
