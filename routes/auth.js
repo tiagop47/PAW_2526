@@ -23,24 +23,21 @@ router.post("/registar", async (req, res) => {
     const { nome, email, password } = req.body;
 
     try {
-        // Verifica se o utilizador já existe
         const userExistente = await User.findOne({ email });
         if (userExistente) {
-            return res.render("loginRegisto/registar", { 
-                errorMessage: "Este email já está registado." 
+            return res.render("loginRegisto/registar", {
+                errorMessage: "Este email já está registado."
             });
         }
 
-        // Cria o novo utilizador (a password será hashed automaticamente pelo modelo)
         const novoUser = new User({ nome, email, password });
         await novoUser.save();
 
-        // Após sucesso, redireciona para a página de login
         res.redirect("/auth/login");
     } catch (err) {
         console.error("Erro no registo:", err);
-        res.render("loginRegisto/registar", { 
-            errorMessage: "Ocorreu um erro inesperado. Tente novamente." 
+        res.render("loginRegisto/registar", {
+            errorMessage: "Ocorreu um erro inesperado. Tente novamente."
         });
     }
 });

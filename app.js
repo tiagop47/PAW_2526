@@ -6,7 +6,6 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-// Ligação ao MongoDB
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('Ligado ao MongoDB com sucesso!'))
     .catch(err => console.error('Erro ao ligar ao MongoDB:', err));
@@ -32,11 +31,11 @@ app.get('/', (req, res) => {
 app.use('/auth', authRouter);
 app.use('/users', usersRouter);
 
-app.use(function (req, res, next) {
+app.use(function (next) {
     next(createError(404));
 });
 
-app.use(function (err, req, res, next) {
+app.use(function (err, req, res) {
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
 
