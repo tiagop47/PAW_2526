@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/UserModel');
+const { validarRegisto } = require('../utils/userValidator');
 
 /**
  * Rota para exibir o formulário de login.
@@ -22,7 +23,16 @@ router.get("/registar", (req, res) => {
 router.post("/registar", async (req, res) => {
     const { nome, email, password } = req.body;
 
+    // 1. Validar os dados de entrada
+    const erroValidacao = validarRegisto(nome, email, password);
+    if (erroValidacao) {
+        return res.render("loginRegisto/registar", {
+            errorMessage: erroValidacao
+        });
+    }
+
     try {
+        // 2. Verificar se o utilizador já existe
         const userExistente = await User.findOne({ email });
         if (userExistente) {
             return res.render("loginRegisto/registar", {
@@ -30,6 +40,7 @@ router.post("/registar", async (req, res) => {
             });
         }
 
+        // 3. Criar e guardar o novo utilizador
         const novoUser = new User({ nome, email, password });
         await novoUser.save();
 
