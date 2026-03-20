@@ -7,6 +7,8 @@
 const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i;
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
+const rolesPublicas = ['clientes', 'supermercados', 'estafetas'];
+
 function validarEmail(email) {
     return email && emailRegex.test(email);
 }
@@ -38,8 +40,7 @@ function validarRegisto(dados) {
         return "Telefone inválido (mín. 9 dígitos).";
     }
 
-    const rolesPermitidas = ['clientes', 'supermercados', 'estafetas'];
-    if (role && !rolesPermitidas.includes(role)) {
+    if (role && !rolesPublicas.includes(role)) {
         return "Perfil de utilizador inválido.";
     }
 
@@ -50,5 +51,6 @@ module.exports = {
     validarEmail,
     validarPassword,
     validarTelefone,
-    validarRegisto
+    validarRegisto,
+    rolesPublicas
 };

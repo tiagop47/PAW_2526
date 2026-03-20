@@ -24,34 +24,33 @@
                 <p class="text-muted small">Crie o seu perfil para começar</p>
             </header>
 
-            <form action="/auth/registar" method="POST">
+            <% if (locals.errorMessage) { %>
+                <div class="alert alert-danger"><%= errorMessage %></div>
+            <% } %>
+
+            <form action="/auth/registar" method="POST" onsubmit="validarComRecaptcha(event, '<%= siteKey %>', 'registar')">
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome" required>
+                    <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome"
+                        value="<%= locals.dados?.nome || '' %>" minlength="3" required>
                     <label for="nome">Nome Completo</label>
                 </div>
 
                 <div class="form-floating mb-3">
-                    <input type="email" class="form-control 
-                    <% if (locals.errorMessage) { %>is-invalid<% } %>" id="email" name="email"
-                        placeholder="nome@exemplo.com" required>
+                    <input type="email" class="form-control" id="email" name="email"
+                        placeholder="nome@exemplo.com" value="<%= locals.dados?.email || '' %>" required>
                     <label for="email">Endereço de Email</label>
-                    <% if (locals.errorMessage) { %>
-                        <div class="invalid-feedback">
-                            <%= errorMessage %>
-                        </div>
-                        <% } %>
                 </div>
 
                 <div class="form-floating mb-3 position-relative">
                     <input type="password" class="form-control input-password-toggle" id="password" name="password"
-                        placeholder="Password" required>
+                        placeholder="Password" minlength="8" required>
                     <label for="password">Defina uma Password</label>
                     <button type="button" class="btn-toggle-pass" id="togglePassword">Ver</button>
                 </div>
 
                 <div class="form-floating mb-3">
                     <input type="text" class="form-control" id="morada" name="morada" placeholder="Morada completa"
-                        required>
+                        value="<%= locals.dados?.morada || '' %>" minlength="5" required>
                     <label for="morada">Morada</label>
                 </div>
 
@@ -59,16 +58,16 @@
                     <div class="col-6">
                         <div class="form-floating">
                             <input type="number" class="form-control" id="telefone" name="telefone"
-                                placeholder="912345678" required>
+                                placeholder="912345678" value="<%= locals.dados?.telefone || '' %>" required>
                             <label for="telefone">Telemóvel</label>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="form-floating">
                             <select class="form-select" id="role" name="role" required>
-                                <option value="clientes" selected>Cliente</option>
-                                <option value="supermercados">Supermercado</option>
-                                <option value="estafetas">Estafeta</option>
+                                <option value="clientes" <%= locals.dados?.role === 'clientes' || !locals.dados ? 'selected' : '' %>>Cliente</option>
+                                <option value="supermercados" <%= locals.dados?.role === 'supermercados' ? 'selected' : '' %>>Supermercado</option>
+                                <option value="estafetas" <%= locals.dados?.role === 'estafetas' ? 'selected' : '' %>>Estafeta</option>
                             </select>
                             <label for="role">Tipo de Conta</label>
                         </div>
