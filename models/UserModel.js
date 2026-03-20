@@ -1,14 +1,11 @@
 const mongoose = require('mongoose');
-const { validarNome, validarEmail, validarPassword, validarTelefone, validarMorada } = require('../utils/userValidator');
+const { validarEmail, validarPassword, validarTelefone } = require('../utils/userValidator');
 
 const UserSchema = new mongoose.Schema({
     nome: {
         type: String,
         required: [true, "O nome é obrigatório"],
-        validate: {
-            validator: validarNome,
-            message: "O nome deve ter pelo menos 3 caracteres"
-        }
+        minlength: [3, "O nome deve ter pelo menos 3 caracteres"]
     },
     email: {
         type: String,
@@ -38,14 +35,11 @@ const UserSchema = new mongoose.Schema({
     morada: {
         type: String,
         required: [true, "A morada é obrigatória"],
-        validate: {
-            validator: validarMorada,
-            message: "Por favor, introduza uma morada válida"
-        }
+        minlength: [5, "Por favor, introduza uma morada válida"]
     },
     role: {
         type: String,
-        enum: ['clientes', 'supermercados', 'estafetas', 'administradores'],
+        enum: ['clientes', 'supermercados', 'estafetas', 'administrador'],
         default: 'clientes',
         required: true
     },

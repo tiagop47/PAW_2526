@@ -1,62 +1,54 @@
 /**
- * Utilitário para validação de dados de utilizador no backend.
+ * Utilitário de Validação
+ * Apenas validações que requerem lógica custom (regex, regras compostas).
+ * Validações simples (minlength, maxlength, min) estão nos Schemas do Mongoose.
  */
 
-const emailRegex = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i;
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
-const validarNome = (nome) => {
-    return nome && nome.trim().length >= 3;
-};
-
-const validarEmail = (email) => {
+function validarEmail(email) {
     return email && emailRegex.test(email);
-};
+}
 
-const validarPassword = (password) => {
+function validarPassword(password) {
     return password && passwordRegex.test(password);
-};
+}
 
-const validarTelefone = (telefone) => {
+function validarTelefone(telefone) {
     return telefone && telefone.toString().trim().length >= 9;
-};
+}
 
-const validarMorada = (morada) => {
-    return morada && morada.trim().length >= 5;
-};
+function validarRegisto(dados) {
+    const { nome, email, password, morada, telefone, role } = dados;
 
-/**
- * Valida os dados de registo de um utilizador de forma agrupada.
- * Utilizado principalmente nas rotas para feedback rápido.
- */
-function validarRegisto(nome, email, password, morada, telefone, role) {
-    if (!validarNome(nome)) {
+    if (!nome || nome.trim().length < 3) {
         return "O nome deve ter pelo menos 3 caracteres.";
     }
     if (!validarEmail(email)) {
-        return "Por favor, introduza um email válido.";
+        return "Formato de email inválido.";
     }
     if (!validarPassword(password)) {
-        return "A password deve ter pelo menos 8 caracteres, incluindo uma letra maiúscula, uma minúscula e um número.";
+        return "A password deve ter pelo menos 8 caracteres (Incluindo Maiúscula, Minúscula e Número).";
     }
-    if (!validarMorada(morada)) {
-        return "Por favor, introduza uma morada válida.";
+    if (!morada || morada.trim().length < 5) {
+        return "Morada inválida.";
     }
     if (!validarTelefone(telefone)) {
-        return "Por favor, introduza um número de telefone válido (pelo menos 9 dígitos).";
+        return "Telefone inválido (mín. 9 dígitos).";
     }
-    const rolesPermitidas = ['cliente', 'supermercado', 'estafeta', 'admin'];
+
+    const rolesPermitidas = ['clientes', 'supermercados', 'estafetas'];
     if (role && !rolesPermitidas.includes(role)) {
-        return "O perfil de utilizador selecionado é inválido.";
+        return "Perfil de utilizador inválido.";
     }
+
     return null;
 }
 
 module.exports = {
-    validarNome,
     validarEmail,
     validarPassword,
     validarTelefone,
-    validarMorada,
     validarRegisto
 };

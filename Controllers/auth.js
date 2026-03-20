@@ -141,6 +141,7 @@ const login = async (req, res) => {
         });
 
         return res.redirect(getDashboardUrl(user.role));
+
     } catch (err) {
         console.error("Erro no login:", err);
         res.render("loginRegisto/login", {

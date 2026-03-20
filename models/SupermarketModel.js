@@ -1,29 +1,30 @@
 const mongoose = require('mongoose');
-const { validarNomeSupermercado, validarLocalizacao, validarDescricao } = require('../utils/userValidator');
 
 const SupermarketSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    nome: { 
-        type: String, 
-        required: [true, "O nome é obrigatório"],
-        validate: { validator: validarNomeSupermercado, message: "Nome inválido (mín. 3 caracteres)" }
-    },
-    descricao: { 
+    nome: {
         type: String,
-        validate: { validator: validarDescricao, message: "A descrição é demasiado longa" }
+        required: [true, "O nome é obrigatório"],
+        minlength: [3, "Nome inválido (mín. 3 caracteres)"],
+        maxlength: [50, "Nome demasiado longo (máx. 50 caracteres)"]
     },
-    localizacao: { 
-        type: String, 
+    descricao: {
+        type: String,
+        maxlength: [500, "A descrição é demasiado longa"]
+    },
+    localizacao: {
+        type: String,
         required: [true, "A localização é obrigatória"],
-        validate: { validator: validarLocalizacao, message: "Localização curta demais" }
+        minlength: [5, "Localização curta demais"],
+        maxlength: [100, "Localização demasiado longa"]
     },
     horarioFuncionamento: String,
     metodosEntrega: { type: [String], default: ['levantamento em loja'] },
     custoEntrega: { type: Number, default: 0 },
-    estadoAprovacao: { 
-        type: String, 
-        enum: ['Pendente', 'Aprovado', 'Rejeitado'], 
-        default: 'Pendente' 
+    estadoAprovacao: {
+        type: String,
+        enum: ['Pendente', 'Aprovado', 'Rejeitado'],
+        default: 'Pendente'
     },
     criadoEm: { type: Date, default: Date.now }
 });

@@ -1,28 +1,29 @@
 const mongoose = require('mongoose');
-const { validarNomeProduto, validarPreco, validarStock, validarCategoria } = require('../utils/userValidator');
 
 const ProductSchema = new mongoose.Schema({
     supermercadoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Supermarket', required: true },
     nome: {
         type: String,
         required: [true, "O nome do produto é obrigatório"],
-        validate: { validator: validarNomeProduto, message: "Nome do produto inválido" }
+        minlength: [2, "Nome do produto demasiado curto"],
+        maxlength: [100, "Nome do produto demasiado longo"]
     },
     descricao: String,
     categoria: {
         type: String,
         required: [true, "A categoria é obrigatória"],
-        validate: { validator: validarCategoria, message: "Categoria inválida" }
+        minlength: [3, "Categoria inválida"],
+        maxlength: [30, "Categoria demasiado longa"]
     },
     preco: {
         type: Number,
         required: [true, "O preço é obrigatório"],
-        validate: { validator: validarPreco, message: "O preço deve ser positivo" }
+        min: [0, "O preço deve ser positivo"]
     },
     stockDisponivel: {
         type: Number,
         required: [true, "O stock é obrigatório"],
-        validate: { validator: validarStock, message: "O stock deve ser um número inteiro positivo" }
+        min: [0, "O stock deve ser positivo"]
     },
     imagem: String,
     criadoEm: { type: Date, default: Date.now }

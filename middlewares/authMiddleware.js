@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback';
 const DASHBOARDS = {
-    administradores: "/admin/dashboard",
+    administrador: "/admin/dashboard",
     supermercados: "/supermercado/dashboard",
     estafetas: "/estafeta/dashboard",
     clientes: "/cliente/dashboard",
