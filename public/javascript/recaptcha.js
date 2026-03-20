@@ -1,4 +1,4 @@
-function validarRecaptcha(event, siteKey, actionName) {
+function validarComRecaptcha(event, siteKey, actionName) {
     event.preventDefault();
 
     const form = event.target; 
