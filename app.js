@@ -31,7 +31,7 @@ app.get('/', (req, res) => {
 app.use('/auth', authRouter);
 app.use('/users', usersRouter);
 
-app.use(function (next) {
+app.use(function (req, res,next) {
     next(createError(404));
 });
 
