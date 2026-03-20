@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const { validarNome, validarEmail, validarPassword } = require('../utils/userValidator');
+const { validarNome, validarEmail, validarPassword, validarTelefone, validarMorada } = require('../utils/userValidator');
 
 const UserSchema = new mongoose.Schema({
     nome: {
@@ -28,24 +28,41 @@ const UserSchema = new mongoose.Schema({
             message: "A password deve ter pelo menos 8 caracteres, incluindo uma letra maiúscula, uma minúscula e um número"
         }
     },
-    phoneNumber: {
-        type: Number
+    telefone: {
+        type: String,
+        required: [true, "O telefone é obrigatório"],
+        validate: {
+            validator: validarTelefone,
+            message: "Por favor, introduza um número de telefone válido (pelo menos 9 dígitos)"
+        }
     },
-    age: {
-        type: Number
+    morada: {
+        type: String,
+        required: [true, "A morada é obrigatória"],
+        validate: {
+            validator: validarMorada,
+            message: "Por favor, introduza uma morada válida"
+        }
+    },
+    role: {
+        type: String,
+        enum: ['cliente', 'supermercado', 'estafeta', 'admin'],
+        default: 'cliente',
+        required: true
     },
     criadoEm: { type: Date, default: Date.now }
 });
 
-UserSchema.pre('save', async function () {
-    if (!this.isModified('password')) return;
+UserSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) return next();
 
     try {
         const saltRounds = parseInt(process.env.SALT_ROUNDS) || 10;
         const salt = await bcrypt.genSalt(saltRounds);
         this.password = await bcrypt.hash(this.password, salt);
+        next();
     } catch (err) {
-        throw err;
+        next(err);
     }
 });
 
