@@ -12,6 +12,8 @@ mongoose.connect(process.env.MONGODB_URI)
 
 var authRouter = require('./routes/auth');
 var usersRouter = require('./routes/users');
+var adminRouter = require('./routes/admin');
+var supermercadoRouter = require('./routes/supermercado');
 
 var app = express();
 
@@ -24,14 +26,33 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Middleware Global para passar o utilizador para as vistas (EJS)
+app.use((req, res, next) => {
+    const jwt = require('jsonwebtoken');
+    const token = req.cookies.token;
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'segredo_temporario');
+            res.locals.user = decoded; // Fica disponível em todas as views como 'user'
+        } catch (err) {
+            res.locals.user = null;
+        }
+    } else {
+        res.locals.user = null;
+    }
+    next();
+});
+
 app.get('/', (req, res) => {
     res.redirect('/auth/registar');
 });
 
 app.use('/auth', authRouter);
 app.use('/users', usersRouter);
+app.use('/admin', adminRouter);
+app.use('/supermercado', supermercadoRouter);
 
-app.use(function (req, res,next) {
+app.use(function (req, res, next) {
     next(createError(404));
 });
 

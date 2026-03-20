@@ -48,18 +48,27 @@
                     <button type="button" class="btn-toggle-pass" id="togglePassword">Ver</button>
                 </div>
 
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="morada" name="morada" placeholder="Morada completa" required>
+                    <label for="morada">Morada</label>
+                </div>
+
                 <div class="row g-2 mb-3">
-                    <div class="col-8">
+                    <div class="col-6">
                         <div class="form-floating">
-                            <input type="number" class="form-control" id="phoneNumber" name="phoneNumber"
-                                placeholder="912345678">
-                            <label for="phoneNumber">Telemóvel</label>
+                            <input type="number" class="form-control" id="telefone" name="telefone"
+                                placeholder="912345678" required>
+                            <label for="telefone">Telemóvel</label>
                         </div>
                     </div>
-                    <div class="col-4">
+                    <div class="col-6">
                         <div class="form-floating">
-                            <input type="number" class="form-control" id="age" name="age" placeholder="18">
-                            <label for="age">Idade</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="cliente" selected>Cliente</option>
+                                <option value="supermercado">Supermercado</option>
+                                <option value="estafeta">Estafeta</option>
+                            </select>
+                            <label for="role">Tipo de Conta</label>
                         </div>
                     </div>
                 </div>

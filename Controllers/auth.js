@@ -1,5 +1,6 @@
 const User = require('../models/UserModel');
 const { validarRegisto } = require('../utils/userValidator');
+const jwt = require('jsonwebtoken');
 
 /**
  * Exibe o formulário de login.
@@ -24,8 +25,10 @@ const exibirRegisto = (req, res) => {
  * Processa o registo de um novo utilizador (Create).
  */
 const registar = async (req, res) => {
-    const { nome, email, password, phoneNumber, age } = req.body;
+    const { nome, email, password, telefone, morada, role } = req.body;
 
+    /* 
+    COMENTADO TEMPORARIAMENTE PARA TESTES LOCAIS (Reativar antes da entrega)
     const recaptchaResponse = req.body["g-recaptcha-response"];
     const siteKey = process.env.CAPTCHA_API_KEY;
 
@@ -59,8 +62,17 @@ const registar = async (req, res) => {
             siteKey: siteKey,
         });
     }
+    */
+    const siteKey = process.env.CAPTCHA_API_KEY; // Necessário para a view não dar erro de undefined
 
-    const erroValidacao = validarRegisto(nome, email, password);
+    // Segurança: Não permitir que se registem como 'administradores' pelo formulário público
+    let roleFinal = role;
+    const rolesPublicas = ["clientes", "supermercados", "estafetas"];
+    if (!rolesPublicas.includes(role)) {
+        roleFinal = "clientes";
+    }
+
+    const erroValidacao = validarRegisto({ nome, email, password, morada, telefone, role: roleFinal });
     if (erroValidacao) {
         return res.render("loginRegisto/registar", {
             errorMessage: erroValidacao,
@@ -77,7 +89,7 @@ const registar = async (req, res) => {
             });
         }
 
-        const novoUser = new User({ nome, email, password, phoneNumber, age });
+        const novoUser = new User({ nome, email, password, telefone, morada, role: roleFinal });
         await novoUser.save();
 
         res.redirect("/auth/login");
@@ -112,10 +124,29 @@ const login = async (req, res) => {
             });
         }
 
-        res.render("loginRegisto/login", {
-            successMessage: "Login efetuado com sucesso! Bem-vindo " + user.nome,
-            errorMessage: null
+        const token = jwt.sign(
+            { id: user._id, role: user.role, nome: user.nome },
+            process.env.JWT_SECRET || 'segredo_temporario',
+            { expiresIn: '24h' }
+        );
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 24 * 60 * 60 * 1000 // 24 horas
         });
+
+        if (user.role === 'administradores') {
+            return res.redirect('/admin/dashboard');
+        }
+        if (user.role === 'supermercados') {
+            return res.redirect('/supermercado/dashboard');
+        }
+        if (user.role === 'estafetas') {
+            return res.redirect('/estafeta/dashboard');
+        }
+
+        return res.redirect('/cliente/dashboard');
     } catch (err) {
         console.error("Erro no login:", err);
         res.render("loginRegisto/login", {
