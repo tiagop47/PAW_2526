@@ -1,6 +1,16 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'segredo_temporario';
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback';
+const DASHBOARDS = {
+    administradores: "/admin/dashboard",
+    supermercados: "/supermercado/dashboard",
+    estafetas: "/estafeta/dashboard",
+    clientes: "/cliente/dashboard",
+};
+
+function getDashboardUrl(role) {
+    return DASHBOARDS[role];
+}
 
 /**
  * Helper interno — descodifica o token JWT do cookie.
@@ -8,7 +18,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'segredo_temporario';
  */
 const descodificarToken = (req, res) => {
     const token = req.cookies.token;
-    if (!token) return null;
+
+    if (!token) {
+        return null;
+    }
 
     try {
         return jwt.verify(token, JWT_SECRET);
@@ -29,36 +42,44 @@ const injetarUserNasViews = (req, res, next) => {
 
 /**
  * Middleware — bloqueia acesso se não estiver autenticado.
+ * Reutiliza o res.locals.user já injetado pelo injetarUserNasViews.
  */
 const verificarAutenticacao = (req, res, next) => {
-    const user = descodificarToken(req, res);
-    if (!user) return res.redirect('/auth/login');
-    req.user = user;
+    if (!res.locals.user) {
+        return res.redirect('/auth/login');
+    }
+
+    req.user = res.locals.user;
     next();
 };
 
 /**
  * Middleware — redireciona utilizadores já logados (ex: páginas de login/registo).
+ * Reutiliza o res.locals.user já injetado pelo injetarUserNasViews.
  */
-const redirecionarSeLogado = (req, res, next) => {
-    const user = descodificarToken(req, res);
-    if (user) return res.redirect(`/${user.role}/dashboard`);
+const redirecionarLogged = (req, res, next) => {
+    if (res.locals.user) {
+        return res.redirect(getDashboardUrl(res.locals.user.role));
+    }
     next();
 };
 
 /**
  * Middleware factory — restringe acesso a roles específicas.
  */
-const verificarRole = (rolesPermitidas) => (req, res, next) => {
-    if (!req.user || !rolesPermitidas.includes(req.user.role)) {
-        return res.status(403).send('Acesso Restrito. Não tem permissões para aceder a esta página.');
-    }
-    next();
-};
+function verificarRole(rolesPermitidas) {
+    return function (req, res, next) {
+        if (!req.user || !rolesPermitidas.includes(req.user.role)) {
+            return res.status(403).send('Acesso Restrito. Não tem permissões para aceder a esta página.');
+        }
+        next();
+    };
+}
 
 module.exports = {
     injetarUserNasViews,
     verificarAutenticacao,
-    redirecionarSeLogado,
-    verificarRole
+    redirecionarLogged,
+    verificarRole,
+    getDashboardUrl
 };

@@ -1,6 +1,8 @@
 const User = require('../models/UserModel');
 const { validarRegisto } = require('../utils/userValidator');
+const { getDashboardUrl } = require('../middlewares/authMiddleware');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 /**
  * Exibe o formulário de login.
@@ -49,7 +51,7 @@ const registar = async (req, res) => {
         if (!googleData.success || googleData.score < minScore) {
             return res.render("loginRegisto/registar", {
                 errorMessage:
-                    "Registo bloqueado por suspeita de atividade automatizada (Bot).",
+                    "Registo bloqueado por suspeita de atividade automatizada.",
                 siteKey: siteKey,
             });
         }
@@ -84,7 +86,17 @@ const registar = async (req, res) => {
             });
         }
 
-        const novoUser = new User({ nome, email, password, telefone, morada, role: roleFinal });
+        const saltRounds = parseInt(process.env.SALT_ROUNDS) || 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        const novoUser = new User({
+            nome,
+            email,
+            password: hashedPassword,
+            telefone,
+            morada,
+            role: roleFinal
+        });
         await novoUser.save();
 
         res.redirect("/auth/login");
@@ -111,7 +123,7 @@ const login = async (req, res) => {
             });
         }
 
-        const isMatch = await user.comparePassword(password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.render("loginRegisto/login", {
                 errorMessage: "Credenciais inválidas.",
@@ -120,28 +132,15 @@ const login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user._id, role: user.role, nome: user.nome },
-            process.env.JWT_SECRET || 'segredo_temporario',
-            { expiresIn: '24h' }
-        );
-
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 24 * 60 * 60 * 1000 // 24 horas
+            { id: user._id, role: user.role, nome: user.nome }, process.env.JWT_SECRET, {
+            expiresIn: '86400'
         });
 
-        if (user.role === 'administradores') {
-            return res.redirect('/admin/dashboard');
-        }
-        if (user.role === 'supermercados') {
-            return res.redirect('/supermercado/dashboard');
-        }
-        if (user.role === 'estafetas') {
-            return res.redirect('/estafeta/dashboard');
-        }
+        res.cookie('token', token, {
+            httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 // 24 horas
+        });
 
-        return res.redirect('/cliente/dashboard');
+        return res.redirect(getDashboardUrl(user.role));
     } catch (err) {
         console.error("Erro no login:", err);
         res.render("loginRegisto/login", {
