@@ -9,10 +9,10 @@ const verificarAutenticacao = (req, res, next) => {
     if (!token) {
         return res.redirect('/auth/login');
     }
-    
+
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'segredo_temporario');
-        req.user = decoded; // Fica disponível nas rotas { id, role, nome }
+        req.user = decoded;
         next();
     } catch (err) {
         res.clearCookie('token');
@@ -29,15 +29,22 @@ const redirecionarSeLogado = (req, res, next) => {
     if (token) {
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'segredo_temporario');
-            // Mapeamento de plural para rota singular ou plural conforme preferires
-            // Aqui mantemos a lógica de redirecionar para uma rota que faça sentido
             let rota = decoded.role;
-            if (decoded.role === 'administradores') rota = 'admin';
-            if (decoded.role === 'supermercados') rota = 'supermercado';
-            if (decoded.role === 'estafetas') rota = 'estafeta';
-            if (decoded.role === 'clientes') rota = 'cliente';
 
-            return res.redirect(`/${rota}/dashboard`); 
+            if (decoded.role === 'administradores') {
+                rota = 'admin';
+            }
+            if (decoded.role === 'supermercados') {
+                rota = 'supermercado';
+            }
+            if (decoded.role === 'estafetas') {
+                rota = 'estafeta';
+            }
+            if (decoded.role === 'clientes') {
+                rota = 'cliente';
+            }
+
+            return res.redirect(`/${rota}/dashboard`);
         } catch (err) {
             res.clearCookie('token');
         }

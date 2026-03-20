@@ -27,8 +27,6 @@ const exibirRegisto = (req, res) => {
 const registar = async (req, res) => {
     const { nome, email, password, telefone, morada, role } = req.body;
 
-    /* 
-    COMENTADO TEMPORARIAMENTE PARA TESTES LOCAIS (Reativar antes da entrega)
     const recaptchaResponse = req.body["g-recaptcha-response"];
     const siteKey = process.env.CAPTCHA_API_KEY;
 
@@ -62,10 +60,7 @@ const registar = async (req, res) => {
             siteKey: siteKey,
         });
     }
-    */
-    const siteKey = process.env.CAPTCHA_API_KEY; // Necessário para a view não dar erro de undefined
 
-    // Segurança: Não permitir que se registem como 'administradores' pelo formulário público
     let roleFinal = role;
     const rolesPublicas = ["clientes", "supermercados", "estafetas"];
     if (!rolesPublicas.includes(role)) {
