@@ -1,71 +1,63 @@
 const jwt = require('jsonwebtoken');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'segredo_temporario';
+
 /**
- * Middleware para verificar se o utilizador está autenticado via Token (Cookie).
- * Se não estiver logado, redireciona para a página de login.
+ * Helper interno — descodifica o token JWT do cookie.
+ * Retorna o payload do utilizador ou null.
  */
-const verificarAutenticacao = (req, res, next) => {
+const descodificarToken = (req, res) => {
     const token = req.cookies.token;
-    if (!token) {
-        return res.redirect('/auth/login');
-    }
+    if (!token) return null;
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'segredo_temporario');
-        req.user = decoded;
-        next();
+        return jwt.verify(token, JWT_SECRET);
     } catch (err) {
         res.clearCookie('token');
-        return res.redirect('/auth/login');
+        return null;
     }
 };
 
 /**
- * Middleware para impedir que utilizadores já logados acedam a páginas
- * como Login ou Registo. Redireciona-os para a sua dashboard.
+ * Middleware global — injeta `res.locals.user` em todas as views.
+ * Deve ser usado uma vez no app.js (substitui o middleware inline).
  */
-const redirecionarSeLogado = (req, res, next) => {
-    const token = req.cookies.token;
-    if (token) {
-        try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'segredo_temporario');
-            let rota = decoded.role;
-
-            if (decoded.role === 'administradores') {
-                rota = 'admin';
-            }
-            if (decoded.role === 'supermercados') {
-                rota = 'supermercado';
-            }
-            if (decoded.role === 'estafetas') {
-                rota = 'estafeta';
-            }
-            if (decoded.role === 'clientes') {
-                rota = 'cliente';
-            }
-
-            return res.redirect(`/${rota}/dashboard`);
-        } catch (err) {
-            res.clearCookie('token');
-        }
-    }
+const injetarUserNasViews = (req, res, next) => {
+    res.locals.user = descodificarToken(req, res);
     next();
 };
 
 /**
- * Middleware de Controlo de Acesso Baseado no Perfil (Role).
- * Só permite acesso se o utilizador tiver uma das roles permitidas.
+ * Middleware — bloqueia acesso se não estiver autenticado.
  */
-const verificarRole = (rolesPermitidas) => {
-    return (req, res, next) => {
-        if (!req.user || !rolesPermitidas.includes(req.user.role)) {
-            return res.status(403).send("Acesso Restrito. Não tem permissões para aceder a esta página.");
-        }
-        next();
-    };
+const verificarAutenticacao = (req, res, next) => {
+    const user = descodificarToken(req, res);
+    if (!user) return res.redirect('/auth/login');
+    req.user = user;
+    next();
+};
+
+/**
+ * Middleware — redireciona utilizadores já logados (ex: páginas de login/registo).
+ */
+const redirecionarSeLogado = (req, res, next) => {
+    const user = descodificarToken(req, res);
+    if (user) return res.redirect(`/${user.role}/dashboard`);
+    next();
+};
+
+/**
+ * Middleware factory — restringe acesso a roles específicas.
+ */
+const verificarRole = (rolesPermitidas) => (req, res, next) => {
+    if (!req.user || !rolesPermitidas.includes(req.user.role)) {
+        return res.status(403).send('Acesso Restrito. Não tem permissões para aceder a esta página.');
+    }
+    next();
 };
 
 module.exports = {
+    injetarUserNasViews,
     verificarAutenticacao,
     redirecionarSeLogado,
     verificarRole

@@ -5,6 +5,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var { injetarUserNasViews } = require('./middlewares/authMiddleware');
 
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('Ligado ao MongoDB com sucesso!'))
@@ -28,22 +29,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware Global para passar o utilizador para as vistas (EJS)
-app.use((req, res, next) => {
-    const jwt = require('jsonwebtoken');
-    const token = req.cookies.token;
-    if (token) {
-        try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'segredo_temporario');
-            res.locals.user = decoded; // Fica disponível em todas as views como 'user'
-        } catch (err) {
-            res.locals.user = null;
-        }
-    } else {
-        res.locals.user = null;
-    }
-    next();
-});
+// Middleware Global — injeta o user em todas as views EJS
+app.use(injetarUserNasViews);
 
 app.get('/', (req, res) => {
     res.redirect('/auth/registar');
