@@ -36,7 +36,9 @@ const exibirFormularioNovo = (req, res) => {
 const exibirDetalhes = async (req, res) => {
     try {
         const produto = await Product.findById(req.params.id);
-        if (!produto) return res.status(404).send('Produto não encontrado');
+        if (!produto) {
+            return res.status(404).send('Produto não encontrado');
+        }
 
         res.render('supermercado/detalhesProduto', {
             title: 'Detalhes do Produto',
@@ -53,7 +55,9 @@ const exibirDetalhes = async (req, res) => {
 const exibirFormularioEditar = async (req, res) => {
     try {
         const produto = await Product.findById(req.params.id);
-        if (!produto) return res.status(404).send('Produto não encontrado');
+        if (!produto) {
+            return res.status(404).send('Produto não encontrado');
+        }
 
         res.render('supermercado/editarProduto', {
             title: 'Editar Produto',
@@ -117,11 +121,9 @@ const pesquisarProdutos = async (req, res) => {
     try {
         const { q, categoria } = req.query;
 
-        // Construir filtro dinâmico
         const filtro = { supermercadoId: req.user.id };
 
         if (q) {
-            // Pesquisa parcial no nome (case-insensitive)
             filtro.nome = { $regex: q, $options: 'i' };
         }
         if (categoria) {
@@ -130,7 +132,6 @@ const pesquisarProdutos = async (req, res) => {
 
         const produtos = await Product.find(filtro).sort({ nome: 1 });
 
-        // Devolver JSON (não HTML!)
         res.json(produtos);
     } catch (err) {
         res.status(500).json({ erro: 'Erro ao pesquisar produtos.' });

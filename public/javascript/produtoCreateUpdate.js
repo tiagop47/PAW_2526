@@ -1,35 +1,35 @@
-document.getElementById
+const formCriar = document.querySelector('formCriar');
+const formEditar = document.querySelector("formEditar");
+const formEliminar = document.querySelector("formEliminar");
 
-const form = document.querySelector('form');
-if (!form) return;
+if (formCriar) {
+    form.addEventListener('submit', function (e) {
+        const nome = form.querySelector('[name="nome"]').value.trim();
+        const preco = form.querySelector('[name="preco"]').value;
+        const stock = form.querySelector('[name="stock"]').value;
+        const erros = [];
 
-const campos = {
-    nome: form.querySelector('[name="nome"]'),
-    categoria: form.querySelector('[name="categoria"]'),
-    preco: form.querySelector('[name="preco"]'),
-    stock: form.querySelector('[name="stock"]'),
-    descricao: form.querySelector('[name="descricao"]')
-};
+        if (nome.length < 2) {
+            erros.push('O nome deve ter pelo menos 2 caracteres.');
+        }
 
-const regras = {
-    nome: {
-        validar: (valor) => valor.trim().length >= 2 && valor.trim().length <= 100,
-        mensagem: 'O nome deve ter entre 2 e 100 caracteres.'
-    },
-    categoria: {
-        validar: (valor) => valor && valor.trim().length >= 3,
-        mensagem: 'Selecione uma categoria.'
-    },
-    preco: {
-        validar: (valor) => !isNaN(valor) && parseFloat(valor) >= 0,
-        mensagem: 'Introduza um preço válido (≥ 0).'
-    },
-    stock: {
-        validar: (valor) => !isNaN(valor) && Number.isInteger(Number(valor)) && parseInt(valor) >= 0,
-        mensagem: 'O stock deve ser um número inteiro positivo.'
-    }
-};
+        if (preco === '' || parseFloat(preco) < 0) {
+            erros.push('O preço deve ser um valor positivo.');
+        }
 
-function addProduto() {
+        if (stock === '' || parseInt(stock) < 0) {
+            erros.push('O stock deve ser um número positivo.');
+        }
 
+        if (erros.length > 0) {
+            e.preventDefault();
+            alert(erros.join('\n'));
+        }
+    });
+}
+
+if (formEditar) {
+    formEliminar.addEventListener('submit', function(e) {
+        
+    });
 }

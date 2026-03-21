@@ -34,19 +34,27 @@
                             <% produtos.forEach(function(p) { %>
                                 <tr>
                                     <td class="fw-bold">
-                                        <a href="/supermercado/produtos/<%= p._id %>" class="text-decoration-none text-dark">
+                                        <a href="/supermercado/produtos/<%= p._id %>"
+                                            class="text-decoration-none text-dark">
                                             <%= p.nome %>
                                         </a>
                                     </td>
-                                    <td><%= p.categoria %></td>
-                                    <td><%= p.preco %>€</td>
-                                    <td><%= p.stock %></td>
                                     <td>
-                                        <a href="/supermercado/produtos/editar/<%= p._id %>" class="btn btn-sm">Editar</a>
+                                        <%= p.categoria %>
+                                    </td>
+                                    <td>
+                                        <%= p.preco %>€
+                                    </td>
+                                    <td>
+                                        <%= p.stock %>
+                                    </td>
+                                    <td>
+                                        <a href="/supermercado/produtos/editar/<%= p._id %>"
+                                            class="btn btn-sm">Editar</a>
                                         <button class="btn btn-sm text-danger">Eliminar</button>
                                     </td>
                                 </tr>
-                            <% }); %>
+                                <% }); %>
                                     <% } else { %>
                                         <tr>
                                             <td colspan="5" class="text-center py-4 text-muted">Nenhum produto
