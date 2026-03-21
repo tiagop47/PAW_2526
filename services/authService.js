@@ -1,4 +1,5 @@
 const User = require('../models/UserModel');
+const Supermarket = require('../models/SupermarketModel'); // Importar o modelo de Supermercado
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { validarRegisto, rolesPublicas } = require('../utils/userValidator');
@@ -14,7 +15,7 @@ const verificarCaptcha = async (recaptchaResponse) => {
 
     const googleResponse = await fetch(verifyUrl, { method: "POST" });
     const googleData = await googleResponse.json();
-    const minScore = parseFloat(process.env.CAPTCHA_MIN_SCORE);
+    const minScore = parseFloat(process.env.CAPTCHA_MIN_SCORE) || 0.5;
 
     if (!googleData.success || googleData.score < minScore) {
         throw new Error("Registo bloqueado por suspeita de atividade automatizada.");
@@ -26,11 +27,15 @@ const verificarCaptcha = async (recaptchaResponse) => {
  * Lógica de registo de novo utilizador.
  */
 const registarUtilizador = async (userData) => {
-    const { nome, email, password, telefone, morada, role } = userData;
+    // Destruturar os campos, incluindo os extras do supermercado
+    const { 
+        nome, email, password, telefone, morada, role,
+        localizacao, horario, custoEntrega, descricaoLoja 
+    } = userData;
 
     const roleFinal = rolesPublicas.includes(role) ? role : "clientes";
 
-    // Validação de formato (usando o teu util)
+    // Validação de formato
     const erroValidacao = validarRegisto({ nome, email, password, morada, telefone, role: roleFinal });
     if (erroValidacao) throw new Error(erroValidacao);
 
@@ -46,7 +51,22 @@ const registarUtilizador = async (userData) => {
         nome, email, password: hashedPassword, telefone, morada, role: roleFinal
     });
 
-    return await novoUser.save();
+    const userGuardado = await novoUser.save();
+
+    // Se for um supermercado, criamos o documento de supermercado associado (Pendente)
+    if (roleFinal === 'supermercados') {
+        await Supermarket.create({
+            userId: userGuardado._id,
+            nome: nome,
+            localizacao: localizacao || "A definir",
+            horarioFuncionamento: horario || "09:00 - 19:00",
+            custoEntrega: custoEntrega || 0,
+            descricao: descricaoLoja || "",
+            estadoAprovacao: 'Pendente'
+        });
+    }
+
+    return userGuardado;
 };
 
 /**

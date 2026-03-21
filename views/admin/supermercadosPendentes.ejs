@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="bg-light">
+
+    <%- include('../partials/navbar') %>
+
+    <main class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 fw-bold m-0">Aprovação de Supermercados</h1>
+            <a href="/admin/dashboard" class="btn btn-sm btn-light">Voltar</a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <table class="tabela-limpa mb-0">
+                <thead>
+                    <tr>
+                        <th>Supermercado</th>
+                        <th>Responsável</th>
+                        <th>Localização</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (locals.supermercados && supermercados.length > 0) { %>
+                        <% supermercados.forEach(function(s) { %>
+                            <tr>
+                                <td class="fw-bold"><%= s.nome %></td>
+                                <td><%= s.userId ? s.userId.nome : 'N/A' %></td>
+                                <td><%= s.localizacao %></td>
+                                <td>
+                                    <div class="d-flex gap-2 justify-content-center">
+                                        <form action="/admin/supermercados/aprovar/<%= s._id %>" method="POST">
+                                            <button type="submit" class="btn btn-sm btn-primary">Aprovar</button>
+                                        </form>
+                                        <form action="/admin/supermercados/rejeitar/<%= s._id %>" method="POST">
+                                            <button type="submit" class="btn btn-sm text-danger border-danger">Rejeitar</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">Não existem pedidos de registo pendentes.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+</body>
+</html>

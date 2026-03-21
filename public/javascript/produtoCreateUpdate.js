@@ -7,5 +7,5 @@ const preco = document.getElementById("preco");
 const stockDisponivel = document.getElementById("stock");
 
 function addProduto() {
-    
+
 }

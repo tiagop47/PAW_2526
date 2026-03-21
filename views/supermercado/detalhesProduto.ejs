@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="bg-light">
+
+    <%- include('../partials/navbar') %>
+
+    <main class="container py-5">
+        <div class="mx-auto" style="max-width: 700px;">
+            <div class="card p-4 border-0 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="h4 fw-bold m-0">Ficha do Produto</h2>
+                    <a href="/supermercado/produtos" class="btn btn-sm btn-light">Voltar</a>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="border rounded text-center p-3 bg-light">
+                            <i class="bi bi-box-seam display-4 text-muted"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h3 class="h5 fw-bold text-primary"><%= produto.nome %></h3>
+                        <p class="text-muted"><%= produto.descricao || 'Sem descrição.' %></p>
+                        
+                        <div class="mb-2">
+                            <span class="fw-bold small text-muted">CATEGORIA:</span>
+                            <span class="badge bg-light text-dark border ms-2"><%= produto.categoria %></span>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-6 text-center border-end">
+                                <div class="titulo-estatistica">Preço Atual</div>
+                                <div class="h4 fw-bold text-dark"><%= produto.preco %>€</div>
+                            </div>
+                            <div class="col-6 text-center">
+                                <div class="titulo-estatistica">Stock em Loja</div>
+                                <div class="h4 fw-bold <%= produto.stock > 0 ? 'text-success' : 'text-danger' %>">
+                                    <%= produto.stock %> un.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex gap-2">
+                    <a href="/supermercado/produtos/editar/<%= produto._id %>" class="btn btn-primary fw-bold px-4">
+                        <i class="bi bi-pencil me-2"></i> Editar Dados
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

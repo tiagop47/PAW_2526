@@ -1,88 +1,101 @@
 <!DOCTYPE html>
 <html lang="pt">
-
 <head>
     <%- include('../partials/head') %>
 </head>
-
 <body class="bg-light">
 
-    <main class="auth-container d-flex align-items-center justify-content-center py-5" style="min-height: 100vh;">
-        <div class="card shadow border-0 p-4" style="max-width: 500px; width: 100%; border-radius: 20px;">
+    <main class="auth-container d-flex align-items-center justify-content-center py-5">
+        <div class="card shadow border-0 p-4" style="max-width: 600px; width: 100%; border-radius: 4px;">
             <header class="text-center mb-4">
-                <h2 class="fw-bold text-primary">Registo de Parceiro</h2>
+                <h2 class="h4 fw-bold text-primary m-0">Registo de Parceiro</h2>
                 <p class="text-muted small">Crie a sua conta de Supermercado ou Estafeta</p>
             </header>
 
             <% if (locals.errorMessage) { %>
-                <div class="alert alert-danger small">
-                    <%= errorMessage %>
+                <div class="alert alert-danger small"><%= errorMessage %></div>
+            <% } %>
+
+            <form action="/auth/registar" method="POST" onsubmit="validarComRecaptcha(event, '<%= siteKey %>', 'registar')">
+                <div class="row g-3">
+                    <!-- Dados de Utilizador (Comuns) -->
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Nome Completo</label>
+                        <input type="text" name="nome" class="form-control" value="<%= locals.dados?.nome || '' %>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Email</label>
+                        <input type="email" name="email" class="form-control" value="<%= locals.dados?.email || '' %>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Password</label>
+                        <input type="password" name="password" id="password" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Telemóvel</label>
+                        <input type="number" name="telefone" class="form-control" value="<%= locals.dados?.telefone || '' %>" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Morada Fiscal</label>
+                        <input type="text" name="morada" class="form-control" value="<%= locals.dados?.morada || '' %>" required>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Tipo de Perfil</label>
+                        <select name="role" id="seletor-role" class="form-select" required>
+                            <option value="supermercados" selected>Supermercado</option>
+                            <option value="estafetas">Estafeta</option>
+                        </select>
+                    </div>
+
+                    <!-- Campos Específicos para Supermercado -->
+                    <div id="campos-supermercado" class="row g-3 m-0 pt-3 border-top mt-3">
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Localização da Loja</label>
+                            <input type="text" name="localizacao" class="form-control" placeholder="Rua, Cidade, etc.">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Horário</label>
+                            <input type="text" name="horario" class="form-control" placeholder="Ex: 09:00 - 20:00">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Custo de Entrega (€)</label>
+                            <input type="number" step="0.01" name="custoEntrega" class="form-control" value="0.00">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Descrição da Loja</label>
+                            <textarea name="descricaoLoja" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
                 </div>
-                <% } %>
 
-                    <form action="/auth/registar" method="POST"
-                        onsubmit="validarComRecaptcha(event, '<%= siteKey %>', 'registar')">
-                        <div class="mb-3">
-                            <label for="nome" class="form-label small fw-bold text-muted">Nome Completo</label>
-                            <input type="text" class="form-control" id="nome" name="nome"
-                                value="<%= locals.dados?.nome || '' %>" required>
-                        </div>
+                <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold mt-4">Solicitar Registo</button>
+            </form>
 
-                        <div class="mb-3">
-                            <label for="email" class="form-label small fw-bold text-muted">Endereço de Email</label>
-                            <input type="email" class="form-control" id="email" name="email"
-                                value="<%= locals.dados?.email || '' %>" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label small fw-bold text-muted">Palavra-passe</label>
-                            <div class="position-relative">
-                                <input type="password" class="form-control" id="password" name="password" required>
-                                <button type="button"
-                                    class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-2 text-primary fw-bold"
-                                    id="togglePassword">Ver</button>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="morada" class="form-label small fw-bold text-muted">Morada</label>
-                            <input type="text" class="form-control" id="morada" name="morada"
-                                value="<%= locals.dados?.morada || '' %>" required>
-                        </div>
-
-                        <div class="row g-2 mb-4">
-                            <div class="col-6">
-                                <label for="telefone" class="form-label small fw-bold text-muted">Telemóvel</label>
-                                <input type="number" class="form-control" id="telefone" name="telefone"
-                                    value="<%= locals.dados?.telefone || '' %>" required>
-                            </div>
-                            <div class="col-6">
-                                <label for="role" class="form-label small fw-bold text-muted">Tipo de Conta</label>
-                                <select class="form-select" id="role" name="role" required>
-                                    <option value="supermercados" <%= locals.dados?.role === 'supermercados' || !locals.dados ? 'selected' : '' %>>Supermercado</option>
-                                    <option value="estafetas" <%= locals.dados?.role === 'estafetas' ? 'selected' : '' %>>Estafeta</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
-                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">Registar</button>
-                    </form>
-
-                    <footer class="mt-4 pt-3 border-top text-center">
-                        <p class="mb-0 small text-muted">Já tem conta?
-                            <a href="/auth/login" class="fw-bold text-primary text-decoration-none">Inicie
-                                sessão</a>
-                        </p>
-                    </footer>
+            <footer class="mt-4 pt-3 border-top text-center">
+                <p class="mb-0 small text-muted">Já tem conta? <a href="/auth/login" class="fw-bold">Inicie sessão</a></p>
+            </footer>
         </div>
     </main>
 
     <script src="/javascript/validacoes.js"></script>
-    <script src="/javascript/mostrarPassword.js"></script>
     <script src="/javascript/authValidations.js"></script>
     <script src="https://www.google.com/recaptcha/api.js?render=<%= siteKey %>"></script>
     <script src="/javascript/recaptcha.js"></script>
-</body>
 
+    <script>
+        // Lógica simples para mostrar/esconder campos extra
+        const seletorRole = document.getElementById('seletor-role');
+        const camposSuper = document.getElementById('campos-supermercado');
+
+        seletorRole.addEventListener('change', function() {
+            if (this.value === 'supermercados') {
+                camposSuper.style.display = 'flex';
+            } else {
+                camposSuper.style.display = 'none';
+            }
+        });
+    </script>
+</body>
 </html>

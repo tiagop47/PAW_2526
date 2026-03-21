@@ -8,6 +8,7 @@ const authController = require('../Controllers/auth');
 router.get('/login', authController.exibirLogin);
 router.get('/registar', authController.exibirRegisto);
 router.get('/recuperarPassword', authController.exibirRecuperarPassword);
+router.get('/logout', authController.logout);
 
 /**
  * Rotas POST (Processamento de dados)

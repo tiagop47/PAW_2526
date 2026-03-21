@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const Supermarket = require('../models/SupermarketModel'); // Importar o modelo
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback';
 const DASHBOARDS = {
@@ -14,14 +15,10 @@ function getDashboardUrl(role) {
 
 /**
  * Helper interno — descodifica o token JWT do cookie.
- * Retorna o payload do utilizador ou null.
  */
 const descodificarToken = (req, res) => {
     const token = req.cookies.token;
-
-    if (!token) {
-        return null;
-    }
+    if (!token) return null;
 
     try {
         return jwt.verify(token, JWT_SECRET);
@@ -33,7 +30,6 @@ const descodificarToken = (req, res) => {
 
 /**
  * Middleware global — injeta `res.locals.user` em todas as views.
- * Deve ser usado uma vez no app.js (substitui o middleware inline).
  */
 const injetarUserNasViews = (req, res, next) => {
     res.locals.user = descodificarToken(req, res);
@@ -42,20 +38,17 @@ const injetarUserNasViews = (req, res, next) => {
 
 /**
  * Middleware — bloqueia acesso se não estiver autenticado.
- * Reutiliza o res.locals.user já injetado pelo injetarUserNasViews.
  */
 const verificarAutenticacao = (req, res, next) => {
     if (!res.locals.user) {
         return res.redirect('/auth/login');
     }
-
     req.user = res.locals.user;
     next();
 };
 
 /**
- * Middleware — redireciona utilizadores já logados (ex: páginas de login/registo).
- * Reutiliza o res.locals.user já injetado pelo injetarUserNasViews.
+ * Middleware — redireciona utilizadores já logados.
  */
 const redirecionarLogged = (req, res, next) => {
     if (res.locals.user) {
@@ -70,16 +63,37 @@ const redirecionarLogged = (req, res, next) => {
 function verificarRole(rolesPermitidas) {
     return function (req, res, next) {
         if (!req.user || !rolesPermitidas.includes(req.user.role)) {
-            return res.status(403).send('Acesso Restrito. Não tem permissões para aceder a esta página.');
+            return res.status(403).send('Acesso Restrito.');
         }
         next();
     };
 }
+
+/**
+ * Middleware — garante que o supermercado já foi aprovado.
+ */
+const verificarAprovacaoSupermercado = async (req, res, next) => {
+    if (req.user && req.user.role === 'supermercados') {
+        try {
+            const superm = await Supermarket.findOne({ userId: req.user.id });
+            if (!superm || superm.estadoAprovacao !== 'Aprovado') {
+                return res.status(403).render('supermercado/aguardandoAprovacao', { 
+                    title: 'Aguardando Aprovação',
+                    estado: superm ? superm.estadoAprovacao : 'Pendente'
+                });
+            }
+        } catch (err) {
+            return res.status(500).send('Erro ao verificar aprovação.');
+        }
+    }
+    next();
+};
 
 module.exports = {
     injetarUserNasViews,
     verificarAutenticacao,
     redirecionarLogged,
     verificarRole,
-    getDashboardUrl
+    getDashboardUrl,
+    verificarAprovacaoSupermercado
 };

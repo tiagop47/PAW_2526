@@ -10,161 +10,54 @@
     <%- include('../partials/navbar') %>
 
         <main class="container py-4">
-            <!-- Cabeçalho da Página -->
-            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-                <div>
-                    <h1 class="h3 mb-0 fw-bold text-dark">Gerir Produtos</h1>
-                    <p class="text-muted small mb-0">Listagem, adição e edição dos seus produtos à venda.</p>
-                </div>
-                <!-- ID simples: botao-abrir -->
-                <button class="btn btn-primary d-flex align-items-center gap-2 shadow-sm px-4 py-2"
-                    id="botao-abrir-modal">
-                    <i class="bi bi-plus-lg"></i>
-                    Adicionar Produto
-                </button>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h4 fw-bold m-0">Gestão de Produtos</h1>
+                <!-- Agora é um link simples para uma nova página -->
+                <a href="/supermercado/produtos/novo" class="btn btn-primary fw-bold">
+                    + Novo Produto
+                </a>
             </div>
 
-            <!-- Tabela de Produtos -->
-            <div class="card border-0 shadow-sm rounded-3">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" id="tabela-produtos">
-                        <thead class="bg-white border-bottom border-light">
-                            <tr>
-                                <th class="ps-4 py-3 text-muted small fw-bold text-uppercase">Produto</th>
-                                <th class="py-3 text-muted small fw-bold text-uppercase">Categoria</th>
-                                <th class="py-3 text-muted small fw-bold text-uppercase">Preço</th>
-                                <th class="py-3 text-muted small fw-bold text-uppercase text-center">Stock</th>
-                                <th class="py-3 text-muted small fw-bold text-uppercase text-end pe-4">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% if (locals.produtos && produtos.length> 0) { %>
-                                <% produtos.forEach(function(p) { %>
-                                    <tr>
-                                        <td class="ps-4">
-                                            <div class="d-flex align-items-center gap-3">
-                                                <div class="bg-light rounded p-1"
-                                                    style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
-                                                    <img src="<%= p.imagem || '/images/default-product.png' %>"
-                                                        alt="<%= p.nome %>" class="img-fluid rounded"
-                                                        style="max-height: 100%;">
-                                                </div>
-                                                <div>
-                                                    <div class="fw-bold text-dark">
-                                                        <%= p.nome %>
-                                                    </div>
-                                                    <div class="text-muted small text-truncate"
-                                                        style="max-width: 200px;">
-                                                        <%= p.descricao %>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span
-                                                class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-2 border border-secondary-subtle">
-                                                <%= p.categoria %>
-                                            </span>
-                                        </td>
-                                        <td class="fw-medium text-dark">
-                                            <%= p.preco.toLocaleString('pt-PT', { style: 'currency' , currency: 'EUR' })
-                                                %>
-                                        </td>
-                                        <td class="text-center">
-                                            <span
-                                                class="badge rounded-pill px-2 py-1 <%= p.stock > 10 ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning' %>">
-                                                <%= p.stock %> em stock
-                                            </span>
-                                        </td>
-                                        <td class="text-end pe-4">
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-secondary px-3"
-                                                    title="Editar">Editar</button>
-                                                <button class="btn btn-outline-danger px-3"
-                                                    title="Eliminar">Eliminar</button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <% }); %>
-                                        <% } else { %>
-                                            <tr>
-                                                <td colspan="5" class="text-center py-5 text-muted">
-                                                    <p class="mb-0">Ainda não tem produtos registados.</p>
-                                                    <small>Clique no botão "Adicionar Produto" para começar.</small>
-                                                </td>
-                                            </tr>
-                                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="card border-0 shadow-sm">
+                <table class="tabela-limpa mb-0">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Categoria</th>
+                            <th>Preço</th>
+                            <th>Stock</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (locals.produtos && produtos.length> 0) { %>
+                            <% produtos.forEach(function(p) { %>
+                                <tr>
+                                    <td class="fw-bold">
+                                        <a href="/supermercado/produtos/<%= p._id %>" class="text-decoration-none text-dark">
+                                            <%= p.nome %>
+                                        </a>
+                                    </td>
+                                    <td><%= p.categoria %></td>
+                                    <td><%= p.preco %>€</td>
+                                    <td><%= p.stock %></td>
+                                    <td>
+                                        <a href="/supermercado/produtos/editar/<%= p._id %>" class="btn btn-sm">Editar</a>
+                                        <button class="btn btn-sm text-danger">Eliminar</button>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-muted">Nenhum produto
+                                                registado.</td>
+                                        </tr>
+                                        <% } %>
+                    </tbody>
+                </table>
             </div>
         </main>
 
-        <div class="modal fade" id="janela-modal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content border-0 shadow">
-                    <form action="/supermercado/produtos" method="POST" id="formulario-produto">
-                        <div class="modal-header border-bottom-0">
-                            <h5 class="modal-title fw-bold">Novo Produto</h5>
-                            <!-- ID simples: botao-fechar-x -->
-                            <button type="button" class="btn-close" id="botao-fechar-modal-x"></button>
-                        </div>
-                        <div class="modal-body p-4 pt-0">
-                            <div class="row g-3">
-                                <div class="col-12">
-                                    <label for="nome" class="form-label small fw-bold">Nome do Produto</label>
-                                    <input type="text" class="form-control" id="nome" name="nome"
-                                        placeholder="Ex: Maçã Gala" required>
-                                </div>
-                                <div class="col-12">
-                                    <label for="descricao" class="form-label small fw-bold">Descrição</label>
-                                    <textarea class="form-control" id="descricao" name="descricao" rows="3"
-                                        placeholder="Descrição detalhada..." required></textarea>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="categoria" class="form-label small fw-bold">Categoria</label>
-                                    <select class="form-select" id="categoria" name="categoria" required>
-                                        <option value="" selected disabled>Escolha...</option>
-                                        <option value="Frutas e Legumes">Frutas e Legumes</option>
-                                        <option value="Carne e Peixe">Carne e Peixe</option>
-                                        <option value="Laticínios">Laticínios</option>
-                                        <option value="Bebidas">Bebidas</option>
-                                        <option value="Congelados">Congelados</option>
-                                        <option value="Mercearia">Mercearia</option>
-                                        <option value="Padaria">Padaria</option>
-                                        <option value="Limpeza">Produtos de Limpeza</option>
-                                        <option value="Higiene">Higiene Pessoal</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="preco" class="form-label small fw-bold">Preço (€)</label>
-                                    <input type="number" step="0.01" class="form-control" id="preco" name="preco"
-                                        placeholder="0.00" required>
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="stock" class="form-label small fw-bold">Stock Inicial</label>
-                                    <input type="number" class="form-control" id="stock" name="stock" placeholder="0"
-                                        required>
-                                </div>
-                                <div class="col-12">
-                                    <label for="imagem" class="form-label small fw-bold">URL da Imagem</label>
-                                    <input type="url" class="form-control" id="imagem" name="imagem"
-                                        placeholder="https://exemplo.com/imagem.jpg">
-                                    <div class="form-text small">Use um link de uma imagem online por agora.</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top-0 pt-0 pb-4">
-                            <button type="button" class="btn btn-light px-4" id="botao-cancelar-modal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary px-4">Guardar Produto</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <script src="/javascript/navbar.js"></script>
-        <script src="/javascript/supermercadoProdutos.js"></script>
 </body>
 
 </html>
