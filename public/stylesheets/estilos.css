@@ -1,0 +1,99 @@
+/* ============================================================
+   OS TEUS ESTILOS (SOBRESCREVEM O BOOTSTRAP)
+   ============================================================ */
+
+:root {
+  --cor-principal: #0d6efd;
+  --fundo: #f1f3f5;
+  --borda: #dee2e6;
+}
+
+body { 
+    background-color: var(--fundo); 
+    font-family: system-ui, sans-serif;
+    color: #333;
+}
+
+/* HEADER CUSTOM */
+.cabecalho-principal { 
+    background: #fff; 
+    border-bottom: 2px solid var(--borda); 
+    position: sticky; top: 0; z-index: 1000; 
+}
+
+.logotipo { font-weight: bold; font-size: 1.3rem; text-decoration: none; color: #000; }
+.circulo-logo { width: 35px; height: 35px; background: #eef4ff; border: 1px solid #ccc; border-radius: 4px; }
+
+/* MENU LINKS */
+.navegacao-links .link-menu { 
+    text-decoration: none; color: #555; font-weight: 600; font-size: 0.9rem; 
+}
+.navegacao-links .link-menu:hover { color: var(--cor-principal); }
+
+/* ==========================================
+   CARTÕES DE ESTATÍSTICA (FORÇAR CENTRO)
+   ========================================== */
+.cartao-estatistica { 
+    background: #fff; 
+    border: 1px solid var(--borda); 
+    border-radius: 4px; 
+    padding: 25px; 
+    
+    /* Centrar tudo independentemente do Bootstrap */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    
+    height: 100%;
+}
+
+.titulo-estatistica { 
+    font-size: 0.75rem; 
+    text-transform: uppercase; 
+    color: #777; 
+    margin-bottom: 8px; 
+    font-weight: bold;
+}
+
+.valor-estatistica { 
+    font-size: 2rem; 
+    font-weight: 800; 
+    color: var(--cor-principal); 
+    margin: 0;
+}
+
+/* ==========================================
+   TABELAS CENTRADAS
+   ========================================== */
+.tabela-limpa { 
+    width: 100%; 
+    background: #fff; 
+    border: 1px solid var(--borda); 
+    border-radius: 4px; 
+}
+
+.tabela-limpa th, .tabela-limpa td { 
+    text-align: center !important; 
+    padding: 12px !important;
+}
+
+.tabela-limpa th { 
+    background: #f8f9fa; 
+    border-bottom: 2px solid var(--borda); 
+    font-weight: bold;
+}
+
+/* Modal Manual */
+.modal.show { display: block; background: rgba(0,0,0,0.5); }
+
+/* RESPONSIVO */
+@media (max-width: 991px) {
+    .navegacao-links { 
+        display: none; flex-direction: column; position: absolute; 
+        top: 100%; left: 0; width: 100%; background: #fff; padding: 15px; 
+        border-bottom: 2px solid var(--cor-principal); 
+    }
+    .navegacao-links.show { display: flex; }
+}

@@ -7,5 +7,6 @@ const { verificarAutenticacao, verificarRole } = require('../middlewares/authMid
 router.use(verificarAutenticacao, verificarRole(['supermercados']));
 
 router.get('/dashboard', supermarketController.exibirDashboard);
+router.get('/produtos', supermarketController.exibirProdutos);
 
 module.exports = router;

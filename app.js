@@ -29,7 +29,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware Global — injeta o user em todas as views EJS
 app.use(injetarUserNasViews);
 
 app.get('/', (req, res) => {

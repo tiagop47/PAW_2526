@@ -6,26 +6,23 @@ const exibirLogin = (req, res) => {
 };
 
 const exibirRegisto = (req, res) => {
-    res.render("loginRegisto/registar", { 
-        errorMessage: null, 
-        siteKey: process.env.CAPTCHA_API_KEY 
+    res.render("loginRegisto/registar", {
+        errorMessage: null,
+        siteKey: process.env.CAPTCHA_API_KEY
     });
 };
 
 const registar = async (req, res) => {
     const siteKey = process.env.CAPTCHA_API_KEY;
-    
-    try {
-        // 1. Validar Captcha
-        await authService.verificarCaptcha(req.body["g-recaptcha-response"]);
 
-        // 2. Tentar Registar
+    try {
+        await authService.verificarCaptcha(req.body["g-recaptcha-response"]);
         await authService.registarUtilizador(req.body);
 
         res.redirect("/auth/login");
     } catch (err) {
-        res.render("loginRegisto/registar", { 
-            errorMessage: err.message, 
+        res.render("loginRegisto/registar", {
+            errorMessage: err.message,
             siteKey,
             dados: req.body
         });

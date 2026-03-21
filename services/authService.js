@@ -59,9 +59,10 @@ const autenticarUtilizador = async (email, password) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new Error("Credenciais inválidas.");
 
+    const secret = process.env.JWT_SECRET || 'fallback';
     const token = jwt.sign(
         { id: user._id, role: user.role, nome: user.nome },
-        process.env.JWT_SECRET,
+        secret,
         { expiresIn: 86400 }
     );
 
