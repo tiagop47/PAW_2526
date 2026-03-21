@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Confirmar Rejeição de Supermercado
     const botoesRejeitar = document.querySelectorAll('.btn-rejeitar-supermercado');
     botoesRejeitar.forEach(btn => {
         btn.addEventListener("click", function (e) {
@@ -9,7 +8,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Filtros de Utilizadores (Procura em tempo real na tabela)
     const inputProcura = document.getElementById("procuraUtilizador");
     if (inputProcura) {
         inputProcura.addEventListener("keyup", function () {

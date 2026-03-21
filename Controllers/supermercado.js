@@ -5,7 +5,6 @@ const Supermarket = require('../models/SupermarketModel');
  * Exibe a Dashboard do Supermercado.
  */
 const exibirDashboard = async (req, res) => {
-    // Aqui no futuro vamos buscar os produtos desta loja
     res.render('supermercado/dashboard', { title: 'Dashboard Supermercado' });
 };
 
@@ -38,10 +37,10 @@ const exibirDetalhes = async (req, res) => {
     try {
         const produto = await Product.findById(req.params.id);
         if (!produto) return res.status(404).send('Produto não encontrado');
-        
-        res.render('supermercado/detalhesProduto', { 
+
+        res.render('supermercado/detalhesProduto', {
             title: 'Detalhes do Produto',
-            produto 
+            produto
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar detalhes.');
@@ -56,9 +55,9 @@ const exibirFormularioEditar = async (req, res) => {
         const produto = await Product.findById(req.params.id);
         if (!produto) return res.status(404).send('Produto não encontrado');
 
-        res.render('supermercado/editarProduto', { 
+        res.render('supermercado/editarProduto', {
             title: 'Editar Produto',
-            produto 
+            produto
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar formulário de edição.');
@@ -71,15 +70,14 @@ const exibirFormularioEditar = async (req, res) => {
 const criarProduto = async (req, res) => {
     try {
         const { nome, descricao, categoria, preco, stock } = req.body;
-        
-        // Criar o produto na base de dados
+
         await Product.create({
             nome,
             descricao,
             categoria,
             preco,
             stockDisponivel: stock,
-            supermercadoId: req.user.id // Atribuímos o ID do utilizador logado
+            supermercadoId: req.user.id
         });
 
         res.redirect('/supermercado/produtos');
@@ -111,6 +109,34 @@ const atualizarProduto = async (req, res) => {
     }
 };
 
+/**
+ * API — Pesquisar produtos (devolve JSON para o fetch do browser).
+ * Exemplo: GET /supermercado/api/produtos?q=leite&categoria=Laticinios
+ */
+const pesquisarProdutos = async (req, res) => {
+    try {
+        const { q, categoria } = req.query;
+
+        // Construir filtro dinâmico
+        const filtro = { supermercadoId: req.user.id };
+
+        if (q) {
+            // Pesquisa parcial no nome (case-insensitive)
+            filtro.nome = { $regex: q, $options: 'i' };
+        }
+        if (categoria) {
+            filtro.categoria = categoria;
+        }
+
+        const produtos = await Product.find(filtro).sort({ nome: 1 });
+
+        // Devolver JSON (não HTML!)
+        res.json(produtos);
+    } catch (err) {
+        res.status(500).json({ erro: 'Erro ao pesquisar produtos.' });
+    }
+};
+
 module.exports = {
     exibirDashboard,
     exibirProdutos,
@@ -118,5 +144,6 @@ module.exports = {
     exibirDetalhes,
     exibirFormularioEditar,
     criarProduto,
-    atualizarProduto
+    atualizarProduto,
+    pesquisarProdutos
 };

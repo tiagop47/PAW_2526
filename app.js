@@ -12,7 +12,6 @@ mongoose.connect(process.env.MONGODB_URI)
     .catch(err => console.error('Erro ao ligar ao MongoDB:', err));
 
 var authRouter = require('./routes/auth');
-var usersRouter = require('./routes/users');
 var adminRouter = require('./routes/admin');
 var supermercadoRouter = require('./routes/supermercado');
 var clienteRouter = require('./routes/cliente');
@@ -36,7 +35,6 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authRouter);
-app.use('/users', usersRouter);
 app.use('/admin', adminRouter);
 app.use('/supermercado', supermercadoRouter);
 app.use('/cliente', clienteRouter);

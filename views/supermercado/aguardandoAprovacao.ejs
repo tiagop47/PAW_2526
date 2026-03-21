@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt">
+
 <head>
     <%- include('../partials/head') %>
 </head>
+
 <body class="bg-light">
 
     <header class="cabecalho-principal">
         <div class="container d-flex align-items-center justify-content-between py-2">
-            <span class="logotipo">🛒 PAW Market</span>
             <a href="/auth/logout" class="btn btn-sm btn-outline-danger">Sair</a>
         </div>
     </header>
@@ -15,17 +16,21 @@
     <main class="container py-5 text-center">
         <div class="card p-5 border-0 shadow-sm mx-auto" style="max-width: 500px;">
             <i class="bi bi-clock-history display-1 text-warning mb-4"></i>
-            <h1 class="h4 fw-bold">Aguardando Aprovação</h1>
+            <h1 class="h4 fw-bold">Aguarda Aprovação</h1>
             <p class="text-muted">
-                O seu pedido de registo de supermercado está atualmente como <strong><%= estado %></strong>.
+                O seu pedido de registo de supermercado está atualmente como <strong>
+                    <%= estado %>
+                </strong>.
             </p>
             <hr>
             <p class="small">
-                Um administrador irá rever os seus dados brevemente. Por favor, aguarde o contacto ou tente novamente mais tarde.
+                Um administrador irá rever os seus dados brevemente. Por favor, aguarde o contacto ou tente novamente
+                mais tarde.
             </p>
             <a href="/auth/logout" class="btn btn-primary fw-bold mt-3">Voltar ao Início</a>
         </div>
     </main>
 
 </body>
+
 </html>

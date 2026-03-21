@@ -12,9 +12,9 @@ router.get('/produtos/novo', supermarketController.exibirFormularioNovo);
 router.get('/produtos/:id', supermarketController.exibirDetalhes);
 router.get('/produtos/editar/:id', supermarketController.exibirFormularioEditar);
 
-/**
- * Rotas POST (Processamento)
- */
+
+router.get('/api/produtos', supermarketController.pesquisarProdutos);
+
 router.post('/produtos', supermarketController.criarProduto);
 router.post('/produtos/editar/:id', supermarketController.atualizarProduto);
 

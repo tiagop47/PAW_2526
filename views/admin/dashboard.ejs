@@ -1,35 +1,38 @@
 <!DOCTYPE html>
 <html lang="pt">
+
 <head>
     <%- include('../partials/head') %>
 </head>
+
 <body class="bg-light">
 
     <%- include('../partials/navbar') %>
 
-    <div class="container mt-5">
-        <div class="cartao-estatistica">
-            <h1>Painel do Administrador</h1>
-            <p>Gestão global da plataforma.</p>
-            <hr>
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <a href="/admin/supermercados/pendentes" class="btn btn-outline-primary w-100 botao-acao py-3">
-                        <i class="bi bi-check-circle fs-4 d-block"></i>
-                        Aprovar Supermercados
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="/admin/utilizadores" class="btn btn-outline-secondary w-100 botao-acao py-3">
-                        <i class="bi bi-people fs-4 d-block"></i>
-                        Gerir Utilizadores
-                    </a>
+        <div class="container mt-5">
+            <div class="cartao-estatistica">
+                <h1>Painel do Administrador</h1>
+                <p>Gestão global da plataforma.</p>
+                <hr>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <a href="/admin/supermercados/pendentes" class="btn btn-outline-primary w-100 botao-acao py-3">
+                            <i class="bi bi-check-circle fs-4 d-block"></i>
+                            Aprovar 
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="/admin/utilizadores" class="btn btn-outline-secondary w-100 botao-acao py-3">
+                            <i class="bi bi-people fs-4 d-block"></i>
+                            Gerir Utilizadores
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script src="/javascript/navbar.js"></script>
-    <script src="/javascript/adminActions.js"></script>
+        <script src="/javascript/navbar.js"></script>
+        <script src="/javascript/adminActions.js"></script>
 </body>
+
 </html>
