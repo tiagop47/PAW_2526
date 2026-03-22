@@ -1,6 +1,6 @@
-const formCriar = document.querySelector('formCriar');
-const formEditar = document.querySelector("formEditar");
-const formEliminar = document.querySelector("formEliminar");
+const formCriar = document.querySelector('#formCriar');
+const formEditar = document.querySelector("#formEditar");
+const formEliminar = document.querySelector("#formEliminar");
 
 if (formCriar) {
     form.addEventListener('submit', function (e) {
@@ -29,7 +29,7 @@ if (formCriar) {
 }
 
 if (formEditar) {
-    formEliminar.addEventListener('submit', function(e) {
-        
+    formEliminar.addEventListener('submit', function (e) {
+
     });
 }
