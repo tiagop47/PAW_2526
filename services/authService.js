@@ -28,22 +28,23 @@ const verificarCaptcha = async (recaptchaResponse) => {
  */
 const registarUtilizador = async (userData) => {
     // Destruturar os campos, incluindo os extras do supermercado
-    const { 
+    const {
         nome, email, password, telefone, morada, role,
-        localizacao, horario, custoEntrega, descricaoLoja 
+        localizacao, horario, custoEntrega, descricaoLoja
     } = userData;
 
     const roleFinal = rolesPublicas.includes(role) ? role : "clientes";
 
-    // Validação de formato
     const erroValidacao = validarRegisto({ nome, email, password, morada, telefone, role: roleFinal });
-    if (erroValidacao) throw new Error(erroValidacao);
+    if (erroValidacao) {
+        throw new Error(erroValidacao);
+    }
 
-    // Verificar se existe
     const userExistente = await User.findOne({ email });
-    if (userExistente) throw new Error("Este email já está registado.");
+    if (userExistente) {
+        throw new Error("Este email já está registado.");
+    }
 
-    // Hash da password
     const saltRounds = parseInt(process.env.SALT_ROUNDS) || 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 

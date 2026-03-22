@@ -75,12 +75,13 @@ function verificarRole(rolesPermitidas) {
 const verificarAprovacaoSupermercado = async (req, res, next) => {
     if (req.user && req.user.role === 'supermercados') {
         try {
-            const superm = await Supermarket.findOne({ userId: req.user.id });
-            if (!superm || superm.estadoAprovacao !== 'Aprovado') {
-                return res.status(403).render('supermercado/aguardandoAprovacao', { 
-                    title: 'Aguardando Aprovação',
-                    estado: superm ? superm.estadoAprovacao : 'Pendente'
-                });
+            const superMercado = await Supermarket.findOne({ userId: req.user.id });
+            if (!superMercado || superMercado.estadoAprovacao !== 'Aprovado') {
+                return res.status(403).render('supermercado/aguardandoAprovacao',
+                    {
+                        title: 'Aguardando Aprovação',
+                        estado: superMercado ? superMercado.estadoAprovacao : 'Pendente'
+                    });
             }
         } catch (err) {
             return res.status(500).send('Erro ao verificar aprovação.');
