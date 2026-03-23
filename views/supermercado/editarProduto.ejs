@@ -14,10 +14,20 @@
                 <div class="card p-4 border-0 shadow-sm">
                     <h2 class="h4 fw-bold mb-4 text-center">Editar Produto</h2>
 
-                    <form id="formEditar" action="/supermercado/produtos/editar/<%= produto._id %>" method="POST">
+                    <form id="formEditar" action="/supermercado/produtos/editar/<%= produto._id %>" method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Nome do Produto</label>
                             <input type="text" name="nome" class="form-control" value="<%= produto.nome %>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small d-block">Imagem do Produto (Opcional)</label>
+                            <% if (produto.imagem) { %>
+                                <div class="mb-2">
+                                    <img src="<%= produto.imagem %>" alt="Atual" class="img-thumbnail" style="height: 100px;">
+                                </div>
+                            <% } %>
+                            <input type="file" name="imagem" class="form-control" accept="image/*">
                         </div>
 
                         <div class="mb-3">

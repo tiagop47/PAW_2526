@@ -11,31 +11,39 @@
 
         <main class="container py-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h4 fw-bold m-0">Aprovação de Supermercados</h1>
-                <a href="/admin/dashboard" class="btn btn-sm btn-light">Voltar</a>
             </div>
-                   <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm">
                 <table class="tabela-limpa mb-0">
                     <thead>
                         <tr>
                             <th>Utilizador</th>
                             <th>Telefone</th>
                             <th>Cargo/Função</th>
+                            <th class="text-end pe-3">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         <% if (locals.users && users.length> 0) { %>
                             <% users.forEach(function(utilizador) { %>
-                                <tr>
+                                <tr id="user-<%= utilizador._id %>">
                                     <td class="fw-bold">
-                                        <%= utilizador.nome %>
+                                        <%= utilizador.nome %><br>
+                                            <small class="text-muted fw-normal">
+                                                <%= utilizador.email %>
+                                            </small>
                                     </td>
 
                                     <td class="fw-bold">
                                         <%= utilizador.telefone %>
                                     </td>
                                     <td>
-                                        <%= utilizador.role%>
+                                        <span class="badge bg-secondary">
+                                            <%= utilizador.role %>
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <a href="/admin/exibirUtilizadores/<%= utilizador._id %>/detalhes"
+                                            class="btn btn-sm btn-secondary">Editar</a>
                                     </td>
                                 </tr>
                                 <% }); %>
@@ -48,6 +56,21 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Navegação de Paginação -->
+            <% if (locals.totalPaginas > 1) { %>
+                <div class="d-flex justify-content-center mt-4 gap-2">
+                    <% if (paginaAtual > 1) { %>
+                        <a href="/admin/exibirUtilizadores?pagina=<%= paginaAtual - 1 %>" class="btn btn-sm btn-secondary">Anterior</a>
+                    <% } %>
+                    
+                    <span class="btn btn-sm btn-light disabled">Página <%= paginaAtual %> de <%= totalPaginas %></span>
+
+                    <% if (paginaAtual < totalPaginas) { %>
+                        <a href="/admin/exibirUtilizadores?pagina=<%= paginaAtual + 1 %>" class="btn btn-sm btn-secondary">Próximo</a>
+                    <% } %>
+                </div>
+            <% } %>
         </main>
 
         <script src="/javascript/adminActions.js"></script>

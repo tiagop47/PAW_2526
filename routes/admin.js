@@ -10,9 +10,9 @@ router.get('/dashboard', adminController.exibirDashboard);
 router.get('/exibirUtilizadores', adminController.listarUtilizadores);
 router.get('/exibirUtilizadores/:id/detalhes', adminController.editarUser);
 router.post('/exibirUtilizadores/:id/editar', adminController.guardarUser);
-router.post('/exibirUtilizadores/:id/eliminar', adminController.eliminarUser);
 
-router.get('/supermercados/ativos', adminController.supermercadosAtivos);
+router.get('/supermercados/listarMercados', adminController.listarMercados);
+router.get('/supermercados/ativos', adminController.listarMercados);
 router.get('/pendentes', adminController.listarPendentes);
 
 router.post('/aprovar/:id', adminController.aprovarSupermercado);

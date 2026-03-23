@@ -75,7 +75,9 @@ const exibirDetalhes = async (req, res) => {
 const exibirFormularioEditar = async (req, res) => {
     try {
         const produto = await Product.findById(req.params.id);
-        if (!produto) return res.status(404).send('Produto não encontrado');
+        if (!produto) {
+            return res.status(404).send('Produto não encontrado');
+        }
 
         res.render('supermercado/editarProduto', {
             title: 'Editar Produto',

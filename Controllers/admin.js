@@ -1,42 +1,41 @@
-const Supermarket = require('../models/SupermarketModel');
-const User = require('../models/UserModel');
-const Order = require('../models/OrderModel');
+const adminService = require('../services/adminService');
 
 /**
- * Exibe a Dashboard do Administrador (com dados reais completos).
+ * Exibe a Dashboard do Administrador.
  */
 const exibirDashboard = async (req, res) => {
     try {
-        const totalUsers = await User.countDocuments();
-        const pendentes = await Supermarket.countDocuments({ estadoAprovacao: 'Pendente' });
-        const supermercadosAtivosCount = await Supermarket.countDocuments({ estadoAprovacao: 'Aprovado' });
-        const totalEncomendas = await Order.countDocuments();
+        const stats = await adminService.getDashboardStats();
 
         res.render('admin/dashboard', {
             title: 'Painel Admin',
-            totalUsers,
-            pendentes,
-            supermercadosAtivosCount,
-            totalEncomendas
+            totalUsers: stats.totalUsers,
+            pendentes: stats.pendentes
         });
     } catch (err) {
         res.render('admin/dashboard', {
             title: 'Painel Admin',
             totalUsers: 0,
-            pendentes: 0,
-            supermercadosAtivosCount: 0,
-            totalEncomendas: 0
+            pendentes: 0
         });
     }
 };
 
 /**
- * Lista todos os supermercados que aguardam aprovação.
+ * Lista os supermercados que aguardam aprovação (Limite 3).
  */
 const listarPendentes = async (req, res) => {
     try {
-        const supermercados = await Supermarket.find({ estadoAprovacao: 'Pendente' }).populate('userId');
-        res.render('admin/supermercadosPendentes', { title: 'Aprovações Pendentes', supermercados });
+        const pagina = parseInt(req.query.pagina) || 1;
+        const limite = 3;
+        const dadosPagina = await adminService.getPendentesDocumentos(pagina, limite);
+
+        res.render('admin/supermercadosPendentes', {
+            title: 'Aprovações Pendentes',
+            supermercados: dadosPagina.supermercados,
+            paginaAtual: pagina,
+            totalPaginas: dadosPagina.totalPaginas
+        });
     } catch (err) {
         res.status(500).send('Erro ao carregar lista de pendentes.');
     }
@@ -47,7 +46,7 @@ const listarPendentes = async (req, res) => {
  */
 const aprovarSupermercado = async (req, res) => {
     try {
-        await Supermarket.findByIdAndUpdate(req.params.id, { estadoAprovacao: 'Aprovado' });
+        await adminService.aprovarSupermercadoById(req.params.id);
         res.redirect('/admin/pendentes');
     } catch (err) {
         res.status(500).send('Erro ao aprovar supermercado.');
@@ -59,7 +58,7 @@ const aprovarSupermercado = async (req, res) => {
  */
 const rejeitarSupermercado = async (req, res) => {
     try {
-        await Supermarket.findByIdAndUpdate(req.params.id, { estadoAprovacao: 'Rejeitado' });
+        await adminService.rejeitarSupermercadoById(req.params.id);
         res.redirect('/admin/pendentes');
     } catch (err) {
         res.status(500).send('Erro ao rejeitar supermercado.');
@@ -67,14 +66,19 @@ const rejeitarSupermercado = async (req, res) => {
 };
 
 /**
- * Lista todos os utilizadores para gestão.
+ * Lista todos os utilizadores (Limite 3).
  */
 const listarUtilizadores = async (req, res) => {
     try {
-        const users = await User.find().sort({ criadoEm: -1 });
+        const pagina = parseInt(req.query.pagina) || 1;
+        const limite = 3;
+        const dadosPagina = await adminService.getUsersDocumentos(pagina, limite);
+
         res.render('admin/exibirUtilizadores', {
             title: 'Gestão de Utilizadores',
-            users
+            users: dadosPagina.users,
+            paginaAtual: pagina,
+            totalPaginas: dadosPagina.totalPaginas
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar lista de utilizadores.');
@@ -82,88 +86,55 @@ const listarUtilizadores = async (req, res) => {
 };
 
 /**
- * Exibe formulário de edição de um utilizador.
+ * Exibe formulário de edição de utilizador.
  */
 const editarUser = async (req, res) => {
     try {
-        const utilizador = await User.findById(req.params.id).select('-password');
-        if (!utilizador) {
-            return res.status(404).send('Utilizador não encontrado.');
-        }
-        res.render('admin/editarUtilizador', {
-            title: 'Editar Utilizador',
-            utilizador
-        });
+        const user = await adminService.getUserByIdSemPassword(req.params.id);
+        if (!user) return res.status(404).send('Utilizador não encontrado.');
+        res.render('admin/editarUtilizador', { title: 'Editar Utilizador', user });
     } catch (err) {
         res.status(500).send('Erro ao carregar utilizador.');
     }
 };
 
 /**
- * Guarda as alterações a um utilizador.
+ * Guarda alterações de utilizador.
  */
 const guardarUser = async (req, res) => {
     try {
         const { nome, email, telefone, morada, role } = req.body;
-        await User.findByIdAndUpdate(req.params.id, { nome, email, telefone, morada, role });
+        await adminService.atualizarUserById(req.params.id, { nome, email, telefone, morada, role });
         res.redirect('/admin/exibirUtilizadores');
     } catch (err) {
-        res.status(500).send('Erro ao guardar utilizador.');
+        res.status(500).send('Erro ao guardar alterações.');
     }
 };
 
 /**
- * Elimina um utilizador.
+ * API — Listar supermercados ativos (Limite 3).
  */
-const eliminarUser = async (req, res) => {
+const listarMercados = async (req, res) => {
     try {
-        await User.findByIdAndDelete(req.params.id);
-        // Se tinha supermercado, eliminar também
-        await Supermarket.findOneAndDelete({ userId: req.params.id });
-        res.redirect('/admin/exibirUtilizadores');
-    } catch (err) {
-        res.status(500).send('Erro ao eliminar utilizador.');
-    }
-};
-
-/**
- * Bloqueia um supermercado ativo.
- */
-const bloquearSupermercado = async (req, res) => {
-    try {
-        const supermercado = await Supermarket.findByIdAndUpdate(
-            req.params.id,
-            { estadoAprovacao: 'Bloqueado' },
-            { new: true }
-        );
-
-        if (!supermercado) {
-            return res.status(404).json({ message: 'Supermercado não encontrado.' });
-        }
-
-        res.status(200).json({ message: 'Supermercado bloqueado com sucesso!' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Erro ao bloquear o supermercado.' });
-    }
-};
-
-/**
- * API — Lista supermercados ativos (JSON).
- */
-const supermercadosAtivos = async (req, res) => {
-    try {
-        const limite = parseInt(req.query.limite) || 5;
-        const pular = parseInt(req.query.pular) || 0;
-
-        const supermercados = await Supermarket.find({ estadoAprovacao: 'Aprovado' })
-            .populate('userId')
-            .skip(pular)
-            .limit(limite);
-
+        const limite = 3;
+        const contador = parseInt(req.query.contador) || 0;
+        const supermercados = await adminService.getMercadosAtivos(contador, limite);
+        const total = getMercadosPage()
         res.json(supermercados);
     } catch (err) {
         res.status(500).json({ erro: 'Erro ao listar supermercados ativos.' });
+    }
+};
+
+/**
+ * Bloqueia um supermercado.
+ */
+const bloquearSupermercado = async (req, res) => {
+    try {
+        await adminService.bloquearSupermercadoById(req.params.id);
+        res.status(200).json({ success: true, message: "Supermercado Bloqueado!" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Erro ao bloquear supermercado.' });
     }
 };
 
@@ -175,7 +146,6 @@ module.exports = {
     listarUtilizadores,
     editarUser,
     guardarUser,
-    eliminarUser,
-    bloquearSupermercado,
-    supermercadosAtivos
+    listarMercados,
+    bloquearSupermercado
 };

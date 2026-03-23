@@ -14,10 +14,22 @@
                 <div class="card p-4 border-0 shadow-sm">
                     <h2 class="h4 fw-bold mb-4 text-center">Novo Produto</h2>
 
-                    <form action="/supermercado/produtos" method="POST" id="formCriar">
+                    <form action="/supermercado/produtos" method="POST" id="formCriar" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Nome do Produto</label>
                             <input type="text" name="nome" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3 text-center">
+                            <label class="form-label fw-bold small d-block">Imagem do Produto</label>
+                            <div class="input-group">
+                                <input type="file" name="imagem" class="form-control" accept="image/*" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Descrição (Opcional)</label>
+                            <textarea name="descricao" class="form-control" rows="2" placeholder="Breve descrição do produto"></textarea>
                         </div>
 
                         <div class="mb-3">

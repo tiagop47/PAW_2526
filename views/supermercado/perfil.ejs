@@ -71,13 +71,7 @@
                                 <%= supermercado.localizacao %>
                             </span>
                         </div>
-                        <div class="mb-2">
-                            <span class="fw-bold small text-muted">Estado:</span>
-                            <span
-                                class="badge bg-<%= supermercado.estadoAprovacao === 'Aprovado' ? 'success' : supermercado.estadoAprovacao === 'Pendente' ? 'warning' : 'danger' %>">
-                                <%= supermercado.estadoAprovacao %>
-                            </span>
-                        </div>
+
                         <div class="mt-3">
                             <a href="/supermercado/editar" class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-pencil me-1"></i> Editar Supermercado

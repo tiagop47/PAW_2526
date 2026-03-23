@@ -11,8 +11,6 @@
 
         <main class="container py-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h4 fw-bold m-0">Aprovação de Supermercados</h1>
-                <a href="/admin/dashboard" class="btn btn-sm btn-light">Voltar</a>
             </div>
 
             <div class="card border-0 shadow-sm">
@@ -64,6 +62,21 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Navegação de Paginação -->
+            <% if (locals.totalPaginas > 1) { %>
+                <div class="d-flex justify-content-center mt-4 gap-2">
+                    <% if (paginaAtual > 1) { %>
+                        <a href="/admin/pendentes?pagina=<%= paginaAtual - 1 %>" class="btn btn-sm btn-secondary">Anterior</a>
+                    <% } %>
+                    
+                    <span class="btn btn-sm btn-light disabled">Página <%= paginaAtual %> de <%= totalPaginas %></span>
+
+                    <% if (paginaAtual < totalPaginas) { %>
+                        <a href="/admin/pendentes?pagina=<%= paginaAtual + 1 %>" class="btn btn-sm btn-secondary">Próximo</a>
+                    <% } %>
+                </div>
+            <% } %>
         </main>
 
         <script src="/javascript/adminActions.js"></script>
