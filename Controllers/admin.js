@@ -1,16 +1,32 @@
 const Supermarket = require('../models/SupermarketModel');
 const User = require('../models/UserModel');
+const Order = require('../models/OrderModel');
 
 /**
- * Exibe a Dashboard do Administrador.
+ * Exibe a Dashboard do Administrador (com dados reais completos).
  */
 const exibirDashboard = async (req, res) => {
     try {
         const totalUsers = await User.countDocuments();
         const pendentes = await Supermarket.countDocuments({ estadoAprovacao: 'Pendente' });
-        res.render('admin/dashboard', { title: 'Painel Admin', totalUsers, pendentes });
+        const supermercadosAtivosCount = await Supermarket.countDocuments({ estadoAprovacao: 'Aprovado' });
+        const totalEncomendas = await Order.countDocuments();
+
+        res.render('admin/dashboard', {
+            title: 'Painel Admin',
+            totalUsers,
+            pendentes,
+            supermercadosAtivosCount,
+            totalEncomendas
+        });
     } catch (err) {
-        res.render('admin/dashboard', { title: 'Painel Admin', totalUsers: 0, pendentes: 0 });
+        res.render('admin/dashboard', {
+            title: 'Painel Admin',
+            totalUsers: 0,
+            pendentes: 0,
+            supermercadosAtivosCount: 0,
+            totalEncomendas: 0
+        });
     }
 };
 
@@ -50,6 +66,9 @@ const rejeitarSupermercado = async (req, res) => {
     }
 };
 
+/**
+ * Lista todos os utilizadores para gestão.
+ */
 const listarUtilizadores = async (req, res) => {
     try {
         const users = await User.find().sort({ criadoEm: -1 });
@@ -62,11 +81,48 @@ const listarUtilizadores = async (req, res) => {
     }
 };
 
+/**
+ * Exibe formulário de edição de um utilizador.
+ */
 const editarUser = async (req, res) => {
     try {
-
+        const utilizador = await User.findById(req.params.id).select('-password');
+        if (!utilizador) {
+            return res.status(404).send('Utilizador não encontrado.');
+        }
+        res.render('admin/editarUtilizador', {
+            title: 'Editar Utilizador',
+            utilizador
+        });
     } catch (err) {
-        res.status(500).send('Erro ao rejeitar supermercado.');
+        res.status(500).send('Erro ao carregar utilizador.');
+    }
+};
+
+/**
+ * Guarda as alterações a um utilizador.
+ */
+const guardarUser = async (req, res) => {
+    try {
+        const { nome, email, telefone, morada, role } = req.body;
+        await User.findByIdAndUpdate(req.params.id, { nome, email, telefone, morada, role });
+        res.redirect('/admin/exibirUtilizadores');
+    } catch (err) {
+        res.status(500).send('Erro ao guardar utilizador.');
+    }
+};
+
+/**
+ * Elimina um utilizador.
+ */
+const eliminarUser = async (req, res) => {
+    try {
+        await User.findByIdAndDelete(req.params.id);
+        // Se tinha supermercado, eliminar também
+        await Supermarket.findOneAndDelete({ userId: req.params.id });
+        res.redirect('/admin/exibirUtilizadores');
+    } catch (err) {
+        res.status(500).send('Erro ao eliminar utilizador.');
     }
 };
 
@@ -75,9 +131,12 @@ const editarUser = async (req, res) => {
  */
 const bloquearSupermercado = async (req, res) => {
     try {
-        const id = req.params.id;
-        const supermercado = await Supermarket.findByIdAndUpdate(id, { estadoAprovacao: 'Bloqueado' }, { new: true });
-        
+        const supermercado = await Supermarket.findByIdAndUpdate(
+            req.params.id,
+            { estadoAprovacao: 'Bloqueado' },
+            { new: true }
+        );
+
         if (!supermercado) {
             return res.status(404).json({ message: 'Supermercado não encontrado.' });
         }
@@ -89,6 +148,9 @@ const bloquearSupermercado = async (req, res) => {
     }
 };
 
+/**
+ * API — Lista supermercados ativos (JSON).
+ */
 const supermercadosAtivos = async (req, res) => {
     try {
         const limite = parseInt(req.query.limite) || 5;
@@ -112,6 +174,8 @@ module.exports = {
     rejeitarSupermercado,
     listarUtilizadores,
     editarUser,
+    guardarUser,
+    eliminarUser,
     bloquearSupermercado,
     supermercadosAtivos
 };
