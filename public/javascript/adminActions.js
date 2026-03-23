@@ -1,17 +1,22 @@
+const corpoTabelaEl = document.getElementById('corpo-tabela');
+const infoPaginaEl = document.getElementById('info-pagina');
+const btnAntEl = document.getElementById('btn-ant');
+const btnProxEl = document.getElementById('btn-prox');
+
+let contadorAtual = 0;
+
 /**
  * Carrega supermercados de 3 em 3 e injeta na tabela.
  */
 async function carregarSupermercados(contador = 0) {
+    if (!corpoTabelaEl) return;
+
     try {
+        contadorAtual = contador;
         const res = await fetch(`/admin/supermercados/ativos?contador=${contador}`);
         const data = await res.json();
 
         const { supermercados, paginaAtual, totalPaginas } = data;
-        const tbody = document.getElementById('corpo-tabela');
-        const qtdPaginas = document.getElementById('info-pagina');
-
-        if (!tbody) return;
-
 
         let html = '';
         if (supermercados.length === 0 && contador === 0) {
@@ -28,22 +33,17 @@ async function carregarSupermercados(contador = 0) {
                     </tr>`;
             });
         }
-        tbody.innerHTML = html;
+        corpoTabelaEl.innerHTML = html;
 
-        if (qtdPaginas) {
-            qtdPaginas.innerText = `Página ${paginaAtual} de ${totalPaginas}`;
+        if (infoPaginaEl) {
+            infoPaginaEl.innerText = `Página ${paginaAtual} de ${totalPaginas}`;
         }
 
-        const btnAnt = document.getElementById('btn-ant');
-        const btnProx = document.getElementById('btn-prox');
-
-        if (btnAnt) {
-            btnAnt.disabled = (contador === 0);
-            btnAnt.onclick = () => carregarSupermercados(Math.max(0, contador - 3));
+        if (btnAntEl) {
+            btnAntEl.disabled = (contador === 0);
         }
-        if (btnProx) {
-            btnProx.disabled = (paginaAtual >= totalPaginas);
-            btnProx.onclick = () => carregarSupermercados(contador + 3);
+        if (btnProxEl) {
+            btnProxEl.disabled = (paginaAtual >= totalPaginas);
         }
 
     } catch (err) {
@@ -67,9 +67,18 @@ async function bloquearSupermercado(id, contador) {
     }
 }
 
-// Iniciar automaticamente se estivermos na página correta
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('corpo-tabela')) {
-        carregarSupermercados(0);
-    }
-});
+if (btnAntEl) {
+    btnAntEl.addEventListener('click', function () {
+        carregarSupermercados(Math.max(0, contadorAtual - 3));
+    });
+}
+
+if (btnProxEl) {
+    btnProxEl.addEventListener('click', function () {
+        carregarSupermercados(contadorAtual + 3);
+    });
+}
+
+if (corpoTabelaEl) {
+    carregarSupermercados(0);
+}

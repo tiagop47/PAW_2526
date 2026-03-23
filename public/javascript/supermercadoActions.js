@@ -4,6 +4,10 @@ const tabelaBody = document.getElementById('tabela-produtos');
 
 const formCriar = document.getElementById('formCriar');
 const formEditar = document.getElementById('formEditar');
+const formVendaCaixa = document.getElementById('formVendaCaixa');
+const itensVendaInput = document.getElementById('itensVenda');
+
+let timerPesquisa;
 
 const validarProdutoForm = function (form) {
     const nomeInput = form.querySelector('[name="nome"]');
@@ -66,10 +70,10 @@ const atualizarTabelaProdutos = function (produtos) {
             '<td>' + Number(p.preco || 0).toFixed(2) + ' EUR</td>' +
             '<td>' + Number(p.stockDisponivel || 0) + '</td>' +
             '<td>' +
-                '<a href="/supermercado/produtos/' + p._id + '" class="btn btn-sm btn-outline-primary">Ver</a> ' +
-                '<a href="/supermercado/produtos/editar/' + p._id + '" class="btn btn-sm btn-outline-secondary">Editar</a>' +
+            '<a href="/supermercado/produtos/' + p._id + '" class="btn btn-sm btn-outline-primary">Ver</a> ' +
+            '<a href="/supermercado/produtos/editar/' + p._id + '" class="btn btn-sm btn-outline-secondary">Editar</a>' +
             '</td>' +
-        '</tr>';
+            '</tr>';
     }).join('');
 
     tabelaBody.innerHTML = linhas;
@@ -103,18 +107,15 @@ const pesquisarProdutos = async function () {
 };
 
 if (inputPesquisa) {
-    let timer;
     inputPesquisa.addEventListener('input', function () {
-        clearTimeout(timer);
-        timer = setTimeout(pesquisarProdutos, 300);
+        clearTimeout(timerPesquisa);
+        timerPesquisa = setTimeout(pesquisarProdutos, 300);
     });
 }
 
 if (selectCategoria) {
     selectCategoria.addEventListener('change', pesquisarProdutos);
 }
-
-const formVendaCaixa = document.getElementById('formVendaCaixa');
 
 if (formVendaCaixa) {
     formVendaCaixa.addEventListener('submit', function (e) {
@@ -137,7 +138,6 @@ if (formVendaCaixa) {
             return;
         }
 
-        const itensVendaInput = document.getElementById('itensVenda');
         if (itensVendaInput) {
             itensVendaInput.value = JSON.stringify(itens);
         }

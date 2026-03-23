@@ -1,59 +1,65 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const formLogin = document.querySelector('form[action="/auth/login"]');
-    const formRegistar = document.querySelector('form[action="/auth/registar"]');
+const formLogin = document.querySelector('form[action="/auth/login"]');
+const formRegistar = document.querySelector('form[action="/auth/registar"]');
 
-    if (formLogin) {
-        formLogin.addEventListener("submit", function (e) {
-            let temErro = false;
-            const email = document.getElementById("floatingInput");
-            const password = document.getElementById("password");
+const emailLoginInput = document.getElementById('floatingInput');
+const passwordLoginInput = document.getElementById('password');
 
-            if (!validarEmail(email.value)) {
-                exibirErro("floatingInput", "Insira um email válido.");
-                temErro = true;
-            }
+const nomeRegistoInput = document.getElementById('nome');
+const emailRegistoInput = document.getElementById('email');
+const passwordRegistoInput = document.getElementById('password');
+const telefoneRegistoInput = document.getElementById('telefone');
 
-            if (password.value.length < 1) {
-                exibirErro("password", "A password é obrigatória.");
-                temErro = true;
-            }
+const validarSubmitLogin = function (e) {
+    let temErro = false;
 
-            if (temErro) e.preventDefault();
-        });
+    if (emailLoginInput && !validarEmail(emailLoginInput.value)) {
+        exibirErro('floatingInput', 'Insira um email válido.');
+        temErro = true;
     }
 
-    if (formRegistar) {
-        formRegistar.addEventListener("submit", function (e) {
-            let temErro = false;
-            const nome = document.getElementById("nome");
-            const email = document.getElementById("email");
-            const password = document.getElementById("password");
-            const telefone = document.getElementById("telefone");
-
-            if (nome.value.length < 3) {
-                exibirErro("nome", "O nome deve ter pelo menos 3 caracteres.");
-                temErro = true;
-            }
-
-            if (!validarEmail(email.value)) {
-                exibirErro("email", "Insira um email válido.");
-                temErro = true;
-            }
-
-            if (password.value.length < 8) {
-                exibirErro("password", "A password deve ter pelo menos 8 caracteres.");
-                temErro = true;
-            }
-
-            if (telefone.value.length < 9) {
-                exibirErro("telefone", "O telefone deve ter pelo menos 9 dígitos.");
-                temErro = true;
-            }
-
-            if (temErro) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-            }
-        });
+    if (passwordLoginInput && passwordLoginInput.value.length < 1) {
+        exibirErro('password', 'A password é obrigatória.');
+        temErro = true;
     }
-});
+
+    if (temErro) {
+        e.preventDefault();
+    }
+};
+
+const validarSubmitRegisto = function (e) {
+    let temErro = false;
+
+    if (nomeRegistoInput && nomeRegistoInput.value.length < 3) {
+        exibirErro('nome', 'O nome deve ter pelo menos 3 caracteres.');
+        temErro = true;
+    }
+
+    if (emailRegistoInput && !validarEmail(emailRegistoInput.value)) {
+        exibirErro('email', 'Insira um email válido.');
+        temErro = true;
+    }
+
+    if (passwordRegistoInput && passwordRegistoInput.value.length < 8) {
+        exibirErro('password', 'A password deve ter pelo menos 8 caracteres.');
+        temErro = true;
+    }
+
+    if (telefoneRegistoInput && telefoneRegistoInput.value.length < 9) {
+        exibirErro('telefone', 'O telefone deve ter pelo menos 9 dígitos.');
+        temErro = true;
+    }
+
+    if (temErro) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+    }
+};
+
+if (formLogin) {
+    formLogin.addEventListener('submit', validarSubmitLogin);
+}
+
+if (formRegistar) {
+    formRegistar.addEventListener('submit', validarSubmitRegisto);
+}

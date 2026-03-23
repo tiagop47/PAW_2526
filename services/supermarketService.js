@@ -4,7 +4,7 @@ const Order = require('../models/OrderModel');
 const User = require('../models/UserModel');
 const bcrypt = require('bcrypt');
 
-const getSupermarketOrThrow = async (userId) => {
+const getSupermercado = async (userId) => {
     const supermercado = await Supermarket.findOne({ userId });
     if (!supermercado) {
         throw new Error('Supermercado não encontrado');
@@ -16,7 +16,7 @@ const getSupermarketOrThrow = async (userId) => {
  * Obtém os dados necessários para a dashboard do supermercado.
  */
 async function getDashboardData(userId) {
-    const supermercado = await getSupermarketOrThrow(userId);
+    const supermercado = await getSupermercado(userId);
 
     const [totalProdutos, totalEncomendas, encomendas, vendasStats] = await Promise.all([
         Product.countDocuments({ supermercadoId: supermercado._id }),
@@ -44,22 +44,22 @@ async function getDashboardData(userId) {
 /**
  * Obtém todos os produtos de um supermercado.
  */
-const getProductsByUserId = async (userId) => {
-    const supermercado = await getSupermarketOrThrow(userId);
+const getProductByUser = async (userId) => {
+    const supermercado = await getSupermercado(userId);
 
     return Product.find({ supermercadoId: supermercado._id });
 };
 
 const getProductByIdForUser = async (userId, productId) => {
-    const supermercado = await getSupermarketOrThrow(userId);
+    const supermercado = await getSupermercado(userId);
     return Product.findOne({ _id: productId, supermercadoId: supermercado._id });
 };
 
 /**
  * Cria um novo produto.
  */
-const createProduct = async (userId, productData) => {
-    const supermercado = await getSupermarketOrThrow(userId);
+const criarProdutoService = async (userId, productData) => {
+    const supermercado = await getSupermercado(userId);
 
     const novoProduto = Object.assign({}, productData);
     novoProduto.supermercadoId = supermercado._id;
@@ -68,7 +68,7 @@ const createProduct = async (userId, productData) => {
 };
 
 const updateProductByIdForUser = async (userId, productId, updateData) => {
-    const supermercado = await getSupermarketOrThrow(userId);
+    const supermercado = await getSupermercado(userId);
     return Product.findOneAndUpdate(
         { _id: productId, supermercadoId: supermercado._id },
         updateData,
@@ -77,7 +77,7 @@ const updateProductByIdForUser = async (userId, productId, updateData) => {
 };
 
 const deleteProductByIdForUser = async (userId, productId) => {
-    const supermercado = await getSupermarketOrThrow(userId);
+    const supermercado = await getSupermercado(userId);
     return Product.findOneAndDelete({ _id: productId, supermercadoId: supermercado._id });
 };
 
@@ -85,7 +85,7 @@ const deleteProductByIdForUser = async (userId, productId) => {
  * Pesquisa produtos com filtros.
  */
 const searchProducts = async (userId, { q, categoria }) => {
-    const supermercado = await getSupermarketOrThrow(userId);
+    const supermercado = await getSupermercado(userId);
 
     const filtro = { supermercadoId: supermercado._id };
     if (q) filtro.nome = { $regex: q, $options: 'i' };
@@ -95,7 +95,7 @@ const searchProducts = async (userId, { q, categoria }) => {
 };
 
 const getSupermarketByUserId = async (userId) => {
-    return getSupermarketOrThrow(userId);
+    return getSupermercado(userId);
 };
 
 const updateSupermarketByUserId = async (userId, dadosSupermercado) => {
@@ -107,14 +107,14 @@ const getUserByIdSemPassword = async (userId) => {
 };
 
 const getOrdersByUserId = async (userId) => {
-    const supermercado = await getSupermarketOrThrow(userId);
+    const supermercado = await getSupermercado(userId);
     return Order.find({ supermercadoId: supermercado._id })
         .populate('clienteId', 'nome email telefone')
         .sort({ criadoEm: -1 });
 };
 
 const updateOrderStatusByIdForUser = async (userId, orderId, estado) => {
-    const supermercado = await getSupermarketOrThrow(userId);
+    const supermercado = await getSupermercado(userId);
     return Order.findOneAndUpdate(
         { _id: orderId, supermercadoId: supermercado._id },
         { estado },
@@ -123,7 +123,7 @@ const updateOrderStatusByIdForUser = async (userId, orderId, estado) => {
 };
 
 const getAvailableProductsForSaleByUserId = async (userId) => {
-    const supermercado = await getSupermarketOrThrow(userId);
+    const supermercado = await getSupermercado(userId);
     return Product.find({ supermercadoId: supermercado._id, stockDisponivel: { $gt: 0 } });
 };
 
@@ -132,9 +132,8 @@ const getAvailableProductsForSaleByUserId = async (userId) => {
  */
 const registerSale = async (userId, saleData) => {
     const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, listaItens } = saleData;
-    const supermercado = await getSupermarketOrThrow(userId);
+    const supermercado = await getSupermercado(userId);
 
-    // Procurar ou criar cliente
     let cliente = await User.findOne({ email: emailCliente });
     if (!cliente) {
         const passwordTemp = 'Temp1234';
@@ -181,9 +180,9 @@ const registerSale = async (userId, saleData) => {
 
 module.exports = {
     getDashboardData,
-    getProductsByUserId,
+    getProductByUser,
     getProductByIdForUser,
-    createProduct,
+    createProduct: criarProdutoService,
     updateProductByIdForUser,
     deleteProductByIdForUser,
     searchProducts,

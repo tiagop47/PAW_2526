@@ -92,7 +92,7 @@ const criarProduto = async (req, res) => {
         const { nome, descricao, categoria, preco, stock } = req.body;
         const imagem = req.file ? '/images/produtos/' + req.file.filename : '';
 
-        await supermarketService.createProduct(req.user.id, {
+        await supermarketService.criarProdutoService(req.user.id, {
             nome, descricao, categoria, preco, stockDisponivel: stock, imagem
         });
 
