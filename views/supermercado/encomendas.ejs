@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+
+    <%- include('../partials/navbar') %>
+
+    <main class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 fw-bold m-0">Encomendas</h1>
+            <a href="/supermercado/dashboard" class="btn btn-sm btn-light">Voltar</a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Data</th>
+                            <th class="text-end">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (encomendas && encomendas.length > 0) { %>
+                            <% encomendas.forEach(function(encomenda) { %>
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold"><%= encomenda.clienteId ? encomenda.clienteId.nome : 'Cliente Desconhecido' %></div>
+                                        <div class="small text-muted"><%= encomenda.clienteId ? encomenda.clienteId.email : '' %></div>
+                                    </td>
+                                    <td><%= Number(encomenda.valorTotal || 0).toFixed(2) %>EUR</td>
+                                    <td>
+                                        <span class="badge bg-secondary"><%= encomenda.estado %></span>
+                                    </td>
+                                    <td class="small text-muted"><%= new Date(encomenda.criadoEm).toLocaleDateString('pt-PT') %></td>
+                                    <td class="text-end">
+                                        <form action="/supermercado/encomendas/<%= encomenda._id %>/estado" method="POST" class="d-inline-flex gap-2">
+                                            <select name="estado" class="form-select form-select-sm">
+                                                <option value="pendente" <%= encomenda.estado === 'pendente' ? 'selected' : '' %>>pendente</option>
+                                                <option value="confirmada" <%= encomenda.estado === 'confirmada' ? 'selected' : '' %>>confirmada</option>
+                                                <option value="em preparação" <%= encomenda.estado === 'em preparação' ? 'selected' : '' %>>em preparação</option>
+                                                <option value="em entrega" <%= encomenda.estado === 'em entrega' ? 'selected' : '' %>>em entrega</option>
+                                                <option value="entregue" <%= encomenda.estado === 'entregue' ? 'selected' : '' %>>entregue</option>
+                                                <option value="cancelada" <%= encomenda.estado === 'cancelada' ? 'selected' : '' %>>cancelada</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-primary">Atualizar</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">Ainda não existem encomendas.</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+</body>
+
+</html>

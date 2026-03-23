@@ -4,14 +4,19 @@ const Order = require('../models/OrderModel');
 const User = require('../models/UserModel');
 const bcrypt = require('bcrypt');
 
-/**
- * Obtém os dados necessários para a dashboard do supermercado.
- */
-async function getDashboardData(userId) {
+const getSupermarketOrThrow = async (userId) => {
     const supermercado = await Supermarket.findOne({ userId });
     if (!supermercado) {
         throw new Error('Supermercado não encontrado');
     }
+    return supermercado;
+};
+
+/**
+ * Obtém os dados necessários para a dashboard do supermercado.
+ */
+async function getDashboardData(userId) {
+    const supermercado = await getSupermarketOrThrow(userId);
 
     const [totalProdutos, totalEncomendas, encomendas, vendasStats] = await Promise.all([
         Product.countDocuments({ supermercadoId: supermercado._id }),
@@ -40,22 +45,21 @@ async function getDashboardData(userId) {
  * Obtém todos os produtos de um supermercado.
  */
 const getProductsByUserId = async (userId) => {
-    const supermercado = await Supermarket.findOne({ userId });
-    if (!supermercado) {
-        throw new Error('Supermercado não encontrado');
-    }
+    const supermercado = await getSupermarketOrThrow(userId);
 
     return Product.find({ supermercadoId: supermercado._id });
+};
+
+const getProductByIdForUser = async (userId, productId) => {
+    const supermercado = await getSupermarketOrThrow(userId);
+    return Product.findOne({ _id: productId, supermercadoId: supermercado._id });
 };
 
 /**
  * Cria um novo produto.
  */
 const createProduct = async (userId, productData) => {
-    const supermercado = await Supermarket.findOne({ userId });
-    if (!supermercado) {
-        throw new Error('Supermercado não encontrado');
-    }
+    const supermercado = await getSupermarketOrThrow(userId);
 
     const novoProduto = Object.assign({}, productData);
     novoProduto.supermercadoId = supermercado._id;
@@ -63,14 +67,25 @@ const createProduct = async (userId, productData) => {
     return Product.create(novoProduto);
 };
 
+const updateProductByIdForUser = async (userId, productId, updateData) => {
+    const supermercado = await getSupermarketOrThrow(userId);
+    return Product.findOneAndUpdate(
+        { _id: productId, supermercadoId: supermercado._id },
+        updateData,
+        { new: true }
+    );
+};
+
+const deleteProductByIdForUser = async (userId, productId) => {
+    const supermercado = await getSupermarketOrThrow(userId);
+    return Product.findOneAndDelete({ _id: productId, supermercadoId: supermercado._id });
+};
+
 /**
  * Pesquisa produtos com filtros.
  */
 const searchProducts = async (userId, { q, categoria }) => {
-    const supermercado = await Supermarket.findOne({ userId });
-    if (!supermercado) {
-        throw new Error('Supermercado não encontrado');
-    }
+    const supermercado = await getSupermarketOrThrow(userId);
 
     const filtro = { supermercadoId: supermercado._id };
     if (q) filtro.nome = { $regex: q, $options: 'i' };
@@ -79,13 +94,45 @@ const searchProducts = async (userId, { q, categoria }) => {
     return Product.find(filtro).sort({ nome: 1 });
 };
 
+const getSupermarketByUserId = async (userId) => {
+    return getSupermarketOrThrow(userId);
+};
+
+const updateSupermarketByUserId = async (userId, dadosSupermercado) => {
+    return Supermarket.findOneAndUpdate({ userId }, dadosSupermercado, { new: true });
+};
+
+const getUserByIdSemPassword = async (userId) => {
+    return User.findById(userId).select('-password');
+};
+
+const getOrdersByUserId = async (userId) => {
+    const supermercado = await getSupermarketOrThrow(userId);
+    return Order.find({ supermercadoId: supermercado._id })
+        .populate('clienteId', 'nome email telefone')
+        .sort({ criadoEm: -1 });
+};
+
+const updateOrderStatusByIdForUser = async (userId, orderId, estado) => {
+    const supermercado = await getSupermarketOrThrow(userId);
+    return Order.findOneAndUpdate(
+        { _id: orderId, supermercadoId: supermercado._id },
+        { estado },
+        { new: true }
+    );
+};
+
+const getAvailableProductsForSaleByUserId = async (userId) => {
+    const supermercado = await getSupermarketOrThrow(userId);
+    return Product.find({ supermercadoId: supermercado._id, stockDisponivel: { $gt: 0 } });
+};
+
 /**
  * Regista uma venda em caixa.
  */
 const registerSale = async (userId, saleData) => {
     const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, listaItens } = saleData;
-    const supermercado = await Supermarket.findOne({ userId });
-    if (!supermercado) throw new Error('Supermercado não encontrado');
+    const supermercado = await getSupermarketOrThrow(userId);
 
     // Procurar ou criar cliente
     let cliente = await User.findOne({ email: emailCliente });
@@ -135,7 +182,16 @@ const registerSale = async (userId, saleData) => {
 module.exports = {
     getDashboardData,
     getProductsByUserId,
+    getProductByIdForUser,
     createProduct,
+    updateProductByIdForUser,
+    deleteProductByIdForUser,
     searchProducts,
+    getSupermarketByUserId,
+    updateSupermarketByUserId,
+    getUserByIdSemPassword,
+    getOrdersByUserId,
+    updateOrderStatusByIdForUser,
+    getAvailableProductsForSaleByUserId,
     registerSale
 };

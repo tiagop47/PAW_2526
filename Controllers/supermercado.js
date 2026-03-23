@@ -1,7 +1,3 @@
-const Product = require('../models/ProductModel');
-const Supermarket = require('../models/SupermarketModel');
-const Order = require('../models/OrderModel');
-const User = require('../models/UserModel');
 const supermarketService = require('../services/supermarketService');
 
 /**
@@ -57,7 +53,7 @@ const exibirFormularioNovo = (req, res) => {
  */
 const exibirDetalhes = async (req, res) => {
     try {
-        const produto = await Product.findById(req.params.id);
+        const produto = await supermarketService.getProductByIdForUser(req.user.id, req.params.id);
         if (!produto) return res.status(404).send('Produto não encontrado');
 
         res.render('supermercado/detalhesProduto', {
@@ -74,7 +70,7 @@ const exibirDetalhes = async (req, res) => {
  */
 const exibirFormularioEditar = async (req, res) => {
     try {
-        const produto = await Product.findById(req.params.id);
+        const produto = await supermarketService.getProductByIdForUser(req.user.id, req.params.id);
         if (!produto) {
             return res.status(404).send('Produto não encontrado');
         }
@@ -119,7 +115,11 @@ const atualizarProduto = async (req, res) => {
             dados.imagem = '/images/produtos/' + req.file.filename;
         }
 
-        await Product.findByIdAndUpdate(req.params.id, dados);
+        const produtoAtualizado = await supermarketService.updateProductByIdForUser(req.user.id, req.params.id, dados);
+        if (!produtoAtualizado) {
+            return res.status(404).send('Produto não encontrado');
+        }
+
         res.redirect('/supermercado/produtos');
     } catch (err) {
         console.error(err);
@@ -132,7 +132,11 @@ const atualizarProduto = async (req, res) => {
  */
 const eliminarProduto = async (req, res) => {
     try {
-        await Product.findByIdAndDelete(req.params.id);
+        const produtoEliminado = await supermarketService.deleteProductByIdForUser(req.user.id, req.params.id);
+        if (!produtoEliminado) {
+            return res.status(404).send('Produto não encontrado');
+        }
+
         res.redirect('/supermercado/produtos');
     } catch (err) {
         console.error(err);
@@ -158,7 +162,7 @@ const pesquisarProdutos = async (req, res) => {
  */
 const exibirEditarSupermercado = async (req, res) => {
     try {
-        const supermercado = await Supermarket.findOne({ userId: req.user.id });
+        const supermercado = await supermarketService.getSupermarketByUserId(req.user.id);
         res.render('supermercado/editarSupermercado', {
             title: 'Editar Supermercado',
             supermercado
@@ -179,7 +183,7 @@ const atualizarSupermercado = async (req, res) => {
         if (typeof metodos === 'string') metodos = [metodos];
         if (!metodos) metodos = ['levantamento em loja'];
 
-        await Supermarket.findOneAndUpdate({ userId: req.user.id }, {
+        await supermarketService.updateSupermarketByUserId(req.user.id, {
             nome, descricao, localizacao, horarioFuncionamento,
             metodosEntrega: metodos,
             custoEntrega: custoEntrega || 0
@@ -197,8 +201,8 @@ const atualizarSupermercado = async (req, res) => {
  */
 const exibirPerfil = async (req, res) => {
     try {
-        const utilizador = await User.findById(req.user.id).select('-password');
-        const supermercado = await Supermarket.findOne({ userId: req.user.id });
+        const utilizador = await supermarketService.getUserByIdSemPassword(req.user.id);
+        const supermercado = await supermarketService.getSupermarketByUserId(req.user.id);
 
         res.render('supermercado/perfil', {
             title: 'Meu Perfil',
@@ -215,10 +219,7 @@ const exibirPerfil = async (req, res) => {
  */
 const listarEncomendas = async (req, res) => {
     try {
-        const supermercado = await Supermarket.findOne({ userId: req.user.id });
-        const encomendas = await Order.find({ supermercadoId: supermercado._id })
-            .populate('clienteId', 'nome email telefone')
-            .sort({ criadoEm: -1 });
+        const encomendas = await supermarketService.getOrdersByUserId(req.user.id);
 
         res.render('supermercado/encomendas', {
             title: 'Encomendas',
@@ -235,7 +236,16 @@ const listarEncomendas = async (req, res) => {
 const atualizarEstadoEncomenda = async (req, res) => {
     try {
         const { estado } = req.body;
-        await Order.findByIdAndUpdate(req.params.id, { estado });
+        const encomendaAtualizada = await supermarketService.updateOrderStatusByIdForUser(
+            req.user.id,
+            req.params.id,
+            estado
+        );
+
+        if (!encomendaAtualizada) {
+            return res.status(404).send('Encomenda não encontrada');
+        }
+
         res.redirect('/supermercado/encomendas');
     } catch (err) {
         res.status(500).send('Erro ao atualizar estado.');
@@ -247,8 +257,7 @@ const atualizarEstadoEncomenda = async (req, res) => {
  */
 const exibirVendaCaixa = async (req, res) => {
     try {
-        const supermercado = await Supermarket.findOne({ userId: req.user.id });
-        const produtos = await Product.find({ supermercadoId: supermercado._id, stockDisponivel: { $gt: 0 } });
+        const produtos = await supermarketService.getAvailableProductsForSaleByUserId(req.user.id);
 
         res.render('supermercado/vendaCaixa', {
             title: 'Registar Venda',
