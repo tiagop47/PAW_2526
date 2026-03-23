@@ -9,6 +9,8 @@ router.use(verificarAutenticacao, verificarRole(['administrador']));
 router.get('/dashboard', adminController.exibirDashboard);
 router.get('/exibirUtilizadores', adminController.listarUtilizadores);
 router.get('/exibirUtilizadores/:id/detalhes', adminController.editarUser);
+
+router.get('/supermercados/ativos', adminController.supermercadosAtivos);
 router.get('/pendentes', adminController.listarPendentes);
 
 router.post('/aprovar/:id', adminController.aprovarSupermercado);

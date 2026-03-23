@@ -10,7 +10,8 @@
     <%- include('../partials/navbar') %>
 
         <div class="container mt-5">
-            <div class="cartao-estatistica">
+            <!-- O teu design simples original -->
+            <div class="cartao-estatistica bg-white p-4 shadow-sm rounded">
                 <h1>Painel do Administrador</h1>
                 <p>Gestão global da plataforma.</p>
                 <hr>
@@ -18,7 +19,7 @@
                     <div class="col-md-4">
                         <a href="/admin/pendentes" class="btn btn-outline-primary w-100 botao-acao py-3">
                             <i class="bi bi-check-circle fs-4 d-block"></i>
-                            Gerir Mercados
+                            Mercados Pendentes
                         </a>
                     </div>
                     <div class="col-md-4">
@@ -27,14 +28,40 @@
                             Gerir Utilizadores
                         </a>
                     </div>
+                    <div class="col-md-4">
+                        <a href="/admin/estafetas" class="btn btn-outline-secondary w-100 botao-acao py-3">
+                            <i class="bi bi-truck fs-4 d-block"></i>
+                            Gerir Estafetas
+                        </a>
+                    </div>
+                </div>
+            </div>
 
 
+            <div class="mt-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h1 class="h4 fw-bold m-0 center">Supermercados Ativos</h2>
+                        <button onclick="carregarSupermercadosAtivos()" class="btn btn-sm btn-light border">
+                            <i class="bi bi-arrow-clockwise"></i> Atualizar
+                        </button>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded overflow-hidden">
+                    <div id="lista-supermercados-ativos">
+                        <div class="text-center py-5 text-muted">
+                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                            A carregar parceiros ativos...
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <script src="/javascript/navbar.js"></script>
         <script src="/javascript/adminActions.js"></script>
+        <script>
+            // Carrega os dados assim que a página abre
+            document.addEventListener('DOMContentLoaded', carregarSupermercadosAtivos);
+        </script>
 </body>
 
 </html>

@@ -70,11 +70,28 @@ const editarUser = async (req, res) => {
     }
 };
 
+const supermercadosAtivos = async (req, res) => {
+    try {
+        const limite = parseInt(req.query.limite) || 5;
+        const pular = parseInt(req.query.pular) || 0;
+
+        const supermercados = await Supermarket.find({ estadoAprovacao: 'Aprovado' })
+            .populate('userId')
+            .skip(pular)
+            .limit(limite);
+
+        res.json(supermercados);
+    } catch (err) {
+        res.status(500).json({ erro: 'Erro ao listar supermercados ativos.' });
+    }
+};
+
 module.exports = {
     exibirDashboard,
     listarPendentes,
     aprovarSupermercado,
     rejeitarSupermercado,
     listarUtilizadores,
-    editarUser
+    editarUser,
+    supermercadosAtivos
 };
