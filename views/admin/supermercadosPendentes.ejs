@@ -38,12 +38,12 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-2 justify-content-center">
-                                            <form action="/admin/aprovar/<%= s._id %>" method="POST"
+                                            <form action="/admin/supermercados/aprovar/<%= s._id %>" method="POST"
                                                 class="btnConfirmar"
                                                 data-confirm-message="Deseja aprovar este supermercado?">
                                                 <button type="submit" class="btn btn-sm btn-primary">Aprovar</button>
                                             </form>
-                                            <form action="/admin/rejeitar/<%= s._id %>" method="POST"
+                                            <form action="/admin/supermercados/rejeitar/<%= s._id %>" method="POST"
                                                 class="btnConfirmar"
                                                 data-confirm-message="Deseja rejeitar este supermercado? Esta ação é irreversível.">
                                                 <button type="submit"
@@ -67,13 +67,13 @@
             <% if (locals.totalPaginas > 1) { %>
                 <div class="d-flex justify-content-center mt-4 gap-2">
                     <% if (paginaAtual > 1) { %>
-                        <a href="/admin/pendentes?pagina=<%= paginaAtual - 1 %>" class="btn btn-sm btn-secondary">Anterior</a>
+                        <a href="/admin/supermercados/pendentes?pagina=<%= paginaAtual - 1 %>" class="btn btn-sm btn-secondary">Anterior</a>
                     <% } %>
                     
                     <span class="btn btn-sm btn-light disabled">Página <%= paginaAtual %> de <%= totalPaginas %></span>
 
                     <% if (paginaAtual < totalPaginas) { %>
-                        <a href="/admin/pendentes?pagina=<%= paginaAtual + 1 %>" class="btn btn-sm btn-secondary">Próximo</a>
+                        <a href="/admin/supermercados/pendentes?pagina=<%= paginaAtual + 1 %>" class="btn btn-sm btn-secondary">Próximo</a>
                     <% } %>
                 </div>
             <% } %>

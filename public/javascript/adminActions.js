@@ -4,12 +4,15 @@
 async function carregarSupermercados(contador = 0) {
     try {
         const res = await fetch(`/admin/supermercados/ativos?contador=${contador}`);
-        const supermercados = await res.json();
+        const data = await res.json();
+
+        const { supermercados, paginaAtual, totalPaginas } = data;
         const tbody = document.getElementById('corpo-tabela');
-        
+        const qtdPaginas = document.getElementById('info-pagina');
+
         if (!tbody) return;
 
-        // Gerar linhas da tabela
+
         let html = '';
         if (supermercados.length === 0 && contador === 0) {
             html = '<tr><td colspan="3" class="text-center py-4 text-muted">Sem supermercados ativos.</td></tr>';
@@ -27,7 +30,10 @@ async function carregarSupermercados(contador = 0) {
         }
         tbody.innerHTML = html;
 
-        // Configurar botões de navegação
+        if (qtdPaginas) {
+            qtdPaginas.innerText = `Página ${paginaAtual} de ${totalPaginas}`;
+        }
+
         const btnAnt = document.getElementById('btn-ant');
         const btnProx = document.getElementById('btn-prox');
 
@@ -36,7 +42,7 @@ async function carregarSupermercados(contador = 0) {
             btnAnt.onclick = () => carregarSupermercados(Math.max(0, contador - 3));
         }
         if (btnProx) {
-            btnProx.disabled = (supermercados.length < 3);
+            btnProx.disabled = (paginaAtual >= totalPaginas);
             btnProx.onclick = () => carregarSupermercados(contador + 3);
         }
 

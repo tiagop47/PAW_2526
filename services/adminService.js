@@ -50,6 +50,21 @@ const getUsersDocumentos = async (pagina, limite) => {
     };
 };
 
+const getEstafetasDocumentos = async (pagina, limite) => {
+    const contador = (pagina - 1) * limite;
+
+    const total = await User.countDocuments({ role: 'estafetas' });
+    const users = await User.find({ role: 'estafetas' })
+        .sort({ criadoEm: -1 })
+        .skip(Number(contador))
+        .limit(Number(limite));
+
+    return {
+        users,
+        totalPaginas: Math.ceil(total / limite)
+    };
+};
+
 const getUserByIdSemPassword = async (id) => {
     return User.findById(id).select('-password');
 };
@@ -66,13 +81,24 @@ const getMercadosDocumentos = async (pagina, limite) => {
         .sort({ criadoEm: -1 })
         .skip(Number(contador))
         .limit(Number(limite));
+    return {
+        supermercados,
+        totalPaginas: Math.ceil(total / limite)
+    };
 }
 
 const getMercadosAtivos = async (contador, limite) => {
-    return Supermarket.find({ estadoAprovacao: 'Aprovado' })
+    const total = await Supermarket.countDocuments({ estadoAprovacao: 'Aprovado' });
+    const supermercados = await Supermarket.find({ estadoAprovacao: 'Aprovado' })
         .populate('userId')
         .skip(Number(contador))
         .limit(Number(limite));
+
+    return {
+        supermercados,
+        paginaAtual: Math.floor(Number(contador) / Number(limite)) + 1,
+        totalPaginas: Math.ceil(total / limite)
+    };
 };
 
 const bloquearSupermercadoById = async (id) => {
@@ -89,5 +115,6 @@ module.exports = {
     getMercadosAtivos,
     bloquearSupermercadoById,
     getUsersDocumentos,
-    getMercadosDocumentos
+    getMercadosDocumentos,
+    getEstafetasDocumentos
 };

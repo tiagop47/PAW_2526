@@ -22,32 +22,12 @@ const exibirDashboard = async (req, res) => {
 };
 
 /**
- * Lista os supermercados que aguardam aprovação (Limite 3).
- */
-const listarPendentes = async (req, res) => {
-    try {
-        const pagina = parseInt(req.query.pagina) || 1;
-        const limite = 3;
-        const dadosPagina = await adminService.getPendentesDocumentos(pagina, limite);
-
-        res.render('admin/supermercadosPendentes', {
-            title: 'Aprovações Pendentes',
-            supermercados: dadosPagina.supermercados,
-            paginaAtual: pagina,
-            totalPaginas: dadosPagina.totalPaginas
-        });
-    } catch (err) {
-        res.status(500).send('Erro ao carregar lista de pendentes.');
-    }
-};
-
-/**
  * Aprova um supermercado.
  */
 const aprovarSupermercado = async (req, res) => {
     try {
         await adminService.aprovarSupermercadoById(req.params.id);
-        res.redirect('/admin/pendentes');
+        res.redirect('/admin/supermercados/pendentes');
     } catch (err) {
         res.status(500).send('Erro ao aprovar supermercado.');
     }
@@ -59,7 +39,7 @@ const aprovarSupermercado = async (req, res) => {
 const rejeitarSupermercado = async (req, res) => {
     try {
         await adminService.rejeitarSupermercadoById(req.params.id);
-        res.redirect('/admin/pendentes');
+        res.redirect('/admin/supermercados/pendentes');
     } catch (err) {
         res.status(500).send('Erro ao rejeitar supermercado.');
     }
@@ -82,6 +62,45 @@ const listarUtilizadores = async (req, res) => {
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar lista de utilizadores.');
+    }
+};
+
+/**
+ * Lista os supermercados que aguardam aprovação (Limite 3).
+ */
+const listarPendentes = async (req, res) => {
+    try {
+        const pagina = parseInt(req.query.pagina) || 1;
+        const limite = 3;
+        const dadosPagina = await adminService.getPendentesDocumentos(pagina, limite);
+
+        res.render('admin/supermercadosPendentes', {
+            title: 'Aprovações Pendentes',
+            supermercados: dadosPagina.supermercados,
+            paginaAtual: pagina,
+            totalPaginas: dadosPagina.totalPaginas
+        });
+    } catch (err) {
+        res.status(500).send('Erro ao carregar lista de pendentes.');
+    }
+};
+
+/**
+ * API — Listar supermercados ativos (Limite 3).
+ */
+const listarSupermercados = async (req, res) => {
+    try {
+        const limite = 3;
+        const contador = parseInt(req.query.contador) || 0;
+        const dados = await adminService.getMercadosAtivos(contador, limite);
+
+        res.json({
+            supermercados: dados.supermercados,
+            paginaAtual: dados.paginaAtual,
+            totalPaginas: dados.totalPaginas
+        });
+    } catch (err) {
+        res.status(500).json({ erro: 'Erro ao listar supermercados.' });
     }
 };
 
@@ -112,21 +131,6 @@ const guardarUser = async (req, res) => {
 };
 
 /**
- * API — Listar supermercados ativos (Limite 3).
- */
-const listarMercados = async (req, res) => {
-    try {
-        const limite = 3;
-        const contador = parseInt(req.query.contador) || 0;
-        const supermercados = await adminService.getMercadosAtivos(contador, limite);
-        const total = getMercadosPage()
-        res.json(supermercados);
-    } catch (err) {
-        res.status(500).json({ erro: 'Erro ao listar supermercados ativos.' });
-    }
-};
-
-/**
  * Bloqueia um supermercado.
  */
 const bloquearSupermercado = async (req, res) => {
@@ -138,14 +142,35 @@ const bloquearSupermercado = async (req, res) => {
     }
 };
 
+/**
+ * Lista estafetas para gestão admin (Limite 3).
+ */
+const listarEstafetas = async (req, res) => {
+    try {
+        const pagina = parseInt(req.query.pagina) || 1;
+        const limite = 3;
+        const dadosPagina = await adminService.getEstafetasDocumentos(pagina, limite);
+
+        res.render('admin/exibirUtilizadores', {
+            title: 'Gestão de Estafetas',
+            users: dadosPagina.users,
+            paginaAtual: pagina,
+            totalPaginas: dadosPagina.totalPaginas
+        });
+    } catch (err) {
+        res.status(500).send('Erro ao carregar lista de estafetas.');
+    }
+};
+
 module.exports = {
     exibirDashboard,
     listarPendentes,
     aprovarSupermercado,
     rejeitarSupermercado,
     listarUtilizadores,
+    listarEstafetas,
     editarUser,
     guardarUser,
-    listarMercados,
+    listarSupermercados,
     bloquearSupermercado
 };
