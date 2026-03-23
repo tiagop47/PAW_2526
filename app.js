@@ -6,6 +6,25 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var { injetarUserNasViews } = require('./middlewares/authMiddleware');
+var swaggerUi = require('swagger-ui-express');
+var swaggerJsdoc = require('swagger-jsdoc');
+
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'PAW App API',
+            version: '1.0.0',
+            description: 'Documentação da API da PAW App',
+        },
+        servers: [
+            { url: 'http://localhost:3000' }
+        ],
+    },
+    apis: ['./routes/*.js'],
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('Ligado ao MongoDB com sucesso!'))
@@ -28,6 +47,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(injetarUserNasViews);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get('/', (req, res) => {
     res.redirect('/auth/registar');
