@@ -1,18 +1,24 @@
 let supermercadosCarregados = 0;
+let estaACarregarSupermercados = false;
 
 /**
  * Carrega a lista de supermercados que já foram aprovados.
  */
 async function carregarSupermercadosAtivos(reset = false) {
+    if (estaACarregarSupermercados) {
+        return;
+    }
+
     if (reset) {
         supermercadosCarregados = 0;
         document.getElementById('lista-supermercados-ativos').innerHTML = '';
     }
 
     const container = document.getElementById('lista-supermercados-ativos');
+    estaACarregarSupermercados = true;
 
     try {
-        const response = await fetch(`/admin/supermercados/ativos?limite=5&contador=${supermercadosCarregados}`);
+        const response = await fetch(`/admin/supermercados/ativos?limite=5&pular=${supermercadosCarregados}`);
         const novosSupermercados = await response.json();
 
         // Se não houver nada e for o primeiro carregamento
@@ -64,6 +70,8 @@ async function carregarSupermercadosAtivos(reset = false) {
         if (supermercadosCarregados === 0) {
             container.innerHTML = '<p class="text-center py-5 text-danger">Erro ao carregar dados do servidor.</p>';
         }
+    } finally {
+        estaACarregarSupermercados = false;
     }
 }
 

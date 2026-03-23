@@ -14,7 +14,7 @@
                 <div class="card p-4 border-0 shadow-sm">
                     <h2 class="h4 fw-bold mb-4 text-center">Editar Produto</h2>
 
-                    <form action="/supermercado/produtos/editar/<%= produto._id %>" method="POST">
+                    <form id="formEditar" action="/supermercado/produtos/editar/<%= produto._id %>" method="POST">
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Nome do Produto</label>
                             <input type="text" name="nome" class="form-control" value="<%= produto.nome %>" required>
@@ -62,6 +62,8 @@
                 </div>
             </div>
         </main>
+
+        <script src="/javascript/supermercadoActions.js"></script>
 
 </body>
 

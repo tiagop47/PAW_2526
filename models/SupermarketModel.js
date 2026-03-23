@@ -18,6 +18,17 @@ const SupermarketSchema = new mongoose.Schema({
         minlength: [5, "Localização curta demais"],
         maxlength: [100, "Localização demasiado longa"]
     },
+    localizacaoGeo: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+        },
+        coordinates: {
+            type: [Number], // [longitude, latitude]
+            default: [0, 0]
+        }
+    },
     horarioFuncionamento: String,
     metodosEntrega: { type: [String], default: ['levantamento em loja'] },
     custoEntrega: { type: Number, default: 0 },
@@ -27,6 +38,8 @@ const SupermarketSchema = new mongoose.Schema({
         default: 'Pendente'
     },
     criadoEm: { type: Date, default: Date.now }
-});
+    });
 
-module.exports = mongoose.model('Supermarket', SupermarketSchema);
+    SupermarketSchema.index({ localizacaoGeo: '2dsphere' });
+
+    module.exports = mongoose.model('Supermarket', SupermarketSchema);

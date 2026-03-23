@@ -1,0 +1,115 @@
+const inputPesquisa = document.getElementById('pesquisa-produto');
+const selectCategoria = document.getElementById('filtro-categoria');
+const tabelaBody = document.getElementById('tabela-produtos');
+
+const formCriar = document.getElementById('formCriar');
+const formEditar = document.getElementById('formEditar');
+
+const validarProdutoForm = function (form) {
+    const nomeInput = form.querySelector('[name="nome"]');
+    const precoInput = form.querySelector('[name="preco"]');
+    const stockInput = form.querySelector('[name="stock"]');
+
+    const nome = nomeInput ? nomeInput.value.trim() : '';
+    const preco = precoInput ? precoInput.value : '';
+    const stock = stockInput ? stockInput.value : '';
+
+    const erros = [];
+
+    if (nome.length < 2) {
+        erros.push('O nome deve ter pelo menos 2 caracteres.');
+    }
+
+    if (preco === '' || Number(preco) < 0) {
+        erros.push('O preço deve ser um valor positivo.');
+    }
+
+    if (stock === '' || Number(stock) < 0) {
+        erros.push('O stock deve ser um número positivo.');
+    }
+
+    return erros;
+};
+
+const prepararValidacaoFormulario = function (form) {
+    form.addEventListener('submit', function (e) {
+        const erros = validarProdutoForm(form);
+        if (erros.length > 0) {
+            e.preventDefault();
+            alert(erros.join('\n'));
+        }
+    });
+};
+
+if (formCriar) {
+    prepararValidacaoFormulario(formCriar);
+}
+
+if (formEditar) {
+    prepararValidacaoFormulario(formEditar);
+}
+
+const atualizarTabelaProdutos = function (produtos) {
+    if (!tabelaBody) {
+        return;
+    }
+
+    if (!Array.isArray(produtos) || produtos.length === 0) {
+        tabelaBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nenhum produto encontrado.</td></tr>';
+        return;
+    }
+
+    const linhas = produtos.map(function (p) {
+        return '<tr>' +
+            '<td>' + (p.nome || '') + '</td>' +
+            '<td>' + (p.categoria || '') + '</td>' +
+            '<td>' + Number(p.preco || 0).toFixed(2) + ' EUR</td>' +
+            '<td>' + Number(p.stockDisponivel || 0) + '</td>' +
+            '<td>' +
+                '<a href="/supermercado/produtos/' + p._id + '" class="btn btn-sm btn-outline-primary">Ver</a> ' +
+                '<a href="/supermercado/produtos/editar/' + p._id + '" class="btn btn-sm btn-outline-secondary">Editar</a>' +
+            '</td>' +
+        '</tr>';
+    }).join('');
+
+    tabelaBody.innerHTML = linhas;
+};
+
+const pesquisarProdutos = async function () {
+    const params = new URLSearchParams();
+
+    const texto = inputPesquisa && inputPesquisa.value ? inputPesquisa.value.trim() : '';
+    const categoria = selectCategoria ? selectCategoria.value : '';
+
+    if (texto) {
+        params.set('q', texto);
+    }
+
+    if (categoria) {
+        params.set('categoria', categoria);
+    }
+
+    try {
+        const resposta = await fetch('/supermercado/api/produtos?' + params.toString());
+        if (!resposta.ok) {
+            throw new Error('Resposta inválida do servidor');
+        }
+
+        const produtos = await resposta.json();
+        atualizarTabelaProdutos(produtos);
+    } catch (err) {
+        console.error('Erro na pesquisa de produtos:', err);
+    }
+};
+
+if (inputPesquisa) {
+    let timer;
+    inputPesquisa.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(pesquisarProdutos, 300);
+    });
+}
+
+if (selectCategoria) {
+    selectCategoria.addEventListener('change', pesquisarProdutos);
+}
