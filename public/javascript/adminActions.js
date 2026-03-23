@@ -57,7 +57,7 @@ async function carregarSupermercados(contador = 0) {
 async function bloquearSupermercado(id, contador) {
     if (!confirm('Bloquear este supermercado?')) return;
     try {
-        const res = await fetch(`/admin/bloquearSupermercado/${id}`, { method: 'POST' });
+        const res = await fetch(`/admin/supermercados/bloquear/${id}`, { method: 'POST' });
         const data = await res.json();
         if (data.success) {
             carregarSupermercados(contador);

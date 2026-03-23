@@ -18,14 +18,14 @@
 
             <form action="/auth/registar" method="POST" onsubmit="validarComRecaptcha(event, '<%= siteKey %>', 'registar')">
                 <div class="row g-3">
-                    <!-- Dados de Utilizador (Comuns) -->
+                    
                     <div class="col-md-6">
                         <label class="form-label small fw-bold">Nome Completo</label>
-                        <input type="text" name="nome" class="form-control" value="<%= locals.dados?.nome || '' %>" required>
+                        <input type="text" id="nome" name="nome" class="form-control" value="<%= locals.dados?.nome || '' %>" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small fw-bold">Email</label>
-                        <input type="email" name="email" class="form-control" value="<%= locals.dados?.email || '' %>" required>
+                        <input type="email" id="email" name="email" class="form-control" value="<%= locals.dados?.email || '' %>" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small fw-bold">Password</label>
@@ -33,7 +33,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small fw-bold">Telemóvel</label>
-                        <input type="number" name="telefone" class="form-control" value="<%= locals.dados?.telefone || '' %>" required>
+                        <input type="number" id="telefone" name="telefone" class="form-control" value="<%= locals.dados?.telefone || '' %>" required>
                     </div>
                     <div class="col-12">
                         <label class="form-label small fw-bold">Morada Fiscal</label>
@@ -83,19 +83,6 @@
     <script src="/javascript/authValidations.js"></script>
     <script src="https://www.google.com/recaptcha/api.js?render=<%= siteKey %>"></script>
     <script src="/javascript/recaptcha.js"></script>
-
-    <script>
-        // Lógica simples para mostrar/esconder campos extra
-        const seletorRole = document.getElementById('seletor-role');
-        const camposSuper = document.getElementById('campos-supermercado');
-
-        seletorRole.addEventListener('change', function() {
-            if (this.value === 'supermercados') {
-                camposSuper.style.display = 'flex';
-            } else {
-                camposSuper.style.display = 'none';
-            }
-        });
-    </script>
+    <script src="/javascript/authActions.js"></script>
 </body>
 </html>

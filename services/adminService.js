@@ -73,20 +73,6 @@ const atualizarUserById = async (id, dados) => {
     return User.findByIdAndUpdate(id, dados);
 };
 
-const getMercadosDocumentos = async (pagina, limite) => {
-    const contador = (pagina - 1) * limite;
-
-    const total = await Supermarket.countDocuments();
-    const supermercados = await Supermarket.find()
-        .sort({ criadoEm: -1 })
-        .skip(Number(contador))
-        .limit(Number(limite));
-    return {
-        supermercados,
-        totalPaginas: Math.ceil(total / limite)
-    };
-}
-
 const getMercadosAtivos = async (contador, limite) => {
     const total = await Supermarket.countDocuments({ estadoAprovacao: 'Aprovado' });
     const supermercados = await Supermarket.find({ estadoAprovacao: 'Aprovado' })
@@ -115,6 +101,5 @@ module.exports = {
     getMercadosAtivos,
     bloquearSupermercadoById,
     getUsersDocumentos,
-    getMercadosDocumentos,
     getEstafetasDocumentos
 };

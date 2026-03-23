@@ -113,3 +113,33 @@ if (inputPesquisa) {
 if (selectCategoria) {
     selectCategoria.addEventListener('change', pesquisarProdutos);
 }
+
+const formVendaCaixa = document.getElementById('formVendaCaixa');
+
+if (formVendaCaixa) {
+    formVendaCaixa.addEventListener('submit', function (e) {
+        const inputs = formVendaCaixa.querySelectorAll('.js-quantidade');
+        const itens = [];
+
+        inputs.forEach(function (input) {
+            const quantidade = Number(input.value || 0);
+            if (quantidade > 0) {
+                itens.push({
+                    produtoId: input.dataset.produtoId,
+                    quantidade: quantidade
+                });
+            }
+        });
+
+        if (itens.length === 0) {
+            e.preventDefault();
+            alert('Seleciona pelo menos um produto para registar a venda.');
+            return;
+        }
+
+        const itensVendaInput = document.getElementById('itensVenda');
+        if (itensVendaInput) {
+            itensVendaInput.value = JSON.stringify(itens);
+        }
+    });
+}

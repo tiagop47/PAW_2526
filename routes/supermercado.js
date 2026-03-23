@@ -13,8 +13,8 @@ router.get('/dashboard', supermarketController.exibirDashboard);
 // Produtos
 router.get('/produtos', supermarketController.exibirProdutos);
 router.get('/produtos/novo', supermarketController.exibirFormularioNovo);
-router.get('/produtos/:id', supermarketController.exibirDetalhes);
 router.get('/produtos/editar/:id', supermarketController.exibirFormularioEditar);
+router.get('/produtos/:id', supermarketController.exibirDetalhes);
 
 router.get('/api/produtos', supermarketController.pesquisarProdutos);
 

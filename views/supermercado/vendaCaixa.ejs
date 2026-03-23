@@ -84,37 +84,7 @@
         </form>
     </main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const form = document.getElementById('formVendaCaixa');
-            if (!form) {
-                return;
-            }
-
-            form.addEventListener('submit', function (e) {
-                const inputs = form.querySelectorAll('.js-quantidade');
-                const itens = [];
-
-                inputs.forEach(function (input) {
-                    const quantidade = Number(input.value || 0);
-                    if (quantidade > 0) {
-                        itens.push({
-                            produtoId: input.dataset.produtoId,
-                            quantidade: quantidade
-                        });
-                    }
-                });
-
-                if (itens.length === 0) {
-                    e.preventDefault();
-                    alert('Seleciona pelo menos um produto para registar a venda.');
-                    return;
-                }
-
-                document.getElementById('itensVenda').value = JSON.stringify(itens);
-            });
-        });
-    </script>
+    <script src="/javascript/supermercadoActions.js"></script>
 
 </body>
 
