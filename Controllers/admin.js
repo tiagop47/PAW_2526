@@ -70,6 +70,25 @@ const editarUser = async (req, res) => {
     }
 };
 
+/**
+ * Bloqueia um supermercado ativo.
+ */
+const bloquearSupermercado = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const supermercado = await Supermarket.findByIdAndUpdate(id, { estadoAprovacao: 'Bloqueado' }, { new: true });
+        
+        if (!supermercado) {
+            return res.status(404).json({ message: 'Supermercado não encontrado.' });
+        }
+
+        res.status(200).json({ message: 'Supermercado bloqueado com sucesso!' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Erro ao bloquear o supermercado.' });
+    }
+};
+
 const supermercadosAtivos = async (req, res) => {
     try {
         const limite = parseInt(req.query.limite) || 5;
@@ -93,5 +112,6 @@ module.exports = {
     rejeitarSupermercado,
     listarUtilizadores,
     editarUser,
+    bloquearSupermercado,
     supermercadosAtivos
 };

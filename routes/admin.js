@@ -15,5 +15,7 @@ router.get('/pendentes', adminController.listarPendentes);
 
 router.post('/aprovar/:id', adminController.aprovarSupermercado);
 router.post('/rejeitar/:id', adminController.rejeitarSupermercado);
+router.post('/bloquearSupermercado/:id', adminController.bloquearSupermercado);
+
 
 module.exports = router;

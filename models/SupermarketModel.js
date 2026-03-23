@@ -23,7 +23,7 @@ const SupermarketSchema = new mongoose.Schema({
     custoEntrega: { type: Number, default: 0 },
     estadoAprovacao: {
         type: String,
-        enum: ['Pendente', 'Aprovado', 'Rejeitado'],
+        enum: ['Pendente', 'Aprovado', 'Rejeitado', 'Bloqueado'],
         default: 'Pendente'
     },
     criadoEm: { type: Date, default: Date.now }
