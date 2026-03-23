@@ -8,13 +8,14 @@
         <!-- Navegação Principal (Desktop) -->
         <nav class="navegacao-links d-none d-lg-flex align-items-center gap-4">
             <% if (user) { %>
-                <a href="/<%= user.role === 'administrador' ? 'admin' : user.role === 'supermercados' ? 'supermercado' : user.role === 'estafetas' ? 'estafeta' : 'cliente' %>/dashboard" class="link-menu text-decoration-none small">Dashboard</a>
-                
-                <% if (user.role === 'supermercados') { %>
+                <a href="/<%= user.role === 'administrador' ? 'admin' : user.role === 'supermercados' ? 'supermercado' : user.role === 'estafetas' ? 'estafeta' : 'cliente' %>/dashboard"
+                    class="link-menu text-decoration-none small">Dashboard</a>
+
+                <% if (user.role==='supermercados' ) { %>
                     <a href="/supermercado/produtos" class="link-menu text-decoration-none small">Produtos</a>
                     <a href="/supermercado/encomendas" class="link-menu text-decoration-none small">Encomendas</a>
-                <% } %>
-            <% } %>
+                    <% } %>
+                        <% } %>
         </nav>
 
         <!-- Área de Utilizador: Dois Dropdowns Simples -->
@@ -26,13 +27,13 @@
                         <i class="bi bi-person me-1"></i> Minha Conta
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                        <% let urlPerfil = (user.role === 'supermercados') ? '/supermercado/perfil' : (user.role === 'estafetas') ? '/estafeta/perfil' : '/cliente/perfil'; %>
-                        <li><a class="dropdown-item small" href="<%= urlPerfil %>">Editar Perfil</a></li>
-                        <li><a class="dropdown-item small" href="/definicoes">Definições</a></li>
+                        <% let urlPerfil=(user.role==='supermercados' ) ? '/supermercado/perfil' :
+                            (user.role==='estafetas' ) ? '/estafeta/perfil' : '/cliente/perfil' ; %>
+                            <li><a class="dropdown-item small" href="<%= urlPerfil %>">Editar Perfil</a></li>
+                            <li><a class="dropdown-item small" href="/definicoes">Definições</a></li>
                     </ul>
                 </div>
 
-                <!-- Dropdown 2: Sessão -->
                 <div class="dropdown">
                     <button class="btn btn-light btn-sm dropdown-toggle border" type="button" data-bs-toggle="dropdown">
                         Opções
@@ -41,9 +42,9 @@
                         <li><a class="dropdown-item small text-danger" href="/auth/logout">Fechar Painel</a></li>
                     </ul>
                 </div>
-            <% } else { %>
-                <a href="/auth/login" class="btn btn-primary btn-sm px-4">Entrar</a>
-            <% } %>
+                <% } else { %>
+                    <a href="/auth/login" class="btn btn-primary btn-sm px-4">Entrar</a>
+                    <% } %>
         </div>
     </div>
 </header>

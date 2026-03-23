@@ -7,8 +7,11 @@ const { verificarAutenticacao, verificarRole } = require('../middlewares/authMid
 router.use(verificarAutenticacao, verificarRole(['administrador']));
 
 router.get('/dashboard', adminController.exibirDashboard);
-router.get('/supermercados/pendentes', adminController.listarPendentes);
-router.post('/supermercados/aprovar/:id', adminController.aprovarSupermercado);
-router.post('/supermercados/rejeitar/:id', adminController.rejeitarSupermercado);
+router.get('/exibirUtilizadores', adminController.listarUtilizadores);
+router.get('/exibirUtilizadores/:id/detalhes', adminController.editarUser);
+router.get('/pendentes', adminController.listarPendentes);
+
+router.post('/aprovar/:id', adminController.aprovarSupermercado);
+router.post('/rejeitar/:id', adminController.rejeitarSupermercado);
 
 module.exports = router;

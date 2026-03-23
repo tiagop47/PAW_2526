@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+
+    <%- include('../partials/navbar') %>
+
+        <main class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h4 fw-bold m-0">Gestão Utilizadores</h1>
+                <a href="/admin/dashboard" class="btn btn-sm btn-light">Voltar</a>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <table class="tabela-limpa mb-0">
+                    <thead>
+                        <tr>
+                            <th>Utilizador</th>
+                            <th>Telefone</th>
+                            <th>Cargo/Função</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (locals.users && users.length> 0) { %>
+                            <% users.forEach(function(utilizador) { %>
+                                <tr>
+                                    <td class="fw-bold">
+                                        <%= utilizador.nome %>
+                                    </td>
+
+                                    <td class="fw-bold">
+                                        <%= utilizador.telefone %>
+                                    </td>
+                                    <td>
+                                        <%= utilizador.role%>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="4" class="text-center py-5 text-muted">Não existem pedidos de
+                                                registo pendentes.</td>
+                                        </tr>
+                                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <script src="/javascript/adminActions.js"></script>
+
+</body>
+
+</html>

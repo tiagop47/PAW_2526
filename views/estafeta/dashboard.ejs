@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html lang="pt">
+
 <head>
     <%- include('../partials/head') %>
 </head>
+
 <body class="bg-light">
 
     <%- include('../partials/navbar') %>
 
-    <div class="container mt-5">
-        <div class="cartao-estatistica">
-            <h1>Área do Estafeta (<%= user.nome %>)</h1>
-            <p>Bem-vindo ao teu painel de entregas.</p>
-            <hr>
-            <div class="d-flex gap-2">
-                <a href="/estafeta/entregas" class="btn btn-primary botao-acao">Ver Entregas Disponíveis</a>
+        <div class="container mt-5">
+            <div class="cartao-estatistica">
+                <h1>Área do Estafeta (<%= user.nome %>)</h1>
+                <p>Bem-vindo ao teu painel de entregas.</p>
+                <hr>
+                <div class="d-flex gap-2">
+                    <a href="/estafeta/entregas" class="btn btn-primary botao-acao">Ver Entregas Disponíveis</a>
+                </div>
             </div>
         </div>
-    </div>
 
-    <script src="/javascript/navbar.js"></script>
+        <script src="/javascript/navbar.js"></script>
+        <script src="/javascript/estafetaActions.js"></script>
 </body>
+
 </html>

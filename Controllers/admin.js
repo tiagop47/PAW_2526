@@ -32,7 +32,7 @@ const listarPendentes = async (req, res) => {
 const aprovarSupermercado = async (req, res) => {
     try {
         await Supermarket.findByIdAndUpdate(req.params.id, { estadoAprovacao: 'Aprovado' });
-        res.redirect('/admin/supermercados/pendentes');
+        res.redirect('/admin/pendentes');
     } catch (err) {
         res.status(500).send('Erro ao aprovar supermercado.');
     }
@@ -44,7 +44,27 @@ const aprovarSupermercado = async (req, res) => {
 const rejeitarSupermercado = async (req, res) => {
     try {
         await Supermarket.findByIdAndUpdate(req.params.id, { estadoAprovacao: 'Rejeitado' });
-        res.redirect('/admin/supermercados/pendentes');
+        res.redirect('/admin/pendentes');
+    } catch (err) {
+        res.status(500).send('Erro ao rejeitar supermercado.');
+    }
+};
+
+const listarUtilizadores = async (req, res) => {
+    try {
+        const users = await User.find().sort({ criadoEm: -1 });
+        res.render('admin/exibirUtilizadores', {
+            title: 'Gestão de Utilizadores',
+            users
+        });
+    } catch (err) {
+        res.status(500).send('Erro ao carregar lista de utilizadores.');
+    }
+};
+
+const editarUser = async (req, res) => {
+    try {
+
     } catch (err) {
         res.status(500).send('Erro ao rejeitar supermercado.');
     }
@@ -54,5 +74,7 @@ module.exports = {
     exibirDashboard,
     listarPendentes,
     aprovarSupermercado,
-    rejeitarSupermercado
+    rejeitarSupermercado,
+    listarUtilizadores,
+    editarUser
 };

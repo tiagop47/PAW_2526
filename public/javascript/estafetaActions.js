@@ -1,4 +1,15 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const formsComConfirmacao = document.querySelectorAll('.js-confirm-submit');
+    formsComConfirmacao.forEach(form => {
+        form.addEventListener("submit", function (e) {
+            const mensagem = form.dataset.confirmMessage || "Deseja continuar?";
+
+            if (!confirm(mensagem)) {
+                e.preventDefault();
+            }
+        });
+    });
+
     // Confirmar Aceitação de Entrega
     const btnsAceitar = document.querySelectorAll('.btn-aceitar-entrega');
     btnsAceitar.forEach(btn => {

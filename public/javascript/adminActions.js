@@ -1,8 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const botoesRejeitar = document.querySelectorAll('.btn-rejeitar-supermercado');
-    botoesRejeitar.forEach(btn => {
-        btn.addEventListener("click", function (e) {
-            if (!confirm("Tem a certeza que deseja rejeitar este supermercado? Esta ação é irreversível.")) {
+    const formsComConfirmacao = document.querySelectorAll("btnConfirmar");
+
+    formsComConfirmacao.forEach(form => {
+        form.addEventListener("submit", function (e) {
+            const mensagem = form.dataset.confirmMessage || "Deseja continuar?";
+
+            if (!confirm(mensagem)) {
                 e.preventDefault();
             }
         });
