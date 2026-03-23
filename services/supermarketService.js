@@ -69,8 +69,10 @@ const criarProdutoService = async (userId, productData) => {
 
 const updateProductByIdForUser = async (userId, productId, updateData) => {
     const supermercado = await getSupermercado(userId);
-    return Product.findOneAndUpdate(
-        { _id: productId, supermercadoId: supermercado._id },
+    return Product.findOneAndUpdate({
+        _id: productId,
+        supermercadoId: supermercado._id
+    },
         updateData,
         { new: true }
     );
@@ -78,7 +80,10 @@ const updateProductByIdForUser = async (userId, productId, updateData) => {
 
 const deleteProductByIdForUser = async (userId, productId) => {
     const supermercado = await getSupermercado(userId);
-    return Product.findOneAndDelete({ _id: productId, supermercadoId: supermercado._id });
+    return Product.findOneAndDelete({
+        _id: productId,
+        supermercadoId: supermercado._id
+    });
 };
 
 /**
