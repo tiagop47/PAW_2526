@@ -5,7 +5,7 @@ const formEliminar = document.querySelector("#formEliminar");
 const validarFormularioProduto = function (form) {
     const nome = form.querySelector('[name="nome"]').value.trim();
     const preco = form.querySelector('[name="preco"]').value;
-    const stock = form.querySelector('[name="stock"]').value;
+    const stockDisponivel = form.querySelector('[name="stockDisponivel"]').value;
     const erros = [];
 
     if (nome.length < 2) {
@@ -16,7 +16,7 @@ const validarFormularioProduto = function (form) {
         erros.push('O preço deve ser um valor positivo.');
     }
 
-    if (stock === '' || parseInt(stock, 10) < 0) {
+    if (stockDisponivel === '' || parseInt(stockDisponivel, 10) < 0) {
         erros.push('O stock deve ser um número positivo.');
     }
 

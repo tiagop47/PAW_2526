@@ -120,6 +120,7 @@ const getOrdersByUserId = async (userId) => {
 
 const updateOrderStatusByIdForUser = async (userId, orderId, estado) => {
     const supermercado = await getSupermercado(userId);
+
     return Order.findOneAndUpdate(
         { _id: orderId, supermercadoId: supermercado._id },
         { estado },

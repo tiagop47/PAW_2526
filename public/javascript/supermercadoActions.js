@@ -12,11 +12,11 @@ let timerPesquisa;
 const validarProdutoForm = function (form) {
     const nomeInput = form.querySelector('[name="nome"]');
     const precoInput = form.querySelector('[name="preco"]');
-    const stockInput = form.querySelector('[name="stock"]');
+    const stockInput = form.querySelector('[name="stockDisponivel"]');
 
     const nome = nomeInput ? nomeInput.value.trim() : '';
     const preco = precoInput ? precoInput.value : '';
-    const stock = stockInput ? stockInput.value : '';
+    const stockDisponivel = stockInput ? stockInput.value : '';
 
     const erros = [];
 
@@ -28,7 +28,7 @@ const validarProdutoForm = function (form) {
         erros.push('O preço deve ser um valor positivo.');
     }
 
-    if (stock === '' || Number(stock) < 0) {
+    if (stockDisponivel === '' || Number(stockDisponivel) < 0) {
         erros.push('O stock deve ser um número positivo.');
     }
 
@@ -59,7 +59,10 @@ const atualizarTabelaProdutos = function (produtos) {
     }
 
     if (!Array.isArray(produtos) || produtos.length === 0) {
-        tabelaBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nenhum produto encontrado.</td></tr>';
+        tabelaBody.innerHTML = `<tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                        Nenhum produto encontrado.</td>
+                            </tr>`;
         return;
     }
 
@@ -70,8 +73,6 @@ const atualizarTabelaProdutos = function (produtos) {
             '<td>' + Number(p.preco || 0).toFixed(2) + ' EUR</td>' +
             '<td>' + Number(p.stockDisponivel || 0) + '</td>' +
             '<td>' +
-            '<a href="/supermercado/produtos/' + p._id + '" class="btn btn-sm btn-outline-primary">Ver</a> ' +
-            '<a href="/supermercado/produtos/editar/' + p._id + '" class="btn btn-sm btn-outline-secondary">Editar</a>' +
             '</td>' +
             '</tr>';
     }).join('');

@@ -31,7 +31,7 @@ const exibirDashboard = async (req, res) => {
  */
 const exibirProdutos = async (req, res) => {
     try {
-        const produtos = await supermarketService.getProductsByUserId(req.user.id);
+        const produtos = await supermarketService.getProductByUser(req.user.id);
         res.render('supermercado/produtos', {
             title: 'Gerir Produtos',
             produtos
@@ -89,12 +89,8 @@ const exibirFormularioEditar = async (req, res) => {
  */
 const criarProduto = async (req, res) => {
     try {
-        const { nome, descricao, categoria, preco, stock } = req.body;
-        const imagem = req.file ? '/images/produtos/' + req.file.filename : '';
-
-        await supermarketService.criarProdutoService(req.user.id, {
-            nome, descricao, categoria, preco, stockDisponivel: stock, imagem
-        });
+        const imagem = req.file ? `/images/produtos/${req.file.filename}` : '';
+        await supermarketService.createProduct(req.user.id, { ...req.body, imagem });
 
         res.redirect('/supermercado/produtos');
     } catch (err) {
@@ -108,11 +104,9 @@ const criarProduto = async (req, res) => {
  */
 const atualizarProduto = async (req, res) => {
     try {
-        const { nome, descricao, categoria, preco, stock } = req.body;
-        const dados = { nome, descricao, categoria, preco, stockDisponivel: stock };
-
+        const dados = { ...req.body };
         if (req.file) {
-            dados.imagem = '/images/produtos/' + req.file.filename;
+            dados.imagem = `/images/produtos/${req.file.filename}`;
         }
 
         const produtoAtualizado = await supermarketService.updateProductByIdForUser(req.user.id, req.params.id, dados);
@@ -150,7 +144,10 @@ const eliminarProduto = async (req, res) => {
 const pesquisarProdutos = async (req, res) => {
     try {
         const { q, categoria } = req.query;
-        const produtos = await supermarketService.searchProducts(req.user.id, { q, categoria });
+        const produtos = await supermarketService.searchProducts(req.user.id, {
+            q,
+            categoria
+        });
         res.json(produtos);
     } catch (err) {
         res.status(500).json({ erro: 'Erro ao pesquisar produtos.' });
