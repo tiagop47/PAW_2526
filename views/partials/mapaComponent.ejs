@@ -3,7 +3,14 @@
         <span class="small fw-bold text-muted">
             <%= locals.mapaTitulo || 'Geolocalização' %>
         </span>
-        <button id="btn-sincronizar-geo" class="btn btn-sm btn-outline-secondary">Sincronizar</button>
+        <div class="mapa-acoes">
+            <%- locals.mapaAcoes || '' %>
+        </div>
     </div>
     <div id="<%= locals.mapaId || 'mapa-geral' %>" style="height: <%= locals.mapaAltura || '300px' %>;"></div>
+    <% if (locals.mapaFooter) { %>
+        <div class="card-footer py-2 text-center">
+            <%- mapaFooter %>
+        </div>
+    <% } %>
 </div>

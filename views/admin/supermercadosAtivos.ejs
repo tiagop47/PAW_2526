@@ -51,12 +51,12 @@
             </div>
 
             <div class="col-lg-5">
-                <div class="card border bg-white">
-                    <div class="card-header bg-white py-2">
-                        <span class="small fw-bold text-muted">Mapa de Supermercados Ativos</span>
-                    </div>
-                    <div id="mapa-supermercados-ativos" style="height: 420px;"></div>
-                </div>
+                <%- include('../partials/mapaComponent', { 
+                    mapaId: 'mapa-supermercados-ativos', 
+                    mapaAltura: '420px', 
+                    mapaTitulo: 'Mapa de Supermercados Ativos',
+                    mapaAcoes: '' 
+                }) %>
             </div>
         </div>
     </main>

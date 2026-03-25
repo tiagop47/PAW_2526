@@ -42,22 +42,15 @@
                 </div>
 
                 <div class="col-md-5">
-                    <div class="card">
-                        <div class="card-header py-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>Mapa</span>
-                                <button id="btn-minha-posicao" class="btn btn-sm btn-outline-primary"></button>
-                            </div>
-                        </div>
-                        <div id="mapa-entregas" style="height: 350px;"></div>
-                        <div class="card-footer py-2 text-center">
-                            <small class="text-muted" id="status-localizacao">
-                                <%= (locals.lat && locals.lng) ? 'Filtrado por localização'
-                                    : 'Mostrando todas as encomendas' %>
-                            </small>
-                        </div>
-                    </div>
+                    <%- include('../partials/mapaComponent', { 
+                        mapaId: 'mapa-entregas', 
+                        mapaAltura: '350px', 
+                        mapaTitulo: 'Mapa',
+                        mapaAcoes: '<button id="btn-minha-posicao" class="btn btn-sm btn-outline-primary">Minha Posição</button>',
+                        mapaFooter: '<small class="text-muted" id="status-localizacao">' + ((locals.lat && locals.lng) ? 'Filtrado por localização' : 'Mostrando todas as encomendas') + '</small>'
+                    }) %>
                 </div>
+
             </div>
         </div>
 
