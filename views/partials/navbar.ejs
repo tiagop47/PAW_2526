@@ -2,14 +2,12 @@
     <div class="container d-flex align-items-center justify-content-between py-2">
         <!-- Logotipo -->
         <a href="/" class="logotipo text-decoration-none">
-            <span class="nome-marca">Área Registo</span></span>
+            <span class="nome-marca">Dashboard</span></span>
+            <p class="text-secondary small mb-0">Utilizador: <%= user.nome %>
         </a>
 
         <nav class="navegacao-links d-none d-lg-flex align-items-center gap-4">
             <% if (user) { %>
-                <a href="/<%= user.role === 'administrador' ? 'admin' : user.role === 'supermercados' ? 'supermercado' : user.role === 'estafetas' ? 'estafeta' : 'cliente' %>/dashboard"
-                    class="link-menu text-decoration-none small">Dashboard</a>
-
                 <% if (user.role==='supermercados' ) { %>
                     <a href="/supermercado/produtos" class="link-menu text-decoration-none small">Produtos</a>
                     <a href="/supermercado/encomendas" class="link-menu text-decoration-none small">Encomendas</a>
@@ -19,8 +17,6 @@
 
         <div class="area-utilizador d-flex align-items-center gap-2">
             <% if (user) { %>
-                <a href="/<%= user.role === 'administrador' ? 'admin' : user.role === 'supermercados' ? 'supermercado' : user.role === 'estafetas' ? 'estafeta' : 'cliente' %>/dashboard"
-                    class="btn btn-outline-secondary btn-sm px-3">Dashboard</a>
                 <a href="/auth/logout" class="btn btn-outline-danger btn-sm px-3">Fechar Painel</a>
                 <% } else { %>
                     <a href="/auth/login" class="btn btn-primary btn-sm px-4">Entrar</a>

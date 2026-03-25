@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+
+<body>
+    <%- include('../partials/navbar') %>
+
+        <div class="container mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Entregas Disponíveis</h4>
+                <a href="/estafeta/dashboard" class="btn btn-sm btn-outline-secondary">Voltar</a>
+            </div>
+
+            <div class="row">
+                <div class="col-md-7">
+                    <% entregas.forEach(entrega=> { %>
+                        <div class="card mb-2">
+                            <div class="card-body py-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>#<%= entrega._id.toString().slice(-6).toUpperCase() %></strong>
+                                        <span class="text-muted small ms-2">
+                                            <%= entrega.supermercadoId?.nome || 'N/A' %>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="text-success me-2">
+                                            <%= (entrega.supermercadoId?.custoEntrega || 0).toFixed(2) %>&euro;
+                                        </span>
+                                        <button class="btn btn-sm btn-primary btn-aceitar-entrega"
+                                            data-id="<%= entrega._id %>">Aceitar</button>
+                                    </div>
+                                </div>
+                                <small class="text-muted">Para: <%= entrega.clienteId?.morada || 'N/A' %></small>
+                            </div>
+                        </div>
+                        <% }); %>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="card">
+                        <div class="card-header py-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Mapa</span>
+                                <button id="btn-minha-posicao" class="btn btn-sm btn-outline-primary"></button>
+                            </div>
+                        </div>
+                        <div id="mapa-entregas" style="height: 350px;"></div>
+                        <div class="card-footer py-2 text-center">
+                            <small class="text-muted" id="status-localizacao">
+                                <%= (locals.lat && locals.lng) ? 'Filtrado por localização'
+                                    : 'Mostrando todas as encomendas' %>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="/javascript/estafetaMapa.js"></script>
+        <script src="/javascript/estafetaAcoes.js"></script>
+</body>
+
+</html>

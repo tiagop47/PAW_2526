@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const Supermarket = require('../models/SupermarketModel'); // Importar o modelo
+const Supermarket = require('../models/SupermarketModel'); 
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback';
 const DASHBOARDS = {
@@ -77,9 +77,9 @@ const verificarAprovacaoSupermercado = async (req, res, next) => {
         try {
             const superMercado = await Supermarket.findOne({ userId: req.user.id });
             if (!superMercado || superMercado.estadoAprovacao !== 'Aprovado') {
-                return res.status(403).render('supermercado/aguardandoAprovacao',
+                return res.status(403).render('supermercado/aguardaAprovacao',
                     {
-                        title: 'Aguardando Aprovação',
+                        title: 'Aguarda Aprovação',
                         estado: superMercado ? superMercado.estadoAprovacao : 'Pendente'
                     });
             }

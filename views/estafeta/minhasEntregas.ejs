@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>Minhas Entregas</h4>
+            <a href="/estafeta/dashboard" class="btn btn-sm btn-outline-secondary">Voltar</a>
+        </div>
+
+        <% if (entregas.length === 0) { %>
+            <div class="alert alert-info">Ainda não tens entregas.</div>
+        <% } else { %>
+
+            <% const emCurso = entregas.filter(e => e.estado === 'em entrega'); %>
+            <% if (emCurso.length > 0) { %>
+                <h5>Em Curso</h5>
+                <div class="row mb-4">
+                    <% emCurso.forEach(entrega => { %>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <h6>#<%= entrega._id.toString().slice(-6).toUpperCase() %></h6>
+                                    <p class="small mb-2">
+                                        <strong>De:</strong> <%= entrega.supermercadoId?.nome || 'N/A' %><br>
+                                        <strong>Para:</strong> <%= entrega.clienteId?.morada || 'N/A' %>
+                                    </p>
+                                    <button class="btn btn-sm btn-success btn-confirmar-entrega" data-id="<%= entrega._id %>">
+                                        Confirmar Entrega
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+
+            <% const historico = entregas.filter(e => e.estado === 'entregue'); %>
+            <% if (historico.length > 0) { %>
+                <h5>Histórico</h5>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Supermercado</th>
+                            <th>Destino</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% historico.forEach(entrega => { %>
+                            <tr>
+                                <td>#<%= entrega._id.toString().slice(-6).toUpperCase() %></td>
+                                <td><%= entrega.supermercadoId?.nome || 'N/A' %></td>
+                                <td><%= entrega.clienteId?.morada || 'N/A' %></td>
+                                <td><%= new Date(entrega.criadoEm).toLocaleDateString('pt-PT') %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } %>
+
+        <% } %>
+    </div>
+
+    <script src="/javascript/estafetaAcoes.js"></script>
+</body>
+</html>

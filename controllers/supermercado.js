@@ -52,38 +52,24 @@ supermarketController.exibirFormularioNovo = function (req, res) {
 
 /**
  * Exibe os detalhes de um produto.
+ * O produto é carregado pelo middleware router.param('productId')
  */
 supermarketController.exibirDetalhes = async function (req, res) {
-    try {
-        const produto = await supermarketService.getProductByIdForUser(req.user.id, req.params.id);
-        if (!produto) return res.status(404).send('Produto não encontrado');
-
-        res.render('supermercado/detalhesProduto', {
-            title: 'Detalhes do Produto',
-            produto
-        });
-    } catch (err) {
-        res.status(500).send('Erro ao carregar detalhes.');
-    }
+    res.render('supermercado/detalhesProduto', {
+        title: 'Detalhes do Produto',
+        produto: req.produto
+    });
 };
 
 /**
  * Exibe o formulário para editar um produto.
+ * O produto é carregado pelo middleware router.param('productId')
  */
 supermarketController.exibirFormularioEditar = async function (req, res) {
-    try {
-        const produto = await supermarketService.getProductByIdForUser(req.user.id, req.params.id);
-        if (!produto) {
-            return res.status(404).send('Produto não encontrado');
-        }
-
-        res.render('supermercado/editarProduto', {
-            title: 'Editar Produto',
-            produto
-        });
-    } catch (err) {
-        res.status(500).send('Erro ao carregar formulário de edição.');
-    }
+    res.render('supermercado/editarProduto', {
+        title: 'Editar Produto',
+        produto: req.produto
+    });
 };
 
 /**
@@ -103,6 +89,7 @@ supermarketController.criarProduto = async function (req, res) {
 
 /**
  * Processa a atualização de um produto existente (com imagem).
+ * O produto é carregado pelo middleware router.param('productId')
  */
 supermarketController.atualizarProduto = async function (req, res) {
     try {
@@ -111,11 +98,7 @@ supermarketController.atualizarProduto = async function (req, res) {
             dados.imagem = `/images/produtos/${req.file.filename}`;
         }
 
-        const produtoAtualizado = await supermarketService.updateProductByIdForUser(req.user.id, req.params.id, dados);
-        if (!produtoAtualizado) {
-            return res.status(404).send('Produto não encontrado');
-        }
-
+        await supermarketService.updateProductByIdForUser(req.user.id, req.produto._id, dados);
         res.redirect('/supermercado/produtos');
     } catch (err) {
         console.error(err);
@@ -125,14 +108,11 @@ supermarketController.atualizarProduto = async function (req, res) {
 
 /**
  * Elimina um produto.
+ * O produto é carregado pelo middleware router.param('productId')
  */
 supermarketController.eliminarProduto = async function (req, res) {
     try {
-        const produtoEliminado = await supermarketService.deleteProductByIdForUser(req.user.id, req.params.id);
-        if (!produtoEliminado) {
-            return res.status(404).send('Produto não encontrado');
-        }
-
+        await supermarketService.deleteProductByIdForUser(req.user.id, req.produto._id);
         res.redirect('/supermercado/produtos');
     } catch (err) {
         console.error(err);
@@ -176,22 +156,23 @@ supermarketController.exibirEditarSupermercado = async function (req, res) {
  */
 supermarketController.atualizarSupermercado = async function (req, res) {
     try {
-        const { nome, descricao, localizacao, horarioFuncionamento, metodosEntrega, custoEntrega } = req.body;
-
-        let metodos = metodosEntrega;
-        if (typeof metodos === 'string') metodos = [metodos];
-        if (!metodos) metodos = ['levantamento em loja'];
+        const { nome, descricao, latitude, longitude, horarioFuncionamento, metodosEntrega, custoEntrega, raioAtuacao } = req.body;
 
         await supermarketService.updateSupermarketByUserId(req.user.id, {
-            nome, descricao, localizacao, horarioFuncionamento,
-            metodosEntrega: metodos,
-            custoEntrega: custoEntrega || 0
+            nome, 
+            descricao, 
+            latitude, 
+            longitude, 
+            horarioFuncionamento,
+            metodosEntrega,
+            custoEntrega: custoEntrega || 0,
+            raioAtuacao: raioAtuacao || 5
         });
 
         res.redirect('/supermercado/dashboard');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Erro ao atualizar supermercado.');
+        res.status(500).send('Erro ao atualizar supermercado: ' + err.message);
     }
 };
 
@@ -231,19 +212,16 @@ supermarketController.listarEncomendas = async function (req, res) {
 
 /**
  * Atualiza o estado de uma encomenda.
+ * A encomenda é verificada pelo middleware router.param('orderId')
  */
 supermarketController.atualizarEstadoEncomenda = async function (req, res) {
     try {
         const { estado } = req.body;
-        const encomendaAtualizada = await supermarketService.updateOrderStatusByIdForUser(
+        await supermarketService.updateOrderStatusByIdForUser(
             req.user.id,
-            req.params.id,
+            req.encomenda._id,
             estado
         );
-
-        if (!encomendaAtualizada) {
-            return res.status(404).send('Encomenda não encontrada');
-        }
 
         res.redirect('/supermercado/encomendas');
     } catch (err) {

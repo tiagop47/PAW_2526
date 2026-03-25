@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+
+<body class="bg-light">
+    <%- include('../partials/navbar') %>
+
+    <main class="container py-4">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm">
+                    <table class="tabela-limpa mb-0">
+                        <thead>
+                            <tr>
+                                <th>Supermercado</th>
+                                <th>Responsável</th>
+                                <th>Localização</th>
+                                <th>Raio</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpo-supermercados">
+                            <% if (locals.supermercados && supermercados.length > 0) { %>
+                                <% supermercados.map(function(s) { %>
+                                    <tr>
+                                        <td class="fw-bold"><%= s.nome %></td>
+                                        <td><%= s.userId ? s.userId.nome : 'N/A' %></td>
+                                        <td><%= s.localizacao || 'Definido por Coordenadas' %></td>
+                                        <td><%= Number(s.raioAtuacao || 5).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) %>km</td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted">
+                                        Não existem supermercados ativos.
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-center mt-4 gap-2">
+                    <button id="btn-ant-supermercados" class="btn btn-sm btn-secondary" <%= paginaAtual <= 1 ? 'disabled' : '' %>>Anterior</button>
+                    <span id="info-pagina-supermercados" class="btn btn-sm btn-light disabled">Página <%= paginaAtual %> de <%= totalPaginas %></span>
+                    <button id="btn-prox-supermercados" class="btn btn-sm btn-secondary" <%= paginaAtual >= totalPaginas ? 'disabled' : '' %>>Próximo</button>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card border bg-white">
+                    <div class="card-header bg-white py-2">
+                        <span class="small fw-bold text-muted">Mapa de Supermercados Ativos</span>
+                    </div>
+                    <div id="mapa-supermercados-ativos" style="height: 420px;"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Dados para o Script Externo -->
+    <div id="dados-supermercados-ativos" 
+         data-supermercados="<%= JSON.stringify(supermercadosMapa || []) %>"
+         data-pagina-atual="<%= paginaAtual %>"
+         data-total-paginas="<%= totalPaginas %>"
+         style="display: none;"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/javascript/adminMapaAtivos.js"></script>
+</body>
+
+</html>

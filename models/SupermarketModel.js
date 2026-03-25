@@ -14,9 +14,7 @@ const SupermarketSchema = new mongoose.Schema({
     },
     localizacao: {
         type: String,
-        required: [true, "A localização é obrigatória"],
-        minlength: [5, "Localização curta demais"],
-        maxlength: [100, "Localização demasiado longa"]
+        default: "Definido por Coordenadas"
     },
     localizacaoGeo: {
         type: {
@@ -26,12 +24,18 @@ const SupermarketSchema = new mongoose.Schema({
         },
         coordinates: {
             type: [Number], // [longitude, latitude]
-            default: [0, 0]
+            required: [true, "As coordenadas são obrigatórias"]
         }
     },
     horarioFuncionamento: String,
     metodosEntrega: { type: [String], default: ['levantamento em loja'] },
     custoEntrega: { type: Number, default: 0 },
+    raioAtuacao: { 
+        type: Number, 
+        default: 5, // Raio padrão de 5km para o "círculo"
+        min: [1, "O raio mínimo é 1km"],
+        max: [50, "O raio máximo é 50km"]
+    },
     estadoAprovacao: {
         type: String,
         enum: ['Pendente', 'Aprovado', 'Rejeitado', 'Bloqueado'],

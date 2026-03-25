@@ -10,6 +10,7 @@ const OrderItemSchema = new mongoose.Schema({
 const OrderSchema = new mongoose.Schema({
     supermercadoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Supermarket', required: true },
     clienteId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    estafetaId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     produtos: [OrderItemSchema],
     valorTotal: { type: Number, required: true },
     estado: {

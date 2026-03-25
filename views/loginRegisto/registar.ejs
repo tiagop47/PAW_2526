@@ -51,9 +51,21 @@
                     <!-- Campos Específicos para Supermercado -->
                     <div id="campos-supermercado" class="row g-3 m-0 pt-3 border-top mt-3">
                         <div class="col-12">
-                            <label class="form-label small fw-bold">Localização da Loja</label>
-                            <input type="text" name="localizacao" class="form-control" placeholder="Rua, Cidade, etc.">
+                            <label class="form-label small fw-bold">Definir Localização no Mapa</label>
+                            <div id="mapa-registo" style="height: 250px; border-radius: 4px; border: 1px solid #dee2e6;"></div>
+                            <div class="d-flex gap-2 mt-2">
+                                <div class="w-50">
+                                    <label class="x-small text-muted">Latitude</label>
+                                    <input type="text" id="input-lat" name="latitude" class="form-control form-control-sm" readonly required>
+                                </div>
+                                <div class="w-50">
+                                    <label class="x-small text-muted">Longitude</label>
+                                    <input type="text" id="input-lon" name="longitude" class="form-control form-control-sm" readonly required>
+                                </div>
+                            </div>
+                            <p class="text-muted mt-1" style="font-size: 0.7rem;">⚠️ Clique no mapa onde se encontra a loja para definir as coordenadas.</p>
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Horário</label>
                             <input type="text" name="horario" class="form-control" placeholder="Ex: 09:00 - 20:00">
@@ -61,6 +73,21 @@
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Custo de Entrega (€)</label>
                             <input type="number" step="0.01" name="custoEntrega" class="form-control" value="0.00">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Raio de Atuação (km) - "Área Y"</label>
+                            <input type="number" name="raioAtuacao" class="form-control" value="5" min="1" max="50">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold d-block">Métodos de Entrega</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="metodosEntrega" value="levantamento em loja" id="checkLevantamento" checked>
+                                <label class="form-check-label small" for="checkLevantamento">Levantamento em Loja</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="metodosEntrega" value="entrega por estafeta" id="checkEstafeta">
+                                <label class="form-check-label small" for="checkEstafeta">Entrega por Estafeta</label>
+                            </div>
                         </div>
                         <div class="col-12">
                             <label class="form-label small fw-bold">Descrição da Loja</label>
@@ -70,7 +97,7 @@
                 </div>
 
                 <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
-                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold mt-4">Solicitar Registo</button>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold mt-4">Registar</button>
             </form>
 
             <footer class="mt-4 pt-3 border-top text-center">
@@ -79,10 +106,12 @@
         </div>
     </main>
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/javascript/validacoes.js"></script>
-    <script src="/javascript/authValidations.js"></script>
+    <script src="/javascript/authValidacoes.js"></script>
     <script src="https://www.google.com/recaptcha/api.js?render=<%= siteKey %>"></script>
     <script src="/javascript/recaptcha.js"></script>
-    <script src="/javascript/authActions.js"></script>
+    <script src="/javascript/authAcoes.js"></script>
 </body>
 </html>

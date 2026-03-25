@@ -1,13 +1,13 @@
 const User = require('../models/UserModel');
-const Supermarket = require('../models/SupermarketModel'); // Importar o modelo de Supermercado
+const Supermarket = require('../models/SupermarketModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { validarRegisto, rolesPublicas } = require('../utils/userValidator');
+const geoService = require('./geoService');
 
-/**
- * Valida o reCAPTCHA com a Google.
- */
-const verificarCaptcha = async (recaptchaResponse) => {
+const authService = {};
+
+authService.verificarCaptcha = async function(recaptchaResponse) {
     if (!recaptchaResponse) throw new Error("Erro de segurança: Token não encontrado.");
 
     const secretKey = process.env.CAPTCHA_API_SECRET;
@@ -23,14 +23,10 @@ const verificarCaptcha = async (recaptchaResponse) => {
     return true;
 };
 
-/**
- * Lógica de registo de novo utilizador.
- */
-const registarUtilizador = async (userData) => {
-    // Destruturar os campos, incluindo os extras do supermercado
+authService.registarUtilizador = async function(userData) {
     const {
         nome, email, password, telefone, morada, role,
-        localizacao, horario, custoEntrega, descricaoLoja
+        localizacao, latitude, longitude, horario, custoEntrega, raioAtuacao, descricaoLoja, metodosEntrega
     } = userData;
 
     const roleFinal = rolesPublicas.includes(role) ? role : "clientes";
@@ -54,14 +50,35 @@ const registarUtilizador = async (userData) => {
 
     const userGuardado = await novoUser.save();
 
-    // Se for um supermercado, criamos o documento de supermercado associado (Pendente)
     if (roleFinal === 'supermercados') {
+        if (!latitude || !longitude) {
+            throw new Error("É obrigatório selecionar a localização da loja no mapa.");
+        }
+
+        const coordenadas = { 
+            type: 'Point', 
+            coordinates: [parseFloat(longitude), parseFloat(latitude)] 
+        };
+
+        // Opcional: Obter um nome legível para a localização via coordenadas (Reverse Geocoding)
+        let nomeLocalizacao = "Definido por Coordenadas";
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const data = await res.json();
+            if (data.display_name) nomeLocalizacao = data.display_name;
+        } catch (e) { /* fallback */ }
+
+        const metodos = Array.isArray(metodosEntrega) ? metodosEntrega : (metodosEntrega ? [metodosEntrega] : ['levantamento em loja']);
+
         await Supermarket.create({
             userId: userGuardado._id,
             nome: nome,
-            localizacao: localizacao || "A definir",
+            localizacao: nomeLocalizacao,
+            localizacaoGeo: coordenadas,
             horarioFuncionamento: horario || "09:00 - 19:00",
             custoEntrega: custoEntrega || 0,
+            raioAtuacao: raioAtuacao || 5,
+            metodosEntrega: metodos,
             descricao: descricaoLoja || "",
             estadoAprovacao: 'Pendente'
         });
@@ -70,10 +87,7 @@ const registarUtilizador = async (userData) => {
     return userGuardado;
 };
 
-/**
- * Lógica de autenticação e geração de Token.
- */
-const autenticarUtilizador = async (email, password) => {
+authService.autenticarUtilizador = async function(email, password) {
     const user = await User.findOne({ email });
     if (!user) throw new Error("Credenciais inválidas.");
 
@@ -90,8 +104,4 @@ const autenticarUtilizador = async (email, password) => {
     return { token, role: user.role };
 };
 
-module.exports = {
-    verificarCaptcha,
-    registarUtilizador,
-    autenticarUtilizador
-};
+module.exports = authService;

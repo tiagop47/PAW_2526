@@ -1,17 +1,31 @@
 const Supermarket = require('../models/SupermarketModel');
 const User = require('../models/UserModel');
+const Product = require('../models/ProductModel');
+const Order = require('../models/OrderModel');
 
-const getDashboardStats = async () => {
-    const totalUsers = await User.countDocuments();
-    const pendentes = await Supermarket.countDocuments({ estadoAprovacao: 'Pendente' });
+const adminService = {};
+
+adminService.getDashboardStats = async function() {
+    const [totalUsers, totalEstafetas, pendentes, ativos, totalProdutos, totalEncomendas] = await Promise.all([
+        User.countDocuments(),
+        User.countDocuments({ role: 'estafetas' }),
+        Supermarket.countDocuments({ estadoAprovacao: 'Pendente' }),
+        Supermarket.countDocuments({ estadoAprovacao: 'Aprovado' }),
+        Product.countDocuments(),
+        Order.countDocuments()
+    ]);
 
     return {
         totalUsers,
-        pendentes
+        totalEstafetas,
+        pendentes,
+        ativos,
+        totalProdutos,
+        totalEncomendas
     };
 };
 
-const getPendentesDocumentos = async (pagina, limite) => {
+adminService.getPendentesDocumentos = async function(pagina, limite) {
     const contador = (pagina - 1) * limite;
 
     const total = await Supermarket.countDocuments({ estadoAprovacao: 'Pendente' });
@@ -27,15 +41,15 @@ const getPendentesDocumentos = async (pagina, limite) => {
     };
 };
 
-const aprovarSupermercadoById = async (id) => {
+adminService.aprovarSupermercadoById = async function(id) {
     return Supermarket.findByIdAndUpdate(id, { estadoAprovacao: 'Aprovado' });
 };
 
-const rejeitarSupermercadoById = async (id) => {
+adminService.rejeitarSupermercadoById = async function(id) {
     return Supermarket.findByIdAndUpdate(id, { estadoAprovacao: 'Rejeitado' });
 };
 
-const getUsersDocumentos = async (pagina, limite) => {
+adminService.getUsersDocumentos = async function(pagina, limite) {
     const contador = (pagina - 1) * limite;
 
     const total = await User.countDocuments();
@@ -50,7 +64,7 @@ const getUsersDocumentos = async (pagina, limite) => {
     };
 };
 
-const getEstafetasDocumentos = async (pagina, limite) => {
+adminService.getEstafetasDocumentos = async function(pagina, limite) {
     const contador = (pagina - 1) * limite;
 
     const total = await User.countDocuments({ role: 'estafetas' });
@@ -65,15 +79,15 @@ const getEstafetasDocumentos = async (pagina, limite) => {
     };
 };
 
-const getUserByIdSemPassword = async (id) => {
+adminService.getUserByIdSemPassword = async function(id) {
     return User.findById(id).select('-password');
 };
 
-const atualizarUserById = async (id, dados) => {
+adminService.atualizarUserById = async function(id, dados) {
     return User.findByIdAndUpdate(id, dados);
 };
 
-const getMercadosAtivos = async (contador, limite) => {
+adminService.getMercadosAtivos = async function(contador, limite) {
     const total = await Supermarket.countDocuments({ estadoAprovacao: 'Aprovado' });
     const supermercados = await Supermarket.find({ estadoAprovacao: 'Aprovado' })
         .populate('userId')
@@ -87,19 +101,32 @@ const getMercadosAtivos = async (contador, limite) => {
     };
 };
 
-const bloquearSupermercadoById = async (id) => {
-    return Supermarket.findByIdAndUpdate(id, { estadoAprovacao: 'Bloqueado' });
+adminService.getTodosMercadosAtivos = async function() {
+    return Supermarket.find({ estadoAprovacao: 'Aprovado' });
 };
 
-module.exports = {
-    getDashboardStats,
-    getPendentesDocumentos,
-    aprovarSupermercadoById,
-    rejeitarSupermercadoById,
-    getUserByIdSemPassword,
-    atualizarUserById,
-    getMercadosAtivos,
-    bloquearSupermercadoById,
-    getUsersDocumentos,
-    getEstafetasDocumentos
+const geoService = require('./geoService');
+
+adminService.sincronizarLocalizacoes = async function() {
+    const mercados = await Supermarket.find({ 
+        $or: [
+            { "localizacaoGeo.coordinates": [0, 0] },
+            { "localizacaoGeo": { $exists: false } }
+        ]
+    });
+
+    let atualizados = 0;
+    for (const s of mercados) {
+        if (s.localizacao && s.localizacao !== "A definir") {
+            const coordenadas = await geoService.getCoordinatesFromAddress(s.localizacao);
+            if (coordenadas) {
+                s.localizacaoGeo = coordenadas;
+                await s.save();
+                atualizados++;
+            }
+        }
+    }
+    return { total: mercados.length, atualizados };
 };
+
+module.exports = adminService;

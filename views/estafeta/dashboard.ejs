@@ -6,21 +6,64 @@
 </head>
 
 <body class="bg-light">
-
     <%- include('../partials/navbar') %>
 
-        <div class="container mt-5">
-            <div class="cartao-estatistica">
-                <h1>Área do Estafeta (<%= user.nome %>)</h1>
-                <p>Bem-vindo ao teu painel de entregas.</p>
-                <hr>
-                <div class="d-flex gap-2">
-                    <a href="/estafeta/entregas" class="btn btn-primary botao-acao">Ver Entregas Disponíveis</a>
+    <main class="container py-4">
+        <h1 class="h4 mb-4 pb-2 border-bottom text-dark">Dashboard do Estafeta</h1>
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Entregas Realizadas</small>
+                        <div class="h3 mb-0 mt-1"><%= stats.entregasRealizadas %></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Em Curso</small>
+                        <div class="h3 mb-0 mt-1"><%= stats.entregasEmCurso %></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Disponíveis</small>
+                        <div class="h3 mb-0 mt-1"><%= stats.entregasDisponiveis %></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Ganhos Totais</small>
+                        <div class="h3 mb-0 mt-1"><%= Number(stats.ganhosTotais || 0).toFixed(2) %>&euro;</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <script src="/javascript/estafetaActions.js"></script>
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h6 text-muted fw-bold text-uppercase mb-3">Ações rápidas</h2>
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <a href="/estafeta/entregas" class="btn btn-secondary w-100">Encomendas Disponíveis</a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="/estafeta/minhas-entregas" class="btn btn-secondary w-100">Minhas Entregas</a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="/estafeta/entregas" class="btn btn-secondary w-100">Mapa de Entregas</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
 </body>
 
 </html>

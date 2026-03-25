@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { verificarAutenticacao, verificarRole } = require('../middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 // Proteger todas as rotas do cliente
-router.use(verificarAutenticacao, verificarRole(['clientes']));
+router.use(authMiddleware.verificarAutenticacao, authMiddleware.verificarRole(['clientes']));
 
 // Dashboard do Cliente
 router.get('/dashboard', (req, res) => {

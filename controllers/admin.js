@@ -8,17 +8,11 @@ var adminController = {};
 adminController.exibirDashboard = async function (req, res) {
     try {
         const stats = await adminService.getDashboardStats();
-
-        res.render('admin/dashboard', {
-            title: 'Painel Admin',
-            totalUsers: stats.totalUsers,
-            pendentes: stats.pendentes
-        });
+        res.render('admin/dashboard', { title: 'Painel Admin', stats });
     } catch (err) {
         res.render('admin/dashboard', {
             title: 'Painel Admin',
-            totalUsers: 0,
-            pendentes: 0
+            stats: { totalUsers: 0, totalEstafetas: 0, pendentes: 0, ativos: 0, totalProdutos: 0, totalEncomendas: 0 }
         });
     }
 };
@@ -28,7 +22,7 @@ adminController.exibirDashboard = async function (req, res) {
  */
 adminController.aprovarSupermercado = async function (req, res) {
     try {
-        await adminService.aprovarSupermercadoById(req.params.id);
+        await adminService.aprovarSupermercadoById(req.params.supermarketId);
         res.redirect('/admin/supermercados/pendentes');
     } catch (err) {
         res.status(500).send('Erro ao aprovar supermercado.');
@@ -40,7 +34,7 @@ adminController.aprovarSupermercado = async function (req, res) {
  */
 adminController.rejeitarSupermercado = async function (req, res) {
     try {
-        await adminService.rejeitarSupermercadoById(req.params.id);
+        await adminService.rejeitarSupermercadoById(req.params.supermarketId);
         res.redirect('/admin/supermercados/pendentes');
     } catch (err) {
         res.status(500).send('Erro ao rejeitar supermercado.');
@@ -88,21 +82,37 @@ adminController.listarPendentes = async function (req, res) {
 };
 
 /**
- * API — Listar supermercados ativos (Limite 3).
+ * Lista supermercados ativos (Limite 3).
  */
 adminController.listarSupermercados = async function (req, res) {
     try {
         const limite = 3;
-        const contador = parseInt(req.query.contador) || 0;
+        const pagina = parseInt(req.query.pagina) || 1;
+        const contador = (pagina - 1) * limite;
         const dados = await adminService.getMercadosAtivos(contador, limite);
+        const pretendeJson = req.query.formato === 'json'
+            || req.xhr
+            || (req.get('accept') || '').includes('application/json');
 
-        res.json({
+        if (pretendeJson) {
+            return res.json({
+                supermercados: dados.supermercados,
+                paginaAtual: dados.paginaAtual,
+                totalPaginas: dados.totalPaginas
+            });
+        }
+
+        const supermercadosMapa = await adminService.getTodosMercadosAtivos();
+
+        res.render('admin/supermercadosAtivos', {
+            title: 'Gestão de Supermercados',
             supermercados: dados.supermercados,
+            supermercadosMapa,
             paginaAtual: dados.paginaAtual,
             totalPaginas: dados.totalPaginas
         });
     } catch (err) {
-        res.status(500).json({ erro: 'Erro ao listar supermercados.' });
+        res.status(500).send('Erro ao listar supermercados.');
     }
 };
 
@@ -111,7 +121,7 @@ adminController.listarSupermercados = async function (req, res) {
  */
 adminController.editarUser = async function (req, res) {
     try {
-        const user = await adminService.getUserByIdSemPassword(req.params.id);
+        const user = await adminService.getUserByIdSemPassword(req.params.userId);
         if (!user) return res.status(404).send('Utilizador não encontrado.');
         res.render('admin/editarUtilizador', { title: 'Editar Utilizador', user });
     } catch (err) {
@@ -125,22 +135,10 @@ adminController.editarUser = async function (req, res) {
 adminController.guardarUser = async function (req, res) {
     try {
         const { nome, email, telefone, morada, role } = req.body;
-        await adminService.atualizarUserById(req.params.id, { nome, email, telefone, morada, role });
+        await adminService.atualizarUserById(req.params.userId, { nome, email, telefone, morada, role });
         res.redirect('/admin/exibirUtilizadores');
     } catch (err) {
         res.status(500).send('Erro ao guardar alterações.');
-    }
-};
-
-/**
- * Bloqueia um supermercado.
- */
-adminController.bloquearSupermercado = async function (req, res) {
-    try {
-        await adminService.bloquearSupermercadoById(req.params.id);
-        res.status(200).json({ success: true, message: "Supermercado Bloqueado!" });
-    } catch (err) {
-        res.status(500).json({ success: false, message: 'Erro ao bloquear supermercado.' });
     }
 };
 
