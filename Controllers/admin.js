@@ -1,9 +1,11 @@
 const adminService = require('../services/adminService');
 
+var adminController = {};
+
 /**
  * Exibe a Dashboard do Administrador.
  */
-const exibirDashboard = async (req, res) => {
+adminController.exibirDashboard = async function (req, res) {
     try {
         const stats = await adminService.getDashboardStats();
 
@@ -24,7 +26,7 @@ const exibirDashboard = async (req, res) => {
 /**
  * Aprova um supermercado.
  */
-const aprovarSupermercado = async (req, res) => {
+adminController.aprovarSupermercado = async function (req, res) {
     try {
         await adminService.aprovarSupermercadoById(req.params.id);
         res.redirect('/admin/supermercados/pendentes');
@@ -36,7 +38,7 @@ const aprovarSupermercado = async (req, res) => {
 /**
  * Rejeita um supermercado.
  */
-const rejeitarSupermercado = async (req, res) => {
+adminController.rejeitarSupermercado = async function (req, res) {
     try {
         await adminService.rejeitarSupermercadoById(req.params.id);
         res.redirect('/admin/supermercados/pendentes');
@@ -48,7 +50,7 @@ const rejeitarSupermercado = async (req, res) => {
 /**
  * Lista todos os utilizadores (Limite 3).
  */
-const listarUtilizadores = async (req, res) => {
+adminController.listarUtilizadores = async function (req, res) {
     try {
         const pagina = parseInt(req.query.pagina) || 1;
         const limite = 3;
@@ -68,7 +70,7 @@ const listarUtilizadores = async (req, res) => {
 /**
  * Lista os supermercados que aguardam aprovação (Limite 3).
  */
-const listarPendentes = async (req, res) => {
+adminController.listarPendentes = async function (req, res) {
     try {
         const pagina = parseInt(req.query.pagina) || 1;
         const limite = 3;
@@ -88,7 +90,7 @@ const listarPendentes = async (req, res) => {
 /**
  * API — Listar supermercados ativos (Limite 3).
  */
-const listarSupermercados = async (req, res) => {
+adminController.listarSupermercados = async function (req, res) {
     try {
         const limite = 3;
         const contador = parseInt(req.query.contador) || 0;
@@ -107,7 +109,7 @@ const listarSupermercados = async (req, res) => {
 /**
  * Exibe formulário de edição de utilizador.
  */
-const editarUser = async (req, res) => {
+adminController.editarUser = async function (req, res) {
     try {
         const user = await adminService.getUserByIdSemPassword(req.params.id);
         if (!user) return res.status(404).send('Utilizador não encontrado.');
@@ -120,7 +122,7 @@ const editarUser = async (req, res) => {
 /**
  * Guarda alterações de utilizador.
  */
-const guardarUser = async (req, res) => {
+adminController.guardarUser = async function (req, res) {
     try {
         const { nome, email, telefone, morada, role } = req.body;
         await adminService.atualizarUserById(req.params.id, { nome, email, telefone, morada, role });
@@ -133,7 +135,7 @@ const guardarUser = async (req, res) => {
 /**
  * Bloqueia um supermercado.
  */
-const bloquearSupermercado = async (req, res) => {
+adminController.bloquearSupermercado = async function (req, res) {
     try {
         await adminService.bloquearSupermercadoById(req.params.id);
         res.status(200).json({ success: true, message: "Supermercado Bloqueado!" });
@@ -145,7 +147,7 @@ const bloquearSupermercado = async (req, res) => {
 /**
  * Lista estafetas para gestão admin (Limite 3).
  */
-const listarEstafetas = async (req, res) => {
+adminController.listarEstafetas = async function (req, res) {
     try {
         const pagina = parseInt(req.query.pagina) || 1;
         const limite = 3;
@@ -162,15 +164,4 @@ const listarEstafetas = async (req, res) => {
     }
 };
 
-module.exports = {
-    exibirDashboard,
-    listarPendentes,
-    aprovarSupermercado,
-    rejeitarSupermercado,
-    listarUtilizadores,
-    listarEstafetas,
-    editarUser,
-    guardarUser,
-    listarSupermercados,
-    bloquearSupermercado
-};
+module.exports = adminController;

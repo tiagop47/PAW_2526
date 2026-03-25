@@ -1,9 +1,11 @@
 const supermarketService = require('../services/supermarketService');
 
+var supermarketController = {};
+
 /**
  * Exibe a Dashboard do Supermercado.
  */
-const exibirDashboard = async (req, res) => {
+supermarketController.exibirDashboard = async function (req, res) {
     let dashboardData = {
         totalProdutos: 0,
         totalEncomendas: 0,
@@ -29,7 +31,7 @@ const exibirDashboard = async (req, res) => {
 /**
  * Exibe a página de gestão de produtos.
  */
-const exibirProdutos = async (req, res) => {
+supermarketController.exibirProdutos = async function (req, res) {
     try {
         const produtos = await supermarketService.getProductByUser(req.user.id);
         res.render('supermercado/produtos', {
@@ -44,14 +46,14 @@ const exibirProdutos = async (req, res) => {
 /**
  * Exibe o formulário para criar um novo produto.
  */
-const exibirFormularioNovo = (req, res) => {
+supermarketController.exibirFormularioNovo = function (req, res) {
     res.render('supermercado/novoProduto', { title: 'Novo Produto' });
 };
 
 /**
  * Exibe os detalhes de um produto.
  */
-const exibirDetalhes = async (req, res) => {
+supermarketController.exibirDetalhes = async function (req, res) {
     try {
         const produto = await supermarketService.getProductByIdForUser(req.user.id, req.params.id);
         if (!produto) return res.status(404).send('Produto não encontrado');
@@ -68,7 +70,7 @@ const exibirDetalhes = async (req, res) => {
 /**
  * Exibe o formulário para editar um produto.
  */
-const exibirFormularioEditar = async (req, res) => {
+supermarketController.exibirFormularioEditar = async function (req, res) {
     try {
         const produto = await supermarketService.getProductByIdForUser(req.user.id, req.params.id);
         if (!produto) {
@@ -87,7 +89,7 @@ const exibirFormularioEditar = async (req, res) => {
 /**
  * Processa a criação de um novo produto (com imagem).
  */
-const criarProduto = async (req, res) => {
+supermarketController.criarProduto = async function (req, res) {
     try {
         const imagem = req.file ? `/images/produtos/${req.file.filename}` : '';
         await supermarketService.createProduct(req.user.id, { ...req.body, imagem });
@@ -102,7 +104,7 @@ const criarProduto = async (req, res) => {
 /**
  * Processa a atualização de um produto existente (com imagem).
  */
-const atualizarProduto = async (req, res) => {
+supermarketController.atualizarProduto = async function (req, res) {
     try {
         const dados = { ...req.body };
         if (req.file) {
@@ -124,7 +126,7 @@ const atualizarProduto = async (req, res) => {
 /**
  * Elimina um produto.
  */
-const eliminarProduto = async (req, res) => {
+supermarketController.eliminarProduto = async function (req, res) {
     try {
         const produtoEliminado = await supermarketService.deleteProductByIdForUser(req.user.id, req.params.id);
         if (!produtoEliminado) {
@@ -141,7 +143,7 @@ const eliminarProduto = async (req, res) => {
 /**
  * API — Pesquisar produtos (devolve JSON).
  */
-const pesquisarProdutos = async (req, res) => {
+supermarketController.pesquisarProdutos = async function (req, res) {
     try {
         const { q, categoria } = req.query;
         const produtos = await supermarketService.searchProducts(req.user.id, {
@@ -157,7 +159,7 @@ const pesquisarProdutos = async (req, res) => {
 /**
  * Exibe o formulário de edição dos dados do supermercado.
  */
-const exibirEditarSupermercado = async (req, res) => {
+supermarketController.exibirEditarSupermercado = async function (req, res) {
     try {
         const supermercado = await supermarketService.getSupermarketByUserId(req.user.id);
         res.render('supermercado/editarSupermercado', {
@@ -172,7 +174,7 @@ const exibirEditarSupermercado = async (req, res) => {
 /**
  * Guarda as alterações aos dados do supermercado.
  */
-const atualizarSupermercado = async (req, res) => {
+supermarketController.atualizarSupermercado = async function (req, res) {
     try {
         const { nome, descricao, localizacao, horarioFuncionamento, metodosEntrega, custoEntrega } = req.body;
 
@@ -196,7 +198,7 @@ const atualizarSupermercado = async (req, res) => {
 /**
  * Exibe o perfil do utilizador.
  */
-const exibirPerfil = async (req, res) => {
+supermarketController.exibirPerfil = async function (req, res) {
     try {
         const utilizador = await supermarketService.getUserByIdSemPassword(req.user.id);
         const supermercado = await supermarketService.getSupermarketByUserId(req.user.id);
@@ -214,7 +216,7 @@ const exibirPerfil = async (req, res) => {
 /**
  * Lista todas as encomendas do supermercado.
  */
-const listarEncomendas = async (req, res) => {
+supermarketController.listarEncomendas = async function (req, res) {
     try {
         const encomendas = await supermarketService.getOrdersByUserId(req.user.id);
 
@@ -230,7 +232,7 @@ const listarEncomendas = async (req, res) => {
 /**
  * Atualiza o estado de uma encomenda.
  */
-const atualizarEstadoEncomenda = async (req, res) => {
+supermarketController.atualizarEstadoEncomenda = async function (req, res) {
     try {
         const { estado } = req.body;
         const encomendaAtualizada = await supermarketService.updateOrderStatusByIdForUser(
@@ -252,7 +254,7 @@ const atualizarEstadoEncomenda = async (req, res) => {
 /**
  * Exibe o formulário de venda em caixa.
  */
-const exibirVendaCaixa = async (req, res) => {
+supermarketController.exibirVendaCaixa = async function (req, res) {
     try {
         const produtos = await supermarketService.getAvailableProductsForSaleByUserId(req.user.id);
 
@@ -268,7 +270,7 @@ const exibirVendaCaixa = async (req, res) => {
 /**
  * Processa uma venda em caixa.
  */
-const registarVenda = async (req, res) => {
+supermarketController.registarVenda = async function (req, res) {
     try {
         const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, itens } = req.body;
         const listaItens = JSON.parse(itens);
@@ -284,21 +286,4 @@ const registarVenda = async (req, res) => {
     }
 };
 
-module.exports = {
-    exibirDashboard,
-    exibirProdutos,
-    exibirFormularioNovo,
-    exibirDetalhes,
-    exibirFormularioEditar,
-    criarProduto,
-    atualizarProduto,
-    eliminarProduto,
-    pesquisarProdutos,
-    exibirEditarSupermercado,
-    atualizarSupermercado,
-    exibirPerfil,
-    listarEncomendas,
-    atualizarEstadoEncomenda,
-    exibirVendaCaixa,
-    registarVenda
-};
+module.exports = supermarketController;

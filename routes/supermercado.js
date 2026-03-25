@@ -4,7 +4,6 @@ const supermarketController = require('../Controllers/supermercado');
 const { verificarAutenticacao, verificarRole, verificarAprovacaoSupermercado } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 
-// Middleware de proteção global para este ficheiro
 router.use(verificarAutenticacao, verificarRole(['supermercados']), verificarAprovacaoSupermercado);
 
 // Dashboard

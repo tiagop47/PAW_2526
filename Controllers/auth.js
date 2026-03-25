@@ -1,18 +1,20 @@
 const authService = require('../services/authService');
 const { getDashboardUrl } = require('../middlewares/authMiddleware');
 
-const exibirLogin = (req, res) => {
+var authController = {};
+
+authController.exibirLogin = function (req, res) {
     res.render("loginRegisto/login", { errorMessage: null });
 };
 
-const exibirRegisto = (req, res) => {
+authController.exibirRegisto = function (req, res) {
     res.render("loginRegisto/registar", {
         errorMessage: null,
         siteKey: process.env.CAPTCHA_API_KEY
     });
 };
 
-const registar = async (req, res) => {
+authController.registar = async function (req, res) {
     const siteKey = process.env.CAPTCHA_API_KEY;
 
     try {
@@ -29,7 +31,7 @@ const registar = async (req, res) => {
     }
 };
 
-const login = async (req, res) => {
+authController.login = async function (req, res) {
     try {
         const { email, password } = req.body;
         const { token, role } = await authService.autenticarUtilizador(email, password);
@@ -46,21 +48,14 @@ const login = async (req, res) => {
     }
 };
 
-const exibirRecuperarPassword = (req, res) => {
+authController.exibirRecuperarPassword = (req, res) => {
     res.render("loginRegisto/recuperarPassword");
 };
 
-const logout = (req, res) => {
+authController.logout = function (req, res) {
     res.clearCookie('token');
     res.redirect('/auth/login');
 };
 
 
-module.exports = {
-    exibirLogin,
-    exibirRegisto,
-    registar,
-    login,
-    exibirRecuperarPassword,
-    logout
-};
+module.exports = authController;

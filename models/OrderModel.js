@@ -4,7 +4,8 @@ const OrderItemSchema = new mongoose.Schema({
     produtoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
     quantidade: { type: Number, required: true, min: 1 },
     precoUnitario: { type: Number, required: true }
-}, { _id: false });
+},
+    { _id: false });
 
 const OrderSchema = new mongoose.Schema({
     supermercadoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Supermarket', required: true },
