@@ -10,7 +10,7 @@
     <div id="<%= locals.mapaId || 'mapa-geral' %>" style="height: <%= locals.mapaAltura || '300px' %>;"></div>
     <% if (locals.mapaFooter) { %>
         <div class="card-footer py-2 text-center">
-            <%- mapaFooter %>
+            <%- locals.mapaFooter %>
         </div>
     <% } %>
 </div>

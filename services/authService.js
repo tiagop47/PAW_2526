@@ -60,13 +60,10 @@ authService.registarUtilizador = async function(userData) {
             coordinates: [parseFloat(longitude), parseFloat(latitude)] 
         };
 
-        // Opcional: Obter um nome legível para a localização via coordenadas (Reverse Geocoding)
+        // Obter um nome legível para a localização via coordenadas (Reverse Geocoding)
         let nomeLocalizacao = "Definido por Coordenadas";
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-            const data = await res.json();
-            if (data.display_name) nomeLocalizacao = data.display_name;
-        } catch (e) { /* fallback */ }
+        const moradaReversa = await geoService.reverseGeocode(latitude, longitude);
+        if (moradaReversa) nomeLocalizacao = moradaReversa;
 
         const metodos = Array.isArray(metodosEntrega) ? metodosEntrega : (metodosEntrega ? [metodosEntrega] : ['levantamento em loja']);
 

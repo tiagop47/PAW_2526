@@ -27,7 +27,7 @@ geoService.getCoordinatesFromAddress = async function(address) {
             const poi = response.data[0];
             const { Latitude, Longitude } = poi.AddressInfo;
 
-            console.log(`OpenChargeMap encontrou localização para: ${address} [${Latitude}, ${Longitude}]`);
+            console.log(`OpenChargeMap localização para: ${address} [${Latitude}, ${Longitude}]`);
 
             return {
                 type: 'Point',
@@ -35,11 +35,29 @@ geoService.getCoordinatesFromAddress = async function(address) {
             };
         }
 
-        console.warn(`OCM não encontrou POI para: "${address}".`);
+        console.warn(`OpenChargeMap não encontrou: "${address}".`);
         return null;
 
     } catch (error) {
         console.error('Erro ao contactar a API OpenChargeMap:', error.message);
+        return null;
+    }
+};
+
+/**
+ * Geocodificação Inversa (Coordenadas -> Morada)
+ * Centralizado aqui para evitar chamadas diretas à API externa nos outros serviços.
+ */
+geoService.reverseGeocode = async function(latitude, longitude) {
+    if (!latitude || !longitude) return null;
+
+    try {
+        // Por agora mantém Nominatim, mas centralizado para fácil substituição futura
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        const data = await res.json();
+        return data.display_name || null;
+    } catch (error) {
+        console.error('Erro no Reverse Geocoding:', error.message);
         return null;
     }
 };

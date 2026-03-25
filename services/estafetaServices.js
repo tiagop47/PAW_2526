@@ -45,10 +45,6 @@ estafetaService.obterEntregasDisponiveis = async function () {
  * relativa à posição atual do estafeta.
  */
 estafetaService.obterEntregasPorLocalizacao = async function (lat, lng) {
-    // 1. Encontrar todos os supermercados que abrangem esta coordenada
-    // Como o raio varia por supermercado, fazemos uma agregação ou filtramos em memória se a escala for pequena.
-    // Para maior eficiência, usamos $geoNear na agregação de Supermarket.
-    
     const supermercadosNoRaio = await Supermarket.aggregate([
         {
             $geoNear: {
@@ -75,7 +71,6 @@ estafetaService.obterEntregasPorLocalizacao = async function (lat, lng) {
 
     const idsSupermercados = supermercadosNoRaio.map(s => s._id);
 
-    // 2. Procurar encomendas desses supermercados
     return Order.find({
         supermercadoId: { $in: idsSupermercados },
         estafetaId: null,

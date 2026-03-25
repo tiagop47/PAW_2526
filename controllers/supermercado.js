@@ -14,7 +14,7 @@ supermarketController.exibirDashboard = async function (req, res) {
     };
 
     try {
-        dashboardData = await supermarketService.getDashboardData(req.user.id);
+        dashboardData = await supermarketService.obterDadosDashboard(req.user.id);
     } catch (err) {
         console.error("Erro ao carregar dashboard:", err);
     }
@@ -33,7 +33,7 @@ supermarketController.exibirDashboard = async function (req, res) {
  */
 supermarketController.exibirProdutos = async function (req, res) {
     try {
-        const produtos = await supermarketService.getProductByUser(req.user.id);
+        const produtos = await supermarketService.obterProdutosPorUtilizador(req.user.id);
         res.render('supermercado/produtos', {
             title: 'Gerir Produtos',
             produtos
@@ -78,7 +78,7 @@ supermarketController.exibirFormularioEditar = async function (req, res) {
 supermarketController.criarProduto = async function (req, res) {
     try {
         const imagem = req.file ? `/images/produtos/${req.file.filename}` : '';
-        await supermarketService.createProduct(req.user.id, { ...req.body, imagem });
+        await supermarketService.criarProduto(req.user.id, { ...req.body, imagem });
 
         res.redirect('/supermercado/produtos');
     } catch (err) {
@@ -98,7 +98,7 @@ supermarketController.atualizarProduto = async function (req, res) {
             dados.imagem = `/images/produtos/${req.file.filename}`;
         }
 
-        await supermarketService.updateProductByIdForUser(req.user.id, req.produto._id, dados);
+        await supermarketService.atualizarProdutoPorIdParaUtilizador(req.user.id, req.produto._id, dados);
         res.redirect('/supermercado/produtos');
     } catch (err) {
         console.error(err);
@@ -112,7 +112,7 @@ supermarketController.atualizarProduto = async function (req, res) {
  */
 supermarketController.eliminarProduto = async function (req, res) {
     try {
-        await supermarketService.deleteProductByIdForUser(req.user.id, req.produto._id);
+        await supermarketService.eliminarProdutoPorIdParaUtilizador(req.user.id, req.produto._id);
         res.redirect('/supermercado/produtos');
     } catch (err) {
         console.error(err);
@@ -126,7 +126,7 @@ supermarketController.eliminarProduto = async function (req, res) {
 supermarketController.pesquisarProdutos = async function (req, res) {
     try {
         const { q, categoria } = req.query;
-        const produtos = await supermarketService.searchProducts(req.user.id, {
+        const produtos = await supermarketService.pesquisarProdutos(req.user.id, {
             q,
             categoria
         });
@@ -141,7 +141,7 @@ supermarketController.pesquisarProdutos = async function (req, res) {
  */
 supermarketController.exibirEditarSupermercado = async function (req, res) {
     try {
-        const supermercado = await supermarketService.getSupermarketByUserId(req.user.id);
+        const supermercado = await supermarketService.obterSupermercadoPorUtilizadorId(req.user.id);
         res.render('supermercado/editarSupermercado', {
             title: 'Editar Supermercado',
             supermercado
@@ -158,11 +158,11 @@ supermarketController.atualizarSupermercado = async function (req, res) {
     try {
         const { nome, descricao, latitude, longitude, horarioFuncionamento, metodosEntrega, custoEntrega, raioAtuacao } = req.body;
 
-        await supermarketService.updateSupermarketByUserId(req.user.id, {
-            nome, 
-            descricao, 
-            latitude, 
-            longitude, 
+        await supermarketService.atualizarSupermercadoPorUtilizadorId(req.user.id, {
+            nome,
+            descricao,
+            latitude,
+            longitude,
             horarioFuncionamento,
             metodosEntrega,
             custoEntrega: custoEntrega || 0,
@@ -182,7 +182,7 @@ supermarketController.atualizarSupermercado = async function (req, res) {
 supermarketController.exibirPerfil = async function (req, res) {
     try {
         const utilizador = await supermarketService.getUserByIdSemPassword(req.user.id);
-        const supermercado = await supermarketService.getSupermarketByUserId(req.user.id);
+        const supermercado = await supermarketService.obterSupermercadoPorUtilizadorId(req.user.id);
 
         res.render('supermercado/perfil', {
             title: 'Meu Perfil',
@@ -199,7 +199,7 @@ supermarketController.exibirPerfil = async function (req, res) {
  */
 supermarketController.listarEncomendas = async function (req, res) {
     try {
-        const encomendas = await supermarketService.getOrdersByUserId(req.user.id);
+        const encomendas = await supermarketService.obterEncomendasPorUtilizadorId(req.user.id);
 
         res.render('supermercado/encomendas', {
             title: 'Encomendas',
@@ -217,7 +217,7 @@ supermarketController.listarEncomendas = async function (req, res) {
 supermarketController.atualizarEstadoEncomenda = async function (req, res) {
     try {
         const { estado } = req.body;
-        await supermarketService.updateOrderStatusByIdForUser(
+        await supermarketService.atualizarEstadoEncomendaPorIdParaUtilizador(
             req.user.id,
             req.encomenda._id,
             estado
@@ -234,7 +234,7 @@ supermarketController.atualizarEstadoEncomenda = async function (req, res) {
  */
 supermarketController.exibirVendaCaixa = async function (req, res) {
     try {
-        const produtos = await supermarketService.getAvailableProductsForSaleByUserId(req.user.id);
+        const produtos = await supermarketService.obterProdutosDisponiveisParaVendaPorUtilizadorId(req.user.id);
 
         res.render('supermercado/vendaCaixa', {
             title: 'Registar Venda',
@@ -253,7 +253,7 @@ supermarketController.registarVenda = async function (req, res) {
         const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, itens } = req.body;
         const listaItens = JSON.parse(itens);
 
-        await supermarketService.registerSale(req.user.id, {
+        await supermarketService.registarVenda(req.user.id, {
             emailCliente, nomeCliente, telefoneCliente, moradaCliente, listaItens
         });
 

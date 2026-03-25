@@ -44,8 +44,10 @@ router.post('/vendas', supermarketController.registarVenda);
  */
 router.param('productId', async (req, res, next, id) => {
     try {
-        const produto = await supermarketService.getProductByIdForUser(req.user.id, id);
-        if (!produto) return res.status(404).send('Produto não encontrado');
+        const produto = await supermarketService.obterProdutoPorIdParaUtilizador(req.user.id, id);
+        if (!produto) {
+            return res.status(404).send('Produto não encontrado');
+        }
         req.produto = produto;
         next();
     } catch (err) {
@@ -58,10 +60,10 @@ router.param('productId', async (req, res, next, id) => {
  */
 router.param('orderId', async (req, res, next, id) => {
     try {
-        const encomendas = await supermarketService.getOrdersByUserId(req.user.id);
-        const encomenda = encomendas.find(o => o._id.toString() === id);
-
-        if (!encomenda) return res.status(404).send('Encomenda não encontrada');
+        const encomenda = await supermarketService.obterEncomendaPorIdParaUtilizador(req.user.id, id);
+        if (!encomenda) {
+            return res.status(404).send('Encomenda não encontrada');
+        }
         req.encomenda = encomenda;
         next();
     } catch (err) {

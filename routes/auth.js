@@ -11,7 +11,6 @@ router.get('/registar', authMiddleware.redirecionarLogged, authController.exibir
 router.get('/recuperarPassword', authController.exibirRecuperarPassword);
 router.get('/logout', authController.logout);
 
-
 /**
  * Rotas POST (Processamento de dados)
  */

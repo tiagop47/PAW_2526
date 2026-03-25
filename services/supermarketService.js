@@ -3,6 +3,21 @@ const Supermarket = require('../models/SupermarketModel');
 const Order = require('../models/OrderModel');
 const User = require('../models/UserModel');
 const bcrypt = require('bcrypt');
+const geoService = require('./geoService');
+
+const RAIO_TERRA_KM = 6371;
+const paraRadianos = (value) => value * (Math.PI / 180);
+const distanciaKM = ([lon1, lat1], [lon2, lat2]) => {
+    const dLat = paraRadianos(lat2 - lat1);
+    const dLon = paraRadianos(lon2 - lon1);
+    const lat1Rad = paraRadianos(lat1);
+    const lat2Rad = paraRadianos(lat2);
+
+    const a = Math.sin(dLat / 2) ** 2
+        + Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.sin(dLon / 2) ** 2;
+
+    return 2 * RAIO_TERRA_KM * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
 
 const supermarketService = {};
 
@@ -14,7 +29,7 @@ supermarketService.getSupermercado = async function (userId) {
     return supermercado;
 };
 
-supermarketService.getDashboardData = async function (userId) {
+supermarketService.obterDadosDashboard = async function (userId) {
     const supermercado = await this.getSupermercado(userId);
 
     const [totalProdutos, totalEncomendas, encomendas, vendasStats] = await Promise.all([
@@ -40,24 +55,25 @@ supermarketService.getDashboardData = async function (userId) {
     };
 };
 
-supermarketService.getProductByUser = async function (userId) {
+supermarketService.obterProdutosPorUtilizador = async function (userId) {
     const supermercado = await this.getSupermercado(userId);
     return Product.find({ supermercadoId: supermercado._id });
 };
 
-supermarketService.getProductByIdForUser = async function (userId, productId) {
+supermarketService.obterProdutoPorIdParaUtilizador = async function (userId, productId) {
     const supermercado = await this.getSupermercado(userId);
     return Product.findOne({ _id: productId, supermercadoId: supermercado._id });
 };
 
-supermarketService.createProduct = async function (userId, productData) {
+supermarketService.criarProduto = async function (userId, productData) {
     const supermercado = await this.getSupermercado(userId);
     const novoProduto = Object.assign({}, productData);
+
     novoProduto.supermercadoId = supermercado._id;
     return Product.create(novoProduto);
 };
 
-supermarketService.updateProductByIdForUser = async function (userId, productId, updateData) {
+supermarketService.atualizarProdutoPorIdParaUtilizador = async function (userId, productId, updateData) {
     const supermercado = await this.getSupermercado(userId);
     return Product.findOneAndUpdate(
         { _id: productId, supermercadoId: supermercado._id },
@@ -66,7 +82,7 @@ supermarketService.updateProductByIdForUser = async function (userId, productId,
     );
 };
 
-supermarketService.deleteProductByIdForUser = async function (userId, productId) {
+supermarketService.eliminarProdutoPorIdParaUtilizador = async function (userId, productId) {
     const supermercado = await this.getSupermercado(userId);
     return Product.findOneAndDelete({
         _id: productId,
@@ -74,46 +90,41 @@ supermarketService.deleteProductByIdForUser = async function (userId, productId)
     });
 };
 
-supermarketService.searchProducts = async function (userId, { q, categoria }) {
+supermarketService.pesquisarProdutos = async function (userId, { q, categoria }) {
     const supermercado = await this.getSupermercado(userId);
     const filtro = { supermercadoId: supermercado._id };
-    if (q) filtro.nome = { $regex: q, $options: 'i' };
-    if (categoria) filtro.categoria = categoria;
+    if (q) {
+        filtro.nome = { $regex: q, $options: 'i' };
+    }
+    if (categoria) {
+        filtro.categoria = categoria;
+    }
+
     return Product.find(filtro).sort({ nome: 1 });
 };
 
-supermarketService.getSupermarketByUserId = async function (userId) {
+supermarketService.obterSupermercadoPorUtilizadorId = async function (userId) {
     return this.getSupermercado(userId);
 };
 
-const geoService = require('./geoService'); // Importar geoService
-
-// ... (dentro de supermarketService)
-
-supermarketService.updateSupermarketByUserId = async function(userId, dadosSupermercado) {
+supermarketService.atualizarSupermercadoPorUtilizadorId = async function (userId, dadosSupermercado) {
     const { latitude, longitude } = dadosSupermercado;
 
-    // Se as coordenadas foram enviadas (via clique no mapa)
     if (latitude && longitude) {
         dadosSupermercado.localizacaoGeo = {
             type: 'Point',
             coordinates: [parseFloat(longitude), parseFloat(latitude)]
         };
 
-        // Atualizar o nome legível da localização via Reverse Geocoding
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-            const data = await res.json();
-            if (data.display_name) {
-                dadosSupermercado.localizacao = data.display_name;
-            }
-        } catch (e) { /* fallback mantido */ }
+        const moradaReversa = await geoService.reverseGeocode(latitude, longitude);
+        if (moradaReversa) {
+            dadosSupermercado.localizacao = moradaReversa;
+        }
     }
 
-    // Garantir que metodosEntrega é um array
     if (dadosSupermercado.metodosEntrega) {
-        dadosSupermercado.metodosEntrega = Array.isArray(dadosSupermercado.metodosEntrega) 
-            ? dadosSupermercado.metodosEntrega 
+        dadosSupermercado.metodosEntrega = Array.isArray(dadosSupermercado.metodosEntrega)
+            ? dadosSupermercado.metodosEntrega
             : [dadosSupermercado.metodosEntrega];
     }
 
@@ -124,14 +135,21 @@ supermarketService.getUserByIdSemPassword = async function (userId) {
     return User.findById(userId).select('-password');
 };
 
-supermarketService.getOrdersByUserId = async function (userId) {
+supermarketService.obterEncomendasPorUtilizadorId = async function (userId) {
     const supermercado = await this.getSupermercado(userId);
+
     return Order.find({ supermercadoId: supermercado._id })
         .populate('clienteId', 'nome email telefone')
         .sort({ criadoEm: -1 });
 };
 
-supermarketService.updateOrderStatusByIdForUser = async function (userId, orderId, estado) {
+supermarketService.obterEncomendaPorIdParaUtilizador = async function (userId, orderId) {
+    const supermercado = await this.getSupermercado(userId);
+    return Order.findOne({ _id: orderId, supermercadoId: supermercado._id })
+        .populate('clienteId', 'nome email telefone');
+};
+
+supermarketService.atualizarEstadoEncomendaPorIdParaUtilizador = async function (userId, orderId, estado) {
     const supermercado = await this.getSupermercado(userId);
     return Order.findOneAndUpdate(
         { _id: orderId, supermercadoId: supermercado._id },
@@ -140,12 +158,12 @@ supermarketService.updateOrderStatusByIdForUser = async function (userId, orderI
     );
 };
 
-supermarketService.getAvailableProductsForSaleByUserId = async function (userId) {
+supermarketService.obterProdutosDisponiveisParaVendaPorUtilizadorId = async function (userId) {
     const supermercado = await this.getSupermercado(userId);
     return Product.find({ supermercadoId: supermercado._id, stockDisponivel: { $gt: 0 } });
 };
 
-supermarketService.registerSale = async function (userId, saleData) {
+supermarketService.registarVenda = async function (userId, saleData) {
     const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, listaItens } = saleData;
     const supermercado = await this.getSupermercado(userId);
 
@@ -195,7 +213,12 @@ supermarketService.registerSale = async function (userId, saleData) {
 
 supermarketService.getMercadosComInterseccao = async function (supermercadoId) {
     const principal = await Supermarket.findById(supermercadoId);
-    if (!principal) return [];
+    if (!principal) {
+        return [];
+    }
+    if (!principal.localizacaoGeo || !Array.isArray(principal.localizacaoGeo.coordinates)) {
+        return [];
+    }
 
     const outros = await Supermarket.find({
         _id: { $ne: supermercadoId },
@@ -203,18 +226,11 @@ supermarketService.getMercadosComInterseccao = async function (supermercadoId) {
     });
 
     return outros.filter(outro => {
-        const [lon1, lat1] = principal.localizacaoGeo.coordinates;
-        const [lon2, lat2] = outro.localizacaoGeo.coordinates;
-
-        const R = 6371;
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distancia = R * c;
+        if (!outro.localizacaoGeo || !Array.isArray(outro.localizacaoGeo.coordinates)) return false;
+        const distancia = distanciaKM(
+            principal.localizacaoGeo.coordinates,
+            outro.localizacaoGeo.coordinates
+        );
 
         return distancia < (principal.raioAtuacao + outro.raioAtuacao);
     });

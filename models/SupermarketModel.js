@@ -23,27 +23,27 @@ const SupermarketSchema = new mongoose.Schema({
             default: 'Point'
         },
         coordinates: {
-            type: [Number], // [longitude, latitude]
+            type: [Number],
             required: [true, "As coordenadas são obrigatórias"]
         }
     },
     horarioFuncionamento: String,
     metodosEntrega: { type: [String], default: ['levantamento em loja'] },
     custoEntrega: { type: Number, default: 0 },
-    raioAtuacao: { 
-        type: Number, 
+    raioAtuacao: {
+        type: Number,
         default: 5, // Raio padrão de 5km para o "círculo"
         min: [1, "O raio mínimo é 1km"],
         max: [50, "O raio máximo é 50km"]
     },
     estadoAprovacao: {
         type: String,
-        enum: ['Pendente', 'Aprovado', 'Rejeitado', 'Bloqueado'],
+        enum: ['Pendente', 'Aprovado', 'Rejeitado'],
         default: 'Pendente'
     },
     criadoEm: { type: Date, default: Date.now }
-    });
+});
 
-    SupermarketSchema.index({ localizacaoGeo: '2dsphere' });
+SupermarketSchema.index({ localizacaoGeo: '2dsphere' });
 
-    module.exports = mongoose.model('Supermarket', SupermarketSchema);
+module.exports = mongoose.model('Supermarket', SupermarketSchema);
