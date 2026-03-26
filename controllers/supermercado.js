@@ -4,6 +4,7 @@ var supermarketController = {};
 
 /**
  * Exibe a Dashboard do Supermercado.
+ * O supermercado é carregado pelo middleware req.supermercado
  */
 supermarketController.exibirDashboard = async function (req, res) {
     let dashboardData = {
@@ -14,6 +15,8 @@ supermarketController.exibirDashboard = async function (req, res) {
     };
 
     try {
+        // Agora podemos passar diretamente o objeto ou o ID se o serviço for refatorado, 
+        // mas por agora mantemos a compatibilidade com req.user.id
         dashboardData = await supermarketService.obterDadosDashboard(req.user.id);
     } catch (err) {
         console.error("Erro ao carregar dashboard:", err);
@@ -89,7 +92,6 @@ supermarketController.criarProduto = async function (req, res) {
 
 /**
  * Processa a atualização de um produto existente (com imagem).
- * O produto é carregado pelo middleware router.param('productId')
  */
 supermarketController.atualizarProduto = async function (req, res) {
     try {
@@ -108,7 +110,6 @@ supermarketController.atualizarProduto = async function (req, res) {
 
 /**
  * Elimina um produto.
- * O produto é carregado pelo middleware router.param('productId')
  */
 supermarketController.eliminarProduto = async function (req, res) {
     try {
@@ -138,17 +139,13 @@ supermarketController.pesquisarProdutos = async function (req, res) {
 
 /**
  * Exibe o formulário de edição dos dados do supermercado.
+ * Usa o req.supermercado injetado pelo middleware.
  */
-supermarketController.exibirEditarSupermercado = async function (req, res) {
-    try {
-        const supermercado = await supermarketService.obterSupermercadoPorUtilizadorId(req.user.id);
-        res.render('supermercado/editarSupermercado', {
-            title: 'Editar Supermercado',
-            supermercado
-        });
-    } catch (err) {
-        res.status(500).send('Erro ao carregar dados do supermercado.');
-    }
+supermarketController.exibirEditarSupermercado = function (req, res) {
+    res.render('supermercado/editarSupermercado', {
+        title: 'Editar Supermercado',
+        supermercado: req.supermercado
+    });
 };
 
 /**
@@ -181,13 +178,13 @@ supermarketController.atualizarSupermercado = async function (req, res) {
  */
 supermarketController.exibirPerfil = async function (req, res) {
     try {
+        // Ainda precisamos de carregar o utilizador (User) para o perfil
         const utilizador = await supermarketService.getUserByIdSemPassword(req.user.id);
-        const supermercado = await supermarketService.obterSupermercadoPorUtilizadorId(req.user.id);
 
         res.render('supermercado/perfil', {
             title: 'Meu Perfil',
             utilizador,
-            supermercado
+            supermercado: req.supermercado
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar perfil.');
@@ -212,7 +209,6 @@ supermarketController.listarEncomendas = async function (req, res) {
 
 /**
  * Atualiza o estado de uma encomenda.
- * A encomenda é verificada pelo middleware router.param('orderId')
  */
 supermarketController.atualizarEstadoEncomenda = async function (req, res) {
     try {

@@ -7,6 +7,17 @@ const supermarketService = require('../services/supermarketService');
 const upload = require('../middlewares/upload');
 
 router.use(authMiddleware.verificarAutenticacao, authMiddleware.verificarRole(['supermercados']), authMiddleware.verificarAprovacaoSupermercado);
+router.use(async (req, res, next) => {
+    try {
+        if (req.user && req.user.id) {
+            const supermercado = await supermarketService.getSupermercado(req.user.id);
+            req.supermercado = supermercado;
+        }
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
 
 // Dashboard
 router.get('/dashboard', supermarketController.exibirDashboard);
@@ -38,7 +49,6 @@ router.post('/encomendas/:orderId/estado', supermarketController.atualizarEstado
 router.get('/vendas/nova', supermarketController.exibirVendaCaixa);
 router.post('/vendas', supermarketController.registarVenda);
 
-
 /**
  * Middleware de Parâmetro: Carrega o produto se :productId estiver presente no URL.
  */
@@ -50,8 +60,7 @@ router.param('productId', async (req, res, next, id) => {
         }
         req.produto = produto;
         next();
-    } catch (err) {
-        next(err);
+    } catch (err) {        next(err);
     }
 });
 

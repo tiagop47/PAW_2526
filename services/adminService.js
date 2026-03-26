@@ -5,6 +5,25 @@ const Order = require('../models/OrderModel');
 
 const adminService = {};
 
+const normalizarRaioKm = function(valor) {
+    const numero = Number(valor);
+    if (!Number.isFinite(numero) || numero <= 0) return 5;
+
+    const emKm = numero > 100 ? numero / 1000 : numero;
+    return Math.min(Math.max(emKm, 1), 50);
+};
+
+const normalizarSupermercadoRaio = function(supermercado) {
+    const dados = supermercado && typeof supermercado.toObject === 'function'
+        ? supermercado.toObject()
+        : { ...supermercado };
+
+    return {
+        ...dados,
+        raioAtuacao: normalizarRaioKm(dados.raioAtuacao)
+    };
+};
+
 adminService.getDashboardStats = async function() {
     const [totalUsers, totalEstafetas, pendentes, ativos, totalProdutos, totalEncomendas] = await Promise.all([
         User.countDocuments(),
@@ -89,10 +108,12 @@ adminService.atualizarUserById = async function(id, dados) {
 
 adminService.getMercadosAtivos = async function(contador, limite) {
     const total = await Supermarket.countDocuments({ estadoAprovacao: 'Aprovado' });
-    const supermercados = await Supermarket.find({ estadoAprovacao: 'Aprovado' })
+    const supermercadosDb = await Supermarket.find({ estadoAprovacao: 'Aprovado' })
         .populate('userId')
         .skip(Number(contador))
         .limit(Number(limite));
+
+    const supermercados = supermercadosDb.map(normalizarSupermercadoRaio);
 
     return {
         supermercados,
@@ -102,7 +123,8 @@ adminService.getMercadosAtivos = async function(contador, limite) {
 };
 
 adminService.getTodosMercadosAtivos = async function() {
-    return Supermarket.find({ estadoAprovacao: 'Aprovado' });
+    const supermercadosDb = await Supermarket.find({ estadoAprovacao: 'Aprovado' });
+    return supermercadosDb.map(normalizarSupermercadoRaio);
 };
 
 const geoService = require('./geoService');

@@ -238,7 +238,9 @@ supermarketService.getMercadosComInterseccao = async function (supermercadoId) {
 
 supermarketService.getDescontosCruzadosNaZona = async function (supermercadoId) {
     const mercadoAtual = await Supermarket.findById(supermercadoId);
-    if (!mercadoAtual) return [];
+    if (!mercadoAtual) {
+        return [];
+    }
 
     const concorrentes = await this.getMercadosComInterseccao(supermercadoId);
     const resultadosCruzados = [];

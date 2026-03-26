@@ -1,4 +1,8 @@
+
+
 const selectFiltroEstado = document.getElementById('filtroEstadoEntrega');
+const btnMinhaPosicao = document.getElementById('btn-minha-posicao');
+const elementoMapaEstafeta = document.getElementById('mapa-estafeta');
 
 const filtrarLinhasPorEstado = function () {
     const estadoSelecionado = selectFiltroEstado.value;
@@ -14,103 +18,99 @@ const filtrarLinhasPorEstado = function () {
     });
 };
 
+const tratarAceitarEntrega = async (id, btn) => {
+
+    btn.disabled = true;
+    const textoOriginal = btn.textContent;
+    btn.textContent = 'A processar...';
+
+    try {
+        const response = await fetch(`/estafeta/api/entregas/${id}/aceitar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (data.sucesso) {
+            alert('Entrega aceite com sucesso!');
+            window.location.reload();
+        } else {
+            alert('Erro: ' + (data.erro || 'Não foi possível aceitar a entrega'));
+            btn.disabled = false;
+            btn.textContent = textoOriginal;
+        }
+    } catch (error) {
+        alert('Erro de comunicação com o servidor');
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+    }
+};
+
+const tratarConfirmarEntrega = async (id, btn) => {
+    if (!confirm('Confirmar que a entrega foi realizada com sucesso?')) return;
+
+    btn.disabled = true;
+    const textoOriginal = btn.textContent;
+    btn.textContent = 'A processar...';
+
+    try {
+        const response = await fetch(`/estafeta/api/entregas/${id}/confirmar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (data.sucesso) {
+            alert('Entrega confirmada com sucesso!');
+            window.location.reload();
+        } else {
+            alert('Erro: ' + (data.erro || 'Não foi possível confirmar a entrega'));
+            btn.disabled = false;
+            btn.textContent = textoOriginal;
+        }
+    } catch (error) {
+        alert('Erro de comunicação com o servidor');
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+    }
+};
+
+
 if (selectFiltroEstado) {
     selectFiltroEstado.addEventListener('change', filtrarLinhasPorEstado);
 }
 
-// Aceitar Entrega
-document.addEventListener('click', async function(e) {
-    if (e.target.classList.contains('btn-aceitar-entrega')) {
-        const btn = e.target;
-        const id = btn.dataset.id;
+document.addEventListener('click', async function (e) {
+    const btn = e.target;
 
-        if (!confirm('Deseja aceitar esta entrega? Terá de a concluir num tempo razoável.')) {
-            return;
-        }
+    if (btn.classList.contains('btn-aceitar-entrega')) {
+        await tratarAceitarEntrega(btn.dataset.id, btn);
+    }
 
-        btn.disabled = true;
-        btn.textContent = 'A processar...';
-
-        try {
-            const response = await fetch(`/estafeta/api/entregas/${id}/aceitar`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await response.json();
-
-            if (data.sucesso) {
-                alert('Entrega aceite com sucesso!');
-                window.location.reload();
-            } else {
-                alert('Erro: ' + (data.erro || 'Não foi possível aceitar a entrega'));
-                btn.disabled = false;
-                btn.textContent = 'Aceitar Entrega';
-            }
-        } catch (error) {
-            alert('Erro de comunicação com o servidor');
-            btn.disabled = false;
-            btn.textContent = 'Aceitar Entrega';
-        }
+    if (btn.classList.contains('btn-confirmar-entrega')) {
+        await tratarConfirmarEntrega(btn.dataset.id, btn);
     }
 });
 
-// Confirmar Entrega
-document.addEventListener('click', async function(e) {
-    if (e.target.classList.contains('btn-confirmar-entrega')) {
-        const btn = e.target;
-        const id = btn.dataset.id;
-
-        if (!confirm('Confirmar que a entrega foi realizada com sucesso?')) {
-            return;
-        }
-
-        btn.disabled = true;
-        btn.textContent = 'A processar...';
-
-        try {
-            const response = await fetch(`/estafeta/api/entregas/${id}/confirmar`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await response.json();
-
-            if (data.sucesso) {
-                alert('Entrega confirmada com sucesso!');
-                window.location.reload();
-            } else {
-                alert('Erro: ' + (data.erro || 'Não foi possível confirmar a entrega'));
-                btn.disabled = false;
-                btn.textContent = 'Confirmar Entrega';
-            }
-        } catch (error) {
-            alert('Erro de comunicação com o servidor');
-            btn.disabled = false;
-            btn.textContent = 'Confirmar Entrega';
-        }
-    }
-});
-
-/**
- * Inicialização do Mapa (Estafeta)
- */
 document.addEventListener('DOMContentLoaded', () => {
-    if (typeof AppMapa !== 'undefined' && document.getElementById('mapa-estafeta')) {
+    if (typeof AppMapa !== 'undefined' && elementoMapaEstafeta) {
         AppMapa.init('mapa-estafeta');
-        AppMapa.carregarSupermercados();
+        AppMapa.carregarSupermercados({ endpoint: '/estafeta/api/supermercados' });
+    }
 
-        const btnPosicao = document.getElementById('btn-minha-posicao');
-        if (btnPosicao) {
-            btnPosicao.addEventListener('click', () => {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(pos => {
-                        const { latitude, longitude } = pos.coords;
+    if (btnMinhaPosicao) {
+        btnMinhaPosicao.addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    const { latitude, longitude } = pos.coords;
+                    if (typeof AppMapa !== 'undefined' && AppMapa.map) {
                         AppMapa.map.setView([latitude, longitude], 13);
                         AppMapa.addEstafeta(latitude, longitude);
-                    });
-                } else {
-                    alert("O seu navegador não suporta geolocalização.");
-                }
-            });
-        }
+                    }
+                });
+            } else {
+                alert("O seu navegador não suporta geolocalização.");
+            }
+        });
     }
 });

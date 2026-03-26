@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const mapaElement = document.getElementById('mapa-supermercados-ativos');
-    if (!mapaElement) return;
+    if (!mapaElement || typeof AppMapa === 'undefined') return;
 
     // Obter dados injetados via data-attributes
     const dadosBrutos = document.getElementById('dados-supermercados-ativos');
@@ -10,30 +10,20 @@ document.addEventListener('DOMContentLoaded', function() {
     let paginaAtualTabela = parseInt(dadosBrutos.getAttribute('data-pagina-atual') || '1');
     let totalPaginasTabela = parseInt(dadosBrutos.getAttribute('data-total-paginas') || '1');
 
-    const mapa = L.map('mapa-supermercados-ativos').setView([41.15, -8.61], 11);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-    }).addTo(mapa);
-
+    // Inicializar mapa centralizado
+    const mapa = AppMapa.init('mapa-supermercados-ativos', [41.15, -8.61], 11);
     const pontos = [];
 
-    supermercadosAtivos.map((s) => {
+    supermercadosAtivos.forEach((s) => {
         if (s.localizacaoGeo && Array.isArray(s.localizacaoGeo.coordinates) && s.localizacaoGeo.coordinates.length === 2) {
             const [lon, lat] = s.localizacaoGeo.coordinates;
-            const raioRealMetros = (s.raioAtuacao || 5) * 1000;
-            const raioVisualMetros = Math.max(raioRealMetros * 0.35, 600);
-
-            L.marker([lat, lon]).addTo(mapa).bindPopup(
-                `<strong>${s.nome}</strong><br>${s.localizacao || 'Definido por Coordenadas'}<br>Raio: ${Number(s.raioAtuacao || 5).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}km`
-            );
-
-            L.circle([lat, lon], {
+            
+            // Usar lógica centralizada de adicionar área (com visual=true para o Admin)
+            AppMapa.addArea(s.nome, lat, lon, s.raioAtuacao || 5, {
                 color: '#0d6efd',
-                fillColor: '#0d6efd',
-                fillOpacity: 0.1,
-                radius: raioVisualMetros
-            }).addTo(mapa);
+                visual: true,
+                popupContent: `<strong>${s.nome}</strong><br>${s.localizacao || 'Definido por Coordenadas'}<br>Raio: ${Number(s.raioAtuacao || 5).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}km`
+            });
 
             pontos.push([lat, lon]);
         }
@@ -43,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
         mapa.fitBounds(pontos, { padding: [80, 80], maxZoom: 11 });
     }
 
+    // --- Restante Lógica de Tabela e Paginacao (Mantida) ---
     const corpoSupermercadosEl = document.getElementById('corpo-supermercados');
     const infoPaginaEl = document.getElementById('info-pagina-supermercados');
     const btnAntEl = document.getElementById('btn-ant-supermercados');

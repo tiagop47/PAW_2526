@@ -12,7 +12,6 @@
         <div class="container mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4>Entregas Disponíveis</h4>
-                <a href="/estafeta/dashboard" class="btn btn-sm btn-outline-secondary">Voltar</a>
             </div>
 
             <div class="row">
@@ -42,19 +41,18 @@
                 </div>
 
                 <div class="col-md-5">
-                    <%- include('../partials/mapaComponent', { 
-                        mapaId: 'mapa-entregas', 
-                        mapaAltura: '350px', 
-                        mapaTitulo: 'Mapa',
-                        mapaAcoes: '<button id="btn-minha-posicao" class="btn btn-sm btn-outline-primary">Minha Posição</button>',
-                        mapaFooter: '<small class="text-muted" id="status-localizacao">' + ((locals.lat && locals.lng) ? 'Filtrado por localização' : 'Mostrando todas as encomendas') + '</small>'
-                    }) %>
+                    <%- include('../partials/mapaComponent', { mapaId: 'mapa-entregas' , mapaAltura: '350px' ,
+                        mapaTitulo: 'Mapa' ,
+                        mapaAcoes: '<button id="btn-minha-posicao" class="btn btn-sm btn-outline-primary">Minha Posição</button>'
+                        , mapaFooter: '<small class="text-muted" id="status-localizacao">' + ((locals.lat && locals.lng)
+                        ? 'Filtrado por localização' : 'Mostrando todas as encomendas' ) + '</small>' }) %>
                 </div>
 
             </div>
         </div>
 
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="/javascript/mapa.js"></script>
         <script src="/javascript/estafetaMapa.js"></script>
         <script src="/javascript/estafetaAcoes.js"></script>
 </body>

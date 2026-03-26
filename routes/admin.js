@@ -31,6 +31,12 @@ router.param('userId', async (req, res, next, id) => {
             return res.status(404).send('Utilizador não encontrado');
         }
         req.targetUser = user;
+
+        if (user.role === 'supermercados') {
+            const supermercado = await Supermarket.findOne({ userId: id });
+            req.targetSupermarket = supermercado;
+        }
+
         next();
     } catch (err) {
         next(err);

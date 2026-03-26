@@ -3,6 +3,29 @@ const Order = require("../models/OrderModel");
 
 const estafetaService = {};
 
+const normalizarRaioKm = function (valor) {
+    const numero = Number(valor);
+    if (!Number.isFinite(numero) || numero <= 0) return 5;
+
+    const emKm = numero > 100 ? numero / 1000 : numero;
+    return Math.min(Math.max(emKm, 1), 50);
+};
+
+const normalizarRaioSupermercado = function (supermercado) {
+    if (!supermercado) return supermercado;
+    supermercado.raioAtuacao = normalizarRaioKm(supermercado.raioAtuacao);
+    return supermercado;
+};
+
+const normalizarRaioEntregas = function (entregas) {
+    entregas.forEach(entrega => {
+        if (entrega && entrega.supermercadoId) {
+            normalizarRaioSupermercado(entrega.supermercadoId);
+        }
+    });
+    return entregas;
+};
+
 estafetaService.obterEstatisticas = async function (estafetaId) {
     const [entregasRealizadas, entregasEmCurso, entregasDisponiveis] = await Promise.all([
         Order.countDocuments({ estafetaId, estado: 'entregue' }),
@@ -30,7 +53,7 @@ estafetaService.obterEstatisticas = async function (estafetaId) {
 };
 
 estafetaService.obterEntregasDisponiveis = async function () {
-    return Order.find({
+    const entregas = await Order.find({
         estafetaId: null,
         estado: 'confirmada',
         metodoEntrega: { $ne: 'levantamento em loja' }
@@ -38,18 +61,23 @@ estafetaService.obterEntregasDisponiveis = async function () {
         .populate('supermercadoId', 'nome localizacao localizacaoGeo custoEntrega raioAtuacao')
         .populate('clienteId', 'nome morada')
         .sort({ criadoEm: -1 });
+
+    return normalizarRaioEntregas(entregas);
 };
 
-/**
- * Filtra encomendas disponíveis que estejam dentro do raio de atuação do supermercado,
- * relativa à posição atual do estafeta.
- */
-estafetaService.obterEntregasPorLocalizacao = async function (lat, lng) {
-    const supermercadosNoRaio = await Supermarket.aggregate([
+estafetaService.obterSupermercadosCoberturaPorLocalizacao = async function (lat, lng) {
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lng);
+
+    if (!Number.isFinite(latNum) || !Number.isFinite(lngNum)) {
+        throw new Error('Coordenadas inválidas');
+    }
+
+    return Supermarket.aggregate([
         {
             $geoNear: {
-                near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
-                distanceField: "distanciaAtual",
+                near: { type: 'Point', coordinates: [lngNum, latNum] },
+                distanceField: 'distanciaAtual',
                 spherical: true,
                 query: { estadoAprovacao: 'Aprovado' }
             }
@@ -58,20 +86,57 @@ estafetaService.obterEntregasPorLocalizacao = async function (lat, lng) {
             $project: {
                 _id: 1,
                 nome: 1,
+                localizacaoGeo: 1,
+                custoEntrega: 1,
                 raioAtuacao: 1,
-                distanciaAtualKm: { $divide: ["$distanciaAtual", 1000] } // Converte metros para Km
+                distanciaAtualKm: { $divide: ['$distanciaAtual', 1000] }
             }
         },
         {
             $match: {
-                $expr: { $lte: ["$distanciaAtualKm", "$raioAtuacao"] }
+                $expr: {
+                    $lte: [
+                        '$distanciaAtualKm',
+                        {
+                            $cond: [
+                                { $gt: ['$raioAtuacao', 100] },
+                                { $divide: ['$raioAtuacao', 1000] },
+                                '$raioAtuacao'
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                nome: 1,
+                localizacaoGeo: 1,
+                custoEntrega: 1,
+                raioAtuacao: {
+                    $cond: [
+                        { $gt: ['$raioAtuacao', 100] },
+                        { $divide: ['$raioAtuacao', 1000] },
+                        '$raioAtuacao'
+                    ]
+                },
+                distanciaAtualKm: 1
             }
         }
     ]);
+};
+
+/**
+ * Filtra encomendas disponíveis que estejam dentro do raio de atuação do supermercado,
+ * relativa à posição atual do estafeta.
+ */
+estafetaService.obterEntregasPorLocalizacao = async function (lat, lng) {
+    const supermercadosNoRaio = await estafetaService.obterSupermercadosCoberturaPorLocalizacao(lat, lng);
 
     const idsSupermercados = supermercadosNoRaio.map(s => s._id);
 
-    return Order.find({
+    const entregas = await Order.find({
         supermercadoId: { $in: idsSupermercados },
         estafetaId: null,
         estado: 'confirmada',
@@ -80,6 +145,8 @@ estafetaService.obterEntregasPorLocalizacao = async function (lat, lng) {
         .populate('supermercadoId', 'nome localizacao localizacaoGeo custoEntrega raioAtuacao')
         .populate('clienteId', 'nome morada')
         .sort({ criadoEm: -1 });
+
+    return normalizarRaioEntregas(entregas);
 };
 
 estafetaService.obterMinhasEntregas = async function (estafetaId) {
@@ -136,10 +203,18 @@ estafetaService.confirmarEntrega = async function (encomendaId, estafetaId) {
 };
 
 estafetaService.obterSupermercadosAtivos = async function () {
-    return Supermarket.find({
+    const supermercados = await Supermarket.find({
         estadoAprovacao: 'Aprovado',
         localizacaoGeo: { $exists: true }
     }).select('nome localizacao localizacaoGeo raioAtuacao custoEntrega');
+
+    return supermercados.map(normalizarRaioSupermercado);
+};
+
+estafetaService.obterEncomendaPorId = async function (id) {
+    return Order.findById(id)
+        .populate('supermercadoId', 'nome localizacao localizacaoGeo custoEntrega raioAtuacao')
+        .populate('clienteId', 'nome morada');
 };
 
 module.exports = estafetaService;
