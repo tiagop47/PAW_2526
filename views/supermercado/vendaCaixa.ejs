@@ -9,82 +9,83 @@
 
     <%- include('../partials/navbar') %>
 
-    <main class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h4 fw-bold m-0">Registar Venda em Caixa</h1>
-            <a href="/supermercado/dashboard" class="btn btn-sm btn-light">Voltar</a>
-        </div>
-
-        <form id="formVendaCaixa" action="/supermercado/vendas" method="POST" class="card border-0 shadow-sm p-4">
-            <h2 class="h6 fw-bold mb-3">Dados do Cliente</h2>
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label small fw-bold">Email</label>
-                    <input type="email" name="emailCliente" class="form-control" required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label small fw-bold">Nome (Opcional)</label>
-                    <input type="text" name="nomeCliente" class="form-control">
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label small fw-bold">Telefone (Opcional)</label>
-                    <input type="text" name="telefoneCliente" class="form-control">
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label small fw-bold">Morada (Opcional)</label>
-                    <input type="text" name="moradaCliente" class="form-control">
-                </div>
+        <main class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h4 fw-bold m-0">Registar Venda em Caixa</h1>
             </div>
 
-            <h2 class="h6 fw-bold mb-3">Produtos</h2>
-            <div class="table-responsive mb-3">
-                <table class="table table-sm align-middle">
-                    <thead>
-                        <tr>
-                            <th>Produto</th>
-                            <th>Preço</th>
-                            <th>Stock</th>
-                            <th>Quantidade</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (produtos && produtos.length > 0) { %>
-                            <% produtos.forEach(function(produto) { %>
-                                <tr>
-                                    <td><%= produto.nome %></td>
-                                    <td><%= Number(produto.preco || 0).toFixed(2) %>EUR</td>
-                                    <td><%= produto.stockDisponivel %></td>
-                                    <td style="max-width: 120px;">
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="<%= produto.stockDisponivel %>"
-                                            value="0"
-                                            class="form-control form-control-sm js-quantidade"
-                                            data-produto-id="<%= produto._id %>"
-                                        >
-                                    </td>
-                                </tr>
-                            <% }) %>
-                        <% } else { %>
+            <form id="formVendaCaixa" action="/supermercado/vendas" method="POST" class="card border-0 shadow-sm p-4">
+                <h2 class="h6 fw-bold mb-3">Dados do Cliente</h2>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Email</label>
+                        <input type="email" name="emailCliente" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Nome (Opcional)</label>
+                        <input type="text" name="nomeCliente" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Telefone (Opcional)</label>
+                        <input type="text" name="telefoneCliente" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Morada (Opcional)</label>
+                        <input type="text" name="moradaCliente" class="form-control">
+                    </div>
+                </div>
+
+                <h2 class="h6 fw-bold mb-3">Produtos</h2>
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm align-middle">
+                        <thead>
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-3">Sem produtos com stock disponível.</td>
+                                <th>Produto</th>
+                                <th>Preço</th>
+                                <th>Stock</th>
+                                <th>Quantidade</th>
                             </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            <% if (produtos && produtos.length> 0) { %>
+                                <% produtos.forEach(function(produto) { %>
+                                    <tr>
+                                        <td>
+                                            <%= produto.nome %>
+                                        </td>
+                                        <td>
+                                            <%= Number(produto.preco || 0).toFixed(2) %>EUR
+                                        </td>
+                                        <td>
+                                            <%= produto.stockDisponivel %>
+                                        </td>
+                                        <td style="max-width: 120px;">
+                                            <input type="number" min="0" max="<%= produto.stockDisponivel %>" value="0"
+                                                class="form-control form-control-sm js-quantidade"
+                                                data-produto-id="<%= produto._id %>">
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted py-3">Sem produtos com
+                                                    stock disponível.</td>
+                                            </tr>
+                                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
 
-            <input type="hidden" id="itensVenda" name="itens" value="[]">
+                <input type="hidden" id="itensVenda" name="itens" value="[]">
 
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Registar Venda</button>
-                <a href="/supermercado/dashboard" class="btn btn-light">Cancelar</a>
-            </div>
-        </form>
-    </main>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Registar Venda</button>
+                    <a href="/supermercado/dashboard" class="btn btn-light">Cancelar</a>
+                </div>
+            </form>
+        </main>
 
-    <script src="/javascript/supermercadoAcoes.js"></script>
+        <script src="/javascript/supermercadoAcoes.js"></script>
 
 </body>
 
