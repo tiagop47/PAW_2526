@@ -15,7 +15,7 @@ const OrderSchema = new mongoose.Schema({
     valorTotal: { type: Number, required: true },
     estado: {
         type: String,
-        enum: ['pendente', 'confirmada', 'em entrega', 'cancelada'],
+        enum: ['pendente', 'confirmada', 'em entrega', 'entregue', 'cancelada'],
         default: 'pendente'
     },
     metodoEntrega: {
