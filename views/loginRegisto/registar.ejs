@@ -78,6 +78,7 @@
                     </div>
                 </div>
 
+                <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
                 <button type="submit" class="btn btn-primary w-100 py-2 fw-bold mt-4">Criar Conta</button>
             </form>
 
@@ -88,6 +89,9 @@
     </main>
 
     <!-- Scripts do Mapa e Validações -->
+    <script src="https://www.google.com/recaptcha/api.js?render=<%= siteKey %>"></script>
+    <script src="/javascript/recaptcha.js"></script>
+    <script src="/javascript/validacoes.js"></script>
     <script src="/javascript/mapa.js"></script>
     <script src="/javascript/registoAcoes.js"></script>
 </body>

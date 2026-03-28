@@ -10,17 +10,24 @@ authController.exibirLogin = function (req, res) {
 authController.exibirRegisto = function (req, res) {
     res.render("loginRegisto/registar", {
         errorMessage: null,
+        siteKey: process.env.CAPTCHA_API_KEY, // Enviar chave pública
         dados: {}
     });
 };
 
 authController.registar = async function (req, res) {
     try {
+        // 1. Verificar o reCAPTCHA primeiro
+        await authService.verificarCaptcha(req.body["g-recaptcha-response"]);
+        
+        // 2. Registar o utilizador
         await authService.registarUtilizador(req.body);
+        
         res.redirect("/auth/login");
     } catch (err) {
         res.render("loginRegisto/registar", {
             errorMessage: err.message,
+            siteKey: process.env.CAPTCHA_API_KEY,
             dados: req.body
         });
     }

@@ -1,6 +1,3 @@
-/**
- * Validações de formulário genéricas e específicas para o projeto.
- */
 function validarEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
@@ -10,14 +7,10 @@ function exibirErro(idCampo, mensagem) {
     const campo = document.getElementById(idCampo);
     if (!campo) return;
 
-    // Remover erro antigo se houver
     const erroAntigo = campo.parentElement.querySelector('.invalid-feedback');
     if (erroAntigo) erroAntigo.remove();
 
-    // Adicionar classe de erro do Bootstrap
     campo.classList.add('is-invalid');
-
-    // Criar a div de mensagem
     const divErro = document.createElement('div');
     divErro.className = 'invalid-feedback';
     divErro.innerText = mensagem;
@@ -33,7 +26,54 @@ function limparErro(idCampo) {
     }
 }
 
-// Escutar eventos de input para limpar erros enquanto o user escreve
+document.addEventListener('DOMContentLoaded', function () {
+    const formLogin = document.querySelector('form[action="/auth/login"]');
+    const formRegistar = document.querySelector('form[action="/auth/registar"]');
+
+    if (formLogin) {
+        formLogin.onsubmit = function (e) {
+            const email = document.getElementById('emailInput');
+            const pass = document.getElementById('password');
+            let temErro = false;
+
+            if (email && !validarEmail(email.value)) {
+                exibirErro('emailInput', 'Email inválido.');
+                temErro = true;
+            }
+            if (pass && pass.value.length < 1) {
+                exibirErro('password', 'Password obrigatória.');
+                temErro = true;
+            }
+
+            if (temErro) e.preventDefault();
+        };
+    }
+
+    if (formRegistar) {
+        formRegistar.onsubmit = function (e) {
+            const nome = document.getElementById('nome');
+            const email = document.getElementById('email');
+            const pass = document.getElementById('password');
+            let temErro = false;
+
+            if (nome && nome.value.length < 3) {
+                exibirErro('nome', 'Nome demasiado curto.');
+                temErro = true;
+            }
+            if (email && !validarEmail(email.value)) {
+                exibirErro('email', 'Email inválido.');
+                temErro = true;
+            }
+            if (pass && pass.value.length < 6) {
+                exibirErro('password', 'Mínimo 6 caracteres.');
+                temErro = true;
+            }
+
+            if (temErro) e.preventDefault();
+        };
+    }
+});
+
 document.addEventListener("input", function (e) {
     if (e.target.classList.contains('is-invalid')) {
         limparErro(e.target.id);

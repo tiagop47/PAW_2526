@@ -6,6 +6,21 @@ const { validarRegisto, rolesPublicas } = require('../utils/userValidator');
 
 const authService = {};
 
+authService.verificarCaptcha = async function(recaptchaResponse) {
+    if (!recaptchaResponse) throw new Error("Erro de segurança: Token não encontrado.");
+
+    const secretKey = process.env.CAPTCHA_API_SECRET;
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaResponse}`;
+
+    const googleResponse = await fetch(verifyUrl, { method: "POST" });
+    const googleData = await googleResponse.json();
+
+    if (!googleData.success) {
+        throw new Error("Registo bloqueado: Falha na validação do reCAPTCHA.");
+    }
+    return true;
+};
+
 authService.registarUtilizador = async function(userData) {
     const {
         nome, email, password, telefone, morada, role,
