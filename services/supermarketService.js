@@ -115,11 +115,6 @@ supermarketService.atualizarSupermercadoPorUtilizadorId = async function (userId
             type: 'Point',
             coordinates: [parseFloat(longitude), parseFloat(latitude)]
         };
-
-        const moradaReversa = await geoService.reverseGeocode(latitude, longitude);
-        if (moradaReversa) {
-            dadosSupermercado.localizacao = moradaReversa;
-        }
     }
 
     if (dadosSupermercado.metodosEntrega) {

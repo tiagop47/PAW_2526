@@ -33,7 +33,7 @@ const tratarAceitarEntrega = async (id, btn) => {
 
         if (data.sucesso) {
             alert('Entrega aceite com sucesso!');
-            window.location.reload();
+            location.reload();
         } else {
             alert('Erro: ' + (data.erro || 'Não foi possível aceitar a entrega'));
             btn.disabled = false;
@@ -61,7 +61,7 @@ const tratarConfirmarEntrega = async (id, btn) => {
 
         if (data.sucesso) {
             alert('Entrega confirmada com sucesso!');
-            window.location.reload();
+            location.reload();
         } else {
             alert('Erro: ' + (data.erro || 'Não foi possível confirmar a entrega'));
             btn.disabled = false;

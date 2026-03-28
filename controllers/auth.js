@@ -10,22 +10,17 @@ authController.exibirLogin = function (req, res) {
 authController.exibirRegisto = function (req, res) {
     res.render("loginRegisto/registar", {
         errorMessage: null,
-        siteKey: process.env.CAPTCHA_API_KEY
+        dados: {}
     });
 };
 
 authController.registar = async function (req, res) {
-    const siteKey = process.env.CAPTCHA_API_KEY;
-
     try {
-        await authService.verificarCaptcha(req.body["g-recaptcha-response"]);
         await authService.registarUtilizador(req.body);
-
         res.redirect("/auth/login");
     } catch (err) {
         res.render("loginRegisto/registar", {
             errorMessage: err.message,
-            siteKey,
             dados: req.body
         });
     }
@@ -56,6 +51,5 @@ authController.logout = function (req, res) {
     res.clearCookie('token');
     res.redirect('/auth/login');
 };
-
 
 module.exports = authController;
