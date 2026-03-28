@@ -3,7 +3,6 @@ const Supermarket = require('../models/SupermarketModel');
 const Order = require('../models/OrderModel');
 const User = require('../models/UserModel');
 const bcrypt = require('bcrypt');
-const geoService = require('./geoService');
 
 const RAIO_TERRA_KM = 6371;
 const paraRadianos = (value) => value * (Math.PI / 180);

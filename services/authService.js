@@ -3,7 +3,6 @@ const Supermarket = require('../models/SupermarketModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { validarRegisto, rolesPublicas } = require('../utils/userValidator');
-const geoService = require('./geoService');
 
 const authService = {};
 

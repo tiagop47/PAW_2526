@@ -127,28 +127,4 @@ adminService.getTodosMercadosAtivos = async function() {
     return supermercadosDb.map(normalizarSupermercadoRaio);
 };
 
-const geoService = require('./geoService');
-
-adminService.sincronizarLocalizacoes = async function() {
-    const mercados = await Supermarket.find({ 
-        $or: [
-            { "localizacaoGeo.coordinates": [0, 0] },
-            { "localizacaoGeo": { $exists: false } }
-        ]
-    });
-
-    let atualizados = 0;
-    for (const s of mercados) {
-        if (s.localizacao && s.localizacao !== "A definir") {
-            const coordenadas = await geoService.getCoordinatesFromAddress(s.localizacao);
-            if (coordenadas) {
-                s.localizacaoGeo = coordenadas;
-                await s.save();
-                atualizados++;
-            }
-        }
-    }
-    return { total: mercados.length, atualizados };
-};
-
 module.exports = adminService;
