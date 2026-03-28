@@ -1,12 +1,12 @@
+const latInput = document.getElementById('input-lat');
+const lonInput = document.getElementById('input-lon');
+const mapaContainer = document.getElementById('mapa-edicao');
+
 /**
  * Lógica para Edição de Localização e Configurações do Supermercado
  */
 document.addEventListener('DOMContentLoaded', function () {
-    const mapaContainer = document.getElementById('mapa-edicao');
     if (!mapaContainer) return;
-
-    const latInput = document.getElementById('input-lat');
-    const lonInput = document.getElementById('input-lon');
 
     const latInicial = parseFloat(latInput.value) || 41.15;
     const lonInicial = parseFloat(lonInput.value) || -8.61;

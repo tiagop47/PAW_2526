@@ -1,7 +1,6 @@
 /**
  * Validações de formulário genéricas e específicas para o projeto.
  */
-
 function validarEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
@@ -35,7 +34,7 @@ function limparErro(idCampo) {
 }
 
 // Escutar eventos de input para limpar erros enquanto o user escreve
-document.addEventListener("input", function(e) {
+document.addEventListener("input", function (e) {
     if (e.target.classList.contains('is-invalid')) {
         limparErro(e.target.id);
     }

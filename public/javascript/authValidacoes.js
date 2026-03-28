@@ -1,13 +1,14 @@
 const formLogin = document.querySelector('form[action="/auth/login"]');
 const formRegistar = document.querySelector('form[action="/auth/registar"]');
-
-const emailLoginInput = document.getElementById('floatingInput');
+const emailLoginInput = document.getElementById('emailInput');
 const passwordLoginInput = document.getElementById('password');
 
 const nomeRegistoInput = document.getElementById('nome');
 const emailRegistoInput = document.getElementById('email');
 const passwordRegistoInput = document.getElementById('password');
 const telefoneRegistoInput = document.getElementById('telefone');
+
+
 
 const validarSubmitLogin = function (e) {
     let temErro = false;

@@ -51,7 +51,6 @@ const tratarConfirmarEntrega = async (id, btn) => {
 
     btn.disabled = true;
     const textoOriginal = btn.textContent;
-    btn.textContent = 'A processar...';
 
     try {
         const response = await fetch(`/estafeta/api/entregas/${id}/confirmar`, {

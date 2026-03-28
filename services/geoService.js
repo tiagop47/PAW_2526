@@ -7,10 +7,9 @@ const axios = require('axios');
  */
 
 const geoService = {};
-
 geoService.OCM_API_KEY = process.env.OCM_API_KEY;
 
-geoService.getCoordinatesFromAddress = async function(address) {
+geoService.getCoordinatesFromAddress = async function (address) {
     if (!address) return null;
 
     try {
@@ -48,7 +47,7 @@ geoService.getCoordinatesFromAddress = async function(address) {
  * Geocodificação Inversa (Coordenadas -> Morada)
  * Centralizado aqui para evitar chamadas diretas à API externa nos outros serviços.
  */
-geoService.reverseGeocode = async function(latitude, longitude) {
+geoService.reverseGeocode = async function (latitude, longitude) {
     if (!latitude || !longitude) return null;
 
     try {

@@ -61,7 +61,7 @@ app.use(injetarUserNasViews);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get('/', (req, res) => {
-    res.redirect('/auth/registar');
+    res.redirect('/auth/login');
 });
 
 app.use('/auth', authRouter);
