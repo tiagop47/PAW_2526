@@ -12,9 +12,6 @@ function inicializarMapa(idElemento, lat = 41.15, lon = -8.61) {
 }
 
 function adicionarMercadoNoMapa(nome, lat, lon, raioKm, cor = '#007bff') {
-    if (!meuMapa) return;
-
-    // Adicionar o Marcador 
     L.marker([lat, lon]).addTo(meuMapa).bindPopup(`<b>${nome}</b>`);
 
     L.circle([lat, lon], {

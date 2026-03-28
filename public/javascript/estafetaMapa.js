@@ -11,7 +11,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (latParam && lngParam) {
         desenharLocalizacaoEstafeta(parseFloat(latParam), parseFloat(lngParam));
-        if (meuMapa) meuMapa.setView([parseFloat(latParam), parseFloat(lngParam)], 13);
+        if (meuMapa) {
+            meuMapa.setView([parseFloat(latParam), parseFloat(lngParam)], 13);
+        }
     }
 
     btnMinhaPosicao.onclick = function () {
