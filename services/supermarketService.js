@@ -133,18 +133,14 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
 supermarketService.registarVenda = async function (supermercadoId, saleData) {
     const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, listaItens } = saleData;
 
-    // Se não houver email, usamos o email do Cliente de Teste por omissão
     const emailFinal = emailCliente || 'cliente@teste.com';
-    
     let cliente = await User.findOne({ email: emailFinal });
-    
-    // Se o cliente não existir, criamos um novo (exigência do enunciado)
+
     if (!cliente) {
-        const passwordTemp = 'Teste12345'; // Password default para novos clientes criados em caixa
+        const passwordTemp = process.env.DEFAULT_USER_PASSWORD || 'Teste12345';
         const hash = await bcrypt.hash(passwordTemp, 12);
-        
-        // Se for o cliente de teste default mas não existia na BD por algum motivo
-        const nifFinal = (emailFinal === 'cliente@teste.com') ? '999999990' : '000000000';
+        const nifFinal = '999999990';
+
 
         cliente = await User.create({
             nome: nomeCliente || (emailFinal === 'cliente@teste.com' ? 'Consumidor Final' : 'Cliente Loja'),

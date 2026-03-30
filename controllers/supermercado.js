@@ -249,10 +249,11 @@ supermarketController.registarVenda = async function (req, res) {
             emailCliente, nomeCliente, telefoneCliente, moradaCliente, listaItens
         });
 
-        res.redirect('/supermercado/encomendas');
+        res.redirect('/supermercado/encomendas?success=Venda registada com sucesso');
     } catch (err) {
         console.error(err);
-        res.status(400).send(err.message || 'Erro ao registar venda.');
+        // Em vez de enviar 400 direto, redirecionamos para o formulário ou dashboard com o erro
+        res.redirect(`/supermercado/vendas/nova?error=${encodeURIComponent(err.message || 'Erro ao registar venda')}`);
     }
 };
 
