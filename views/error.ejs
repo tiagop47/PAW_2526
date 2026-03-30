@@ -1,24 +1,30 @@
 <!DOCTYPE html>
 <html lang="pt">
+
 <head>
     <%- include('./partials/head', { title: 'Erro' }) %>
 </head>
+
 <body class="bg-light">
 
     <%- include('./partials/navbar') %>
 
-    <div class="container mt-5">
-        <div class="cartao-autenticacao text-center mx-auto">
-            <h1 class="display-1 text-danger fw-bold"><%= locals.error?.status || 500 %></h1>
-            <h2 class="h4 mb-4"><%= message %></h2>
-            <% if (locals.error && error.stack) { %>
-                <pre class="bg-light p-3 text-start small border rounded"><%= error.stack %></pre>
-            <% } %>
-            <hr>
-            <a href="/" class="btn btn-primary botao-acao mt-3">Voltar à Página Inicial</a>
+        <div class="container mt-5">
+            <div class="cartao-autenticacao text-center mx-auto">
+                <h1 class="display-1 text-danger fw-bold">
+                    <%= locals.error?.status || 500 %>
+                </h1>
+                <h2 class="h4 mb-4">
+                    <%= message %>
+                </h2>
+                <% if (locals.error && error.stack) { %>
+                    <pre class="bg-light p-3 text-start small border rounded"><%= error.stack %></pre>
+                    <% } %>
+                        <hr>
+                        <a href="/" class="btn btn-primary botao-acao mt-3">Voltar à Página Inicial</a>
+            </div>
         </div>
-    </div>
 
-    <%- include('./partials/scripts') %>
 </body>
+
 </html>

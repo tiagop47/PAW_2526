@@ -14,7 +14,8 @@
                 <div class="card p-4 border-0 shadow-sm">
                     <h2 class="h4 fw-bold mb-4 text-center">Editar Produto</h2>
 
-                    <form id="formEditar" action="/supermercado/produtos/editar/<%= produto._id %>" method="POST" enctype="multipart/form-data">
+                    <form id="formEditar" action="/supermercado/produtos/editar/<%= produto._id %>" method="POST"
+                        enctype="multipart/form-data">
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Nome do Produto</label>
                             <input type="text" name="nome" class="form-control" value="<%= produto.nome %>" required>
@@ -24,10 +25,11 @@
                             <label class="form-label fw-bold small d-block">Imagem do Produto (Opcional)</label>
                             <% if (produto.imagem) { %>
                                 <div class="mb-2">
-                                    <img src="<%= produto.imagem %>" alt="Atual" class="img-thumbnail" style="height: 100px;">
+                                    <img src="<%= produto.imagem %>" alt="Atual" class="img-thumbnail"
+                                        style="height: 100px;">
                                 </div>
-                            <% } %>
-                            <input type="file" name="imagem" class="form-control" accept="image/*">
+                                <% } %>
+                                    <input type="file" name="imagem" class="form-control" accept="image/*">
                         </div>
 
                         <div class="mb-3">
@@ -59,9 +61,10 @@
                             </div>
                             <div class="col-6">
                                 <label class="form-label fw-bold small">Stock</label>
-                                <input type="number" name="stockDisponivel" class="form-control" value="<%= produto.stockDisponivel %>"
-                                    required>
-                            </div>                        </div>
+                                <input type="number" name="stockDisponivel" class="form-control"
+                                    value="<%= produto.stockDisponivel %>" required>
+                            </div>
+                        </div>
 
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary w-100 fw-bold">Guardar Alterações</button>
@@ -73,6 +76,7 @@
         </main>
 
         <script src="/javascript/supermercadoAcoes.js"></script>
+        <script src="/javascript/produtoCriarEditar.js"></script>
 
 </body>
 

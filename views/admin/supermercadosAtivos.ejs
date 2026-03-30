@@ -3,73 +3,87 @@
 
 <head>
     <%- include('../partials/head') %>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body class="bg-light">
     <%- include('../partials/navbar') %>
 
-    <main class="container py-4">
-        <div class="row g-4">
-            <div class="col-lg-7">
-                <div class="card border-0 shadow-sm">
-                    <table class="tabela-limpa mb-0">
-                        <thead>
-                            <tr>
-                                <th>Supermercado</th>
-                                <th>Responsável</th>
-                                <th>Localização</th>
-                                <th>Raio</th>
-                            </tr>
-                        </thead>
-                        <tbody id="corpo-supermercados">
-                            <% if (locals.supermercados && supermercados.length > 0) { %>
-                                <% supermercados.map(function(s) { %>
-                                    <tr>
-                                        <td class="fw-bold"><%= s.nome %></td>
-                                        <td><%= s.userId ? s.userId.nome : 'N/A' %></td>
-                                        <td><%= s.localizacao || 'Definido por Coordenadas' %></td>
-                                        <td><%= Number(s.raioAtuacao || 5).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) %>km</td>
-                                    </tr>
-                                <% }); %>
-                            <% } else { %>
+        <main class="container py-4">
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm">
+                        <table class="tabela-limpa mb-0">
+                            <thead>
                                 <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted">
-                                        Não existem supermercados ativos.
-                                    </td>
+                                    <th>Supermercado</th>
+                                    <th>Responsável</th>
+                                    <th>Localização</th>
+                                    <th>Raio</th>
                                 </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody id="corpo-supermercados">
+                                <% if (locals.supermercados && supermercados.length> 0) { %>
+                                    <% supermercados.map(function(s) { %>
+                                        <tr>
+                                            <td class="fw-bold">
+                                                <%= s.nome %>
+                                            </td>
+                                            <td>
+                                                <%= s.userId ? s.userId.nome : 'N/A' %>
+                                            </td>
+                                            <td>
+                                                <%= s.localizacao %>
+                                            </td>
+                                            <td>
+                                                <%= Number(s.raioAtuacao || 5).toLocaleString('pt-PT', {
+                                                    minimumFractionDigits: 0, maximumFractionDigits: 0 }) %>km
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="4" class="text-center py-5 text-muted">
+                                                        Não existem supermercados ativos.
+                                                    </td>
+                                                </tr>
+                                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-center mt-4 gap-2">
+                        <% if (paginaAtual> 1) { %>
+                            <a href="/admin/supermercados/ativos?pagina=<%= paginaAtual - 1 %>"
+                                class="btn btn-sm btn-secondary">Anterior</a>
+                            <% } else { %>
+                                <button class="btn btn-sm btn-secondary" disabled>Anterior</button>
+                                <% } %>
+                                    <span class="btn btn-sm btn-light disabled">Página <%= paginaAtual %> de <%=
+                                                totalPaginas %></span>
+                                    <% if (paginaAtual < totalPaginas) { %>
+                                        <a href="/admin/supermercados/ativos?pagina=<%= paginaAtual + 1 %>"
+                                            class="btn btn-sm btn-secondary">Próximo</a>
+                                        <% } else { %>
+                                            <button class="btn btn-sm btn-secondary" disabled>Próximo</button>
+                                            <% } %>
+                    </div>
                 </div>
 
-                <div class="d-flex justify-content-center mt-4 gap-2">
-                    <button id="btn-ant-supermercados" class="btn btn-sm btn-secondary" <%= paginaAtual <= 1 ? 'disabled' : '' %>>Anterior</button>
-                    <span id="info-pagina-supermercados" class="btn btn-sm btn-light disabled">Página <%= paginaAtual %> de <%= totalPaginas %></span>
-                    <button id="btn-prox-supermercados" class="btn btn-sm btn-secondary" <%= paginaAtual >= totalPaginas ? 'disabled' : '' %>>Próximo</button>
+                <div class="col-lg-5">
+                    <%- include('../partials/mapaComponent', { mapaId: 'mapa-supermercados-ativos' , mapaAltura: '420px'
+                        , mapaTitulo: 'Mapa de Supermercados Ativos' , mapaAcoes: '' }) %>
                 </div>
             </div>
+        </main>
 
-            <div class="col-lg-5">
-                <%- include('../partials/mapaComponent', { 
-                    mapaId: 'mapa-supermercados-ativos', 
-                    mapaAltura: '420px', 
-                    mapaTitulo: 'Mapa de Supermercados Ativos',
-                    mapaAcoes: '' 
-                }) %>
-            </div>
+        <div id="dados-supermercados-ativos" data-supermercados="<%= JSON.stringify(supermercadosMapa || []) %>"
+            data-pagina-atual="<%= paginaAtual %>" data-total-paginas="<%= totalPaginas %>" style="display: none;">
         </div>
-    </main>
 
-    <div id="dados-supermercados-ativos" 
-         data-supermercados="<%= JSON.stringify(supermercadosMapa || []) %>"
-         data-pagina-atual="<%= paginaAtual %>"
-         data-total-paginas="<%= totalPaginas %>"
-         style="display: none;"></div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="/javascript/mapa.js"></script>
-    <script src="/javascript/adminMapaAtivos.js"></script>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="/javascript/mapa.js"></script>
+        <script src="/javascript/adminMapaAtivos.js"></script>
 </body>
 
 </html>

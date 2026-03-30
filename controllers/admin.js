@@ -90,17 +90,6 @@ adminController.listarSupermercados = async function (req, res) {
         const pagina = parseInt(req.query.pagina) || 1;
         const contador = (pagina - 1) * limite;
         const dados = await adminService.getMercadosAtivos(contador, limite);
-        const pretendeJson = req.query.formato === 'json'
-            || req.xhr
-            || (req.get('accept') || '').includes('application/json');
-
-        if (pretendeJson) {
-            return res.json({
-                supermercados: dados.supermercados,
-                paginaAtual: dados.paginaAtual,
-                totalPaginas: dados.totalPaginas
-            });
-        }
 
         const supermercadosMapa = await adminService.getTodosMercadosAtivos();
 
@@ -118,15 +107,10 @@ adminController.listarSupermercados = async function (req, res) {
 
 /**
  * Exibe formulário de edição de utilizador.
+ * O utilizador é carregado pelo middleware router.param('userId')
  */
-adminController.editarUser = async function (req, res) {
-    try {
-        const user = await adminService.getUserByIdSemPassword(req.params.userId);
-        if (!user) return res.status(404).send('Utilizador não encontrado.');
-        res.render('admin/editarUtilizador', { title: 'Editar Utilizador', user });
-    } catch (err) {
-        res.status(500).send('Erro ao carregar utilizador.');
-    }
+adminController.editarUser = function (req, res) {
+    res.render('admin/editarUtilizador', { title: 'Editar Utilizador', user: req.targetUser });
 };
 
 /**
@@ -135,7 +119,7 @@ adminController.editarUser = async function (req, res) {
 adminController.guardarUser = async function (req, res) {
     try {
         const { nome, email, telefone, morada, role } = req.body;
-        await adminService.atualizarUserById(req.params.userId, { nome, email, telefone, morada, role });
+        await adminService.atualizarUserById(req.targetUser._id, { nome, email, telefone, morada, role });
         res.redirect('/admin/exibirUtilizadores');
     } catch (err) {
         res.status(500).send('Erro ao guardar alterações.');

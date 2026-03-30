@@ -32,6 +32,13 @@ const UserSchema = new mongoose.Schema({
             message: "Por favor, introduza um número de telefone válido (pelo menos 9 dígitos)"
         }
     },
+    nif: {
+        type: String,
+        required: [true, "O NIF é obrigatório"],
+        unique: true,
+        minlength: [9, "O NIF deve ter 9 dígitos"],
+        maxlength: [9, "O NIF deve ter 9 dígitos"]
+    },
     morada: {
         type: String,
         required: [true, "A morada é obrigatória"],

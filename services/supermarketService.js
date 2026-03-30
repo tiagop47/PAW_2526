@@ -2,6 +2,7 @@ const Product = require('../models/ProductModel');
 const Supermarket = require('../models/SupermarketModel');
 const Order = require('../models/OrderModel');
 const User = require('../models/UserModel');
+const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const RAIO_TERRA_KM = 6371;
@@ -20,6 +21,10 @@ const distanciaKM = ([lon1, lat1], [lon2, lat2]) => {
 
 const supermarketService = {};
 
+/**
+ * Carrega o supermercado associado a um userId.
+ * Usado pelo middleware global das rotas para injetar req.supermercado.
+ */
 supermarketService.getSupermercado = async function (userId) {
     const supermercado = await Supermarket.findOne({ userId });
     if (!supermercado) {
@@ -27,86 +32,66 @@ supermarketService.getSupermercado = async function (userId) {
     }
     return supermercado;
 };
-
-supermarketService.obterDadosDashboard = async function (userId) {
-    const supermercado = await this.getSupermercado(userId);
-
+supermarketService.obterDadosDashboard = async function (supermercadoId) {
     const [totalProdutos, totalEncomendas, encomendas, vendasStats] = await Promise.all([
-        Product.countDocuments({ supermercadoId: supermercado._id }),
-        Order.countDocuments({ supermercadoId: supermercado._id }),
-        Order.find({ supermercadoId: supermercado._id })
+        Product.countDocuments({ supermercadoId }),
+        Order.countDocuments({ supermercadoId }),
+        Order.find({ supermercadoId })
             .populate('clienteId', 'nome')
             .sort({ criadoEm: -1 })
             .limit(5),
         Order.aggregate([
-            { $match: { supermercadoId: supermercado._id } },
+            { $match: { supermercadoId: new mongoose.Types.ObjectId(supermercadoId) } },
             { $group: { _id: null, total: { $sum: "$valorTotal" } } }
         ])
     ]);
 
-    const vendasTotais = vendasStats.length > 0 ? vendasStats[0].total : 0;
-
     return {
         totalProdutos,
         totalEncomendas,
-        vendasTotais,
+        vendasTotais: vendasStats.length > 0 ? vendasStats[0].total : 0,
         encomendas
     };
 };
-
-supermarketService.obterProdutosPorUtilizador = async function (userId) {
-    const supermercado = await this.getSupermercado(userId);
-    return Product.find({ supermercadoId: supermercado._id });
+supermarketService.obterProdutos = async function (supermercadoId) {
+    return Product.find({ supermercadoId });
 };
 
-supermarketService.obterProdutoPorIdParaUtilizador = async function (userId, productId) {
-    const supermercado = await this.getSupermercado(userId);
-    return Product.findOne({ _id: productId, supermercadoId: supermercado._id });
+supermarketService.obterProdutoPorId = async function (supermercadoId, productId) {
+    return Product.findOne({ _id: productId, supermercadoId });
 };
 
-supermarketService.criarProduto = async function (userId, productData) {
-    const supermercado = await this.getSupermercado(userId);
-    const novoProduto = Object.assign({}, productData);
-
-    novoProduto.supermercadoId = supermercado._id;
-    return Product.create(novoProduto);
+supermarketService.criarProduto = async function (supermercadoId, productData) {
+    return Product.create({ ...productData, supermercadoId });
 };
 
-supermarketService.atualizarProdutoPorIdParaUtilizador = async function (userId, productId, updateData) {
-    const supermercado = await this.getSupermercado(userId);
+supermarketService.atualizarProduto = async function (supermercadoId, productId, updateData) {
     return Product.findOneAndUpdate(
-        { _id: productId, supermercadoId: supermercado._id },
+        { _id: productId, supermercadoId },
         updateData,
         { new: true }
     );
 };
 
-supermarketService.eliminarProdutoPorIdParaUtilizador = async function (userId, productId) {
-    const supermercado = await this.getSupermercado(userId);
-    return Product.findOneAndDelete({
-        _id: productId,
-        supermercadoId: supermercado._id
-    });
+supermarketService.eliminarProduto = async function (supermercadoId, productId) {
+    return Product.findOneAndDelete({ _id: productId, supermercadoId });
 };
 
-supermarketService.pesquisarProdutos = async function (userId, { q, categoria }) {
-    const supermercado = await this.getSupermercado(userId);
-    const filtro = { supermercadoId: supermercado._id };
+supermarketService.pesquisarProdutos = async function (supermercadoId, { q, categoria }) {
+    const filtro = { supermercadoId };
     if (q) {
         filtro.nome = { $regex: q, $options: 'i' };
     }
     if (categoria) {
         filtro.categoria = categoria;
     }
-
     return Product.find(filtro).sort({ nome: 1 });
 };
 
-supermarketService.obterSupermercadoPorUtilizadorId = async function (userId) {
-    return this.getSupermercado(userId);
+supermarketService.obterProdutosDisponiveis = async function (supermercadoId) {
+    return Product.find({ supermercadoId, stockDisponivel: { $gt: 0 } });
 };
-
-supermarketService.atualizarSupermercadoPorUtilizadorId = async function (userId, dadosSupermercado) {
+supermarketService.atualizarSupermercado = async function (supermercadoId, dadosSupermercado) {
     const { latitude, longitude } = dadosSupermercado;
 
     if (latitude && longitude) {
@@ -122,55 +107,52 @@ supermarketService.atualizarSupermercadoPorUtilizadorId = async function (userId
             : [dadosSupermercado.metodosEntrega];
     }
 
-    return Supermarket.findOneAndUpdate({ userId }, dadosSupermercado, { new: true });
+    return Supermarket.findByIdAndUpdate(supermercadoId, dadosSupermercado, { new: true });
 };
-
 supermarketService.getUserByIdSemPassword = async function (userId) {
     return User.findById(userId).select('-password');
 };
-
-supermarketService.obterEncomendasPorUtilizadorId = async function (userId) {
-    const supermercado = await this.getSupermercado(userId);
-
-    return Order.find({ supermercadoId: supermercado._id })
+supermarketService.obterEncomendas = async function (supermercadoId) {
+    return Order.find({ supermercadoId })
         .populate('clienteId', 'nome email telefone')
         .sort({ criadoEm: -1 });
 };
 
-supermarketService.obterEncomendaPorIdParaUtilizador = async function (userId, orderId) {
-    const supermercado = await this.getSupermercado(userId);
-    return Order.findOne({ _id: orderId, supermercadoId: supermercado._id })
+supermarketService.obterEncomendaPorId = async function (supermercadoId, orderId) {
+    return Order.findOne({ _id: orderId, supermercadoId })
         .populate('clienteId', 'nome email telefone');
 };
 
-supermarketService.atualizarEstadoEncomendaPorIdParaUtilizador = async function (userId, orderId, estado) {
-    const supermercado = await this.getSupermercado(userId);
+supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, orderId, estado) {
     return Order.findOneAndUpdate(
-        { _id: orderId, supermercadoId: supermercado._id },
+        { _id: orderId, supermercadoId },
         { estado },
         { new: true }
     );
 };
-
-supermarketService.obterProdutosDisponiveisParaVendaPorUtilizadorId = async function (userId) {
-    const supermercado = await this.getSupermercado(userId);
-    return Product.find({ supermercadoId: supermercado._id, stockDisponivel: { $gt: 0 } });
-};
-
-supermarketService.registarVenda = async function (userId, saleData) {
+supermarketService.registarVenda = async function (supermercadoId, saleData) {
     const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, listaItens } = saleData;
-    const supermercado = await this.getSupermercado(userId);
 
-    let cliente = await User.findOne({ email: emailCliente });
+    // Se não houver email, usamos o email do Cliente de Teste por omissão
+    const emailFinal = emailCliente || 'cliente@teste.com';
+    
+    let cliente = await User.findOne({ email: emailFinal });
+    
+    // Se o cliente não existir, criamos um novo (exigência do enunciado)
     if (!cliente) {
-        const passwordTemp = 'Temp1234';
+        const passwordTemp = 'Teste12345'; // Password default para novos clientes criados em caixa
         const hash = await bcrypt.hash(passwordTemp, 12);
+        
+        // Se for o cliente de teste default mas não existia na BD por algum motivo
+        const nifFinal = (emailFinal === 'cliente@teste.com') ? '999999990' : '000000000';
+
         cliente = await User.create({
-            nome: nomeCliente || 'Cliente Loja',
-            email: emailCliente,
+            nome: nomeCliente || (emailFinal === 'cliente@teste.com' ? 'Consumidor Final' : 'Cliente Loja'),
+            email: emailFinal,
             password: hash,
             telefone: telefoneCliente || '000000000',
-            morada: moradaCliente || 'Compra em loja',
+            nif: nifFinal,
+            morada: moradaCliente || 'Venda em loja',
             role: 'clientes'
         });
     }
@@ -196,7 +178,7 @@ supermarketService.registarVenda = async function (userId, saleData) {
     }
 
     return Order.create({
-        supermercadoId: supermercado._id,
+        supermercadoId,
         clienteId: cliente._id,
         produtos: produtosEncomenda,
         valorTotal,
@@ -204,7 +186,6 @@ supermarketService.registarVenda = async function (userId, saleData) {
         metodoEntrega: 'levantamento em loja'
     });
 };
-
 supermarketService.getMercadosComInterseccao = async function (supermercadoId) {
     const principal = await Supermarket.findById(supermercadoId);
     if (!principal) {

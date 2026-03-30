@@ -64,22 +64,24 @@
             </div>
 
             <!-- Navegação de Paginação -->
-            <% if (locals.totalPaginas > 1) { %>
+            <% if (locals.totalPaginas> 1) { %>
                 <div class="d-flex justify-content-center mt-4 gap-2">
-                    <% if (paginaAtual > 1) { %>
-                        <a href="/admin/supermercados/pendentes?pagina=<%= paginaAtual - 1 %>" class="btn btn-sm btn-secondary">Anterior</a>
-                    <% } %>
-                    
-                    <span class="btn btn-sm btn-light disabled">Página <%= paginaAtual %> de <%= totalPaginas %></span>
+                    <% if (paginaAtual> 1) { %>
+                        <a href="/admin/supermercados/pendentes?pagina=<%= paginaAtual - 1 %>"
+                            class="btn btn-sm btn-secondary">Anterior</a>
+                        <% } %>
 
-                    <% if (paginaAtual < totalPaginas) { %>
-                        <a href="/admin/supermercados/pendentes?pagina=<%= paginaAtual + 1 %>" class="btn btn-sm btn-secondary">Próximo</a>
-                    <% } %>
+                            <span class="btn btn-sm btn-light disabled">Página <%= paginaAtual %> de <%= totalPaginas %>
+                                        </span>
+
+                            <% if (paginaAtual < totalPaginas) { %>
+                                <a href="/admin/supermercados/pendentes?pagina=<%= paginaAtual + 1 %>"
+                                    class="btn btn-sm btn-secondary">Próximo</a>
+                                <% } %>
                 </div>
-            <% } %>
+                <% } %>
         </main>
 
-        <script src="/javascript/adminAcoes.js"></script>
 
 </body>
 

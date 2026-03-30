@@ -54,13 +54,14 @@ router.post('/vendas', supermarketController.registarVenda);
  */
 router.param('productId', async (req, res, next, id) => {
     try {
-        const produto = await supermarketService.obterProdutoPorIdParaUtilizador(req.user.id, id);
+        const produto = await supermarketService.obterProdutoPorId(req.supermercado._id, id);
         if (!produto) {
             return res.status(404).send('Produto não encontrado');
         }
         req.produto = produto;
         next();
-    } catch (err) {        next(err);
+    } catch (err) {
+        next(err);
     }
 });
 
@@ -69,7 +70,7 @@ router.param('productId', async (req, res, next, id) => {
  */
 router.param('orderId', async (req, res, next, id) => {
     try {
-        const encomenda = await supermarketService.obterEncomendaPorIdParaUtilizador(req.user.id, id);
+        const encomenda = await supermarketService.obterEncomendaPorId(req.supermercado._id, id);
         if (!encomenda) {
             return res.status(404).send('Encomenda não encontrada');
         }

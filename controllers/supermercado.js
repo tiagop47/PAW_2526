@@ -4,7 +4,7 @@ var supermarketController = {};
 
 /**
  * Exibe a Dashboard do Supermercado.
- * O supermercado é carregado pelo middleware req.supermercado
+ * O supermercado é carregado pelo middleware global (req.supermercado).
  */
 supermarketController.exibirDashboard = async function (req, res) {
     let dashboardData = {
@@ -15,9 +15,7 @@ supermarketController.exibirDashboard = async function (req, res) {
     };
 
     try {
-        // Agora podemos passar diretamente o objeto ou o ID se o serviço for refatorado, 
-        // mas por agora mantemos a compatibilidade com req.user.id
-        dashboardData = await supermarketService.obterDadosDashboard(req.user.id);
+        dashboardData = await supermarketService.obterDadosDashboard(req.supermercado._id);
     } catch (err) {
         console.error("Erro ao carregar dashboard:", err);
     }
@@ -36,7 +34,7 @@ supermarketController.exibirDashboard = async function (req, res) {
  */
 supermarketController.exibirProdutos = async function (req, res) {
     try {
-        const produtos = await supermarketService.obterProdutosPorUtilizador(req.user.id);
+        const produtos = await supermarketService.obterProdutos(req.supermercado._id);
         res.render('supermercado/produtos', {
             title: 'Gerir Produtos',
             produtos
@@ -55,9 +53,9 @@ supermarketController.exibirFormularioNovo = function (req, res) {
 
 /**
  * Exibe os detalhes de um produto.
- * O produto é carregado pelo middleware router.param('productId')
+ * O produto é carregado pelo middleware router.param('productId').
  */
-supermarketController.exibirDetalhes = async function (req, res) {
+supermarketController.exibirDetalhes = function (req, res) {
     res.render('supermercado/detalhesProduto', {
         title: 'Detalhes do Produto',
         produto: req.produto
@@ -66,9 +64,9 @@ supermarketController.exibirDetalhes = async function (req, res) {
 
 /**
  * Exibe o formulário para editar um produto.
- * O produto é carregado pelo middleware router.param('productId')
+ * O produto é carregado pelo middleware router.param('productId').
  */
-supermarketController.exibirFormularioEditar = async function (req, res) {
+supermarketController.exibirFormularioEditar = function (req, res) {
     res.render('supermercado/editarProduto', {
         title: 'Editar Produto',
         produto: req.produto
@@ -81,7 +79,7 @@ supermarketController.exibirFormularioEditar = async function (req, res) {
 supermarketController.criarProduto = async function (req, res) {
     try {
         const imagem = req.file ? `/images/produtos/${req.file.filename}` : '';
-        await supermarketService.criarProduto(req.user.id, { ...req.body, imagem });
+        await supermarketService.criarProduto(req.supermercado._id, { ...req.body, imagem });
 
         res.redirect('/supermercado/produtos');
     } catch (err) {
@@ -100,7 +98,7 @@ supermarketController.atualizarProduto = async function (req, res) {
             dados.imagem = `/images/produtos/${req.file.filename}`;
         }
 
-        await supermarketService.atualizarProdutoPorIdParaUtilizador(req.user.id, req.produto._id, dados);
+        await supermarketService.atualizarProduto(req.supermercado._id, req.produto._id, dados);
         res.redirect('/supermercado/produtos');
     } catch (err) {
         console.error(err);
@@ -113,7 +111,7 @@ supermarketController.atualizarProduto = async function (req, res) {
  */
 supermarketController.eliminarProduto = async function (req, res) {
     try {
-        await supermarketService.eliminarProdutoPorIdParaUtilizador(req.user.id, req.produto._id);
+        await supermarketService.eliminarProduto(req.supermercado._id, req.produto._id);
         res.redirect('/supermercado/produtos');
     } catch (err) {
         console.error(err);
@@ -127,10 +125,7 @@ supermarketController.eliminarProduto = async function (req, res) {
 supermarketController.pesquisarProdutos = async function (req, res) {
     try {
         const { q, categoria } = req.query;
-        const produtos = await supermarketService.pesquisarProdutos(req.user.id, {
-            q,
-            categoria
-        });
+        const produtos = await supermarketService.pesquisarProdutos(req.supermercado._id, { q, categoria });
         res.json(produtos);
     } catch (err) {
         res.status(500).json({ erro: 'Erro ao pesquisar produtos.' });
@@ -153,11 +148,12 @@ supermarketController.exibirEditarSupermercado = function (req, res) {
  */
 supermarketController.atualizarSupermercado = async function (req, res) {
     try {
-        const { nome, descricao, latitude, longitude, horarioFuncionamento, metodosEntrega, custoEntrega, raioAtuacao } = req.body;
+        const { nome, descricao, localizacao, latitude, longitude, horarioFuncionamento, metodosEntrega, custoEntrega, raioAtuacao } = req.body;
 
-        await supermarketService.atualizarSupermercadoPorUtilizadorId(req.user.id, {
+        await supermarketService.atualizarSupermercado(req.supermercado._id, {
             nome,
             descricao,
+            localizacao,
             latitude,
             longitude,
             horarioFuncionamento,
@@ -178,7 +174,6 @@ supermarketController.atualizarSupermercado = async function (req, res) {
  */
 supermarketController.exibirPerfil = async function (req, res) {
     try {
-        // Ainda precisamos de carregar o utilizador (User) para o perfil
         const utilizador = await supermarketService.getUserByIdSemPassword(req.user.id);
 
         res.render('supermercado/perfil', {
@@ -196,7 +191,7 @@ supermarketController.exibirPerfil = async function (req, res) {
  */
 supermarketController.listarEncomendas = async function (req, res) {
     try {
-        const encomendas = await supermarketService.obterEncomendasPorUtilizadorId(req.user.id);
+        const encomendas = await supermarketService.obterEncomendas(req.supermercado._id);
 
         res.render('supermercado/encomendas', {
             title: 'Encomendas',
@@ -209,12 +204,13 @@ supermarketController.listarEncomendas = async function (req, res) {
 
 /**
  * Atualiza o estado de uma encomenda.
+ * A encomenda é carregada pelo middleware router.param('orderId').
  */
 supermarketController.atualizarEstadoEncomenda = async function (req, res) {
     try {
         const { estado } = req.body;
-        await supermarketService.atualizarEstadoEncomendaPorIdParaUtilizador(
-            req.user.id,
+        await supermarketService.atualizarEstadoEncomenda(
+            req.supermercado._id,
             req.encomenda._id,
             estado
         );
@@ -230,7 +226,7 @@ supermarketController.atualizarEstadoEncomenda = async function (req, res) {
  */
 supermarketController.exibirVendaCaixa = async function (req, res) {
     try {
-        const produtos = await supermarketService.obterProdutosDisponiveisParaVendaPorUtilizadorId(req.user.id);
+        const produtos = await supermarketService.obterProdutosDisponiveis(req.supermercado._id);
 
         res.render('supermercado/vendaCaixa', {
             title: 'Registar Venda',
@@ -249,7 +245,7 @@ supermarketController.registarVenda = async function (req, res) {
         const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, itens } = req.body;
         const listaItens = JSON.parse(itens);
 
-        await supermarketService.registarVenda(req.user.id, {
+        await supermarketService.registarVenda(req.supermercado._id, {
             emailCliente, nomeCliente, telefoneCliente, moradaCliente, listaItens
         });
 

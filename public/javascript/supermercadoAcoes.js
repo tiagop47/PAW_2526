@@ -6,7 +6,6 @@ const mapaContainer = document.getElementById('mapa-edicao');
  * Lógica para Edição de Localização e Configurações do Supermercado
  */
 document.addEventListener('DOMContentLoaded', function () {
-    if (!mapaContainer) return;
 
     const latInicial = parseFloat(latInput.value) || 41.15;
     const lonInicial = parseFloat(lonInput.value) || -8.61;
