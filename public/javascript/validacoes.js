@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const formRegistar = document.querySelector('form[action="/auth/registar"]');
 
     if (formLogin) {
-        formLogin.onsubmit = function (e) {
+        formLogin.addEventListener('submit', function (e) {
             const email = document.getElementById('emailInput');
             const pass = document.getElementById('password');
             let temErro = false;
@@ -46,11 +46,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (temErro) e.preventDefault();
-        };
+        });
     }
 
     if (formRegistar) {
-        formRegistar.onsubmit = function (e) {
+        formRegistar.addEventListener('submit', function (e) {
             const nome = document.getElementById('nome');
             const email = document.getElementById('email');
             const pass = document.getElementById('password');
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (temErro) e.preventDefault();
-        };
+        });
     }
 });
 

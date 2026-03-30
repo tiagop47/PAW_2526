@@ -17,10 +17,7 @@ authController.exibirRegisto = function (req, res) {
 
 authController.registar = async function (req, res) {
     try {
-        // 1. Verificar o reCAPTCHA primeiro
         await authService.verificarCaptcha(req.body["g-recaptcha-response"]);
-        
-        // 2. Registar o utilizador
         await authService.registarUtilizador(req.body);
         
         res.redirect("/auth/login");
