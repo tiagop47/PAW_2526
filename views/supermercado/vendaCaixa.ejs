@@ -15,30 +15,53 @@
             </div>
 
             <form id="formVendaCaixa" action="/supermercado/vendas" method="POST" class="card border-0 shadow-sm p-4">
-                <h2 class="h6 fw-bold mb-3">Dados do Cliente</h2>
+                <div class="d-flex gap-2 mb-4">
+                    <button type="submit" class="btn btn-primary">Registar Venda</button>
+                    <a href="/supermercado/dashboard" class="btn btn-light">Cancelar</a>
+                </div>
+
+                <h2 class="h6 fw-bold mb-3">Dados da Encomenda</h2>
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold">Email</label>
+                        <label class="form-label small fw-bold">Email do Cliente</label>
                         <input type="email" name="emailCliente" class="form-control" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold">Nome (Opcional)</label>
+                        <label class="form-label small fw-bold">Nome do Cliente</label>
                         <input type="text" name="nomeCliente" class="form-control">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold">Telefone (Opcional)</label>
-                        <input type="text" name="telefoneCliente" class="form-control">
+                        <label class="form-label small fw-bold">Método de Entrega</label>
+                        <select name="metodoEntrega" id="metodoEntregaVenda" class="form-select" required>
+                            <option value="levantamento em loja">Levantamento em Loja</option>
+                            <option value="entrega ao domicilio">Entrega ao Domicílio (Estafeta)</option>
+                        </select>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold">Morada (Opcional)</label>
-                        <input type="text" name="moradaCliente" class="form-control">
+                        <label class="form-label small fw-bold" id="labelMorada">Morada de Destino</label>
+                        <input type="text" name="moradaCliente" id="moradaVenda" class="form-control">
+                        <small class="text-muted" id="hintMorada">Obrigatória apenas para entregas ao domicílio.</small>
                     </div>
                 </div>
 
                 <h2 class="h6 fw-bold mb-3">Produtos</h2>
                 
-                <div class="mb-3">
-                    <input type="text" id="pesquisaProdutoVenda" class="form-control" placeholder="Pesquisar por nome do produto...">
+                <div class="card border-0 bg-light mb-3 p-3">
+                    <div class="row g-2">
+                        <div class="col-md-8">
+                            <input type="text" id="pesquisaProdutoVenda" class="form-control" placeholder="Pesquisar por nome do produto...">
+                        </div>
+                        <div class="col-md-4">
+                            <select id="filtroCategoriaVenda" class="form-select">
+                                <option value="">Todas as categorias</option>
+                                <option value="Frutas">Frutas e Legumes</option>
+                                <option value="Carne">Carne e Peixe</option>
+                                <option value="Laticinios">Laticínios</option>
+                                <option value="Bebidas">Bebidas</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="table-responsive mb-3">
@@ -82,14 +105,10 @@
                 </div>
 
                 <input type="hidden" id="itensVenda" name="itens" value="[]">
-
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Registar Venda</button>
-                    <a href="/supermercado/dashboard" class="btn btn-light">Cancelar</a>
-                </div>
             </form>
         </main>
 
+        <script src="/javascript/pesquisaProdutos.js"></script>
         <script src="/javascript/vendaCaixaAcoes.js"></script>
 
 </body>

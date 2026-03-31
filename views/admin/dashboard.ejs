@@ -13,7 +13,7 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
-                    <div class="list-group">
+                    <div class="list-group mb-4">
                         <a href="/admin/supermercados/pendentes"
                             class="list-group-item list-group-item-action">Aprovações Pendentes</a>
                         <a href="/admin/exibirUtilizadores" class="list-group-item list-group-item-action">Gestão de
@@ -21,10 +21,12 @@
                         <a href="/admin/supermercados/ativos/"
                             class="list-group-item list-group-item-action">Gestão Supermercados</a>
                     </div>
+                    
+                    <%- include('../partials/mapaComponent', { mapaId: 'mapa-admin', mapaAltura: '400px', mapaTitulo: 'Supermercados Ativos' }) %>
                 </div>
 
                 <div class="col-md-8">
-                    <div class="row g-2">
+                    <div class="row g-2 mb-4">
                         <div class="col-md-4">
                             <div class="card card-body bg-white border">
                                 <small class="text-muted fw-bold text-uppercase"
@@ -83,6 +85,16 @@
                 </div>
             </div>
         </main>
+
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="/javascript/mapa.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                inicializarMapa('mapa-admin');
+                carregarMercadosDoServidor();
+            });
+        </script>
 </body>
 
 </html>

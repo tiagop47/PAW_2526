@@ -35,13 +35,18 @@ supermarketService.getSupermercado = async function (userId) {
 supermarketService.obterDadosDashboard = async function (supermercadoId) {
     const [totalProdutos, totalEncomendas, encomendas, vendasStats] = await Promise.all([
         Product.countDocuments({ supermercadoId }),
-        Order.countDocuments({ supermercadoId }),
+        Order.countDocuments({ supermercadoId, estado: { $ne: 'cancelada' } }),
         Order.find({ supermercadoId })
             .populate('clienteId', 'nome')
             .sort({ criadoEm: -1 })
             .limit(5),
         Order.aggregate([
-            { $match: { supermercadoId: new mongoose.Types.ObjectId(supermercadoId) } },
+            {
+                $match: {
+                    supermercadoId: new mongoose.Types.ObjectId(supermercadoId),
+                    estado: { $ne: 'cancelada' }
+                }
+            },
             { $group: { _id: null, total: { $sum: "$valorTotal" } } }
         ])
     ]);
@@ -124,14 +129,50 @@ supermarketService.obterEncomendaPorId = async function (supermercadoId, orderId
 };
 
 supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, orderId, estado) {
-    return Order.findOneAndUpdate(
-        { _id: orderId, supermercadoId },
-        { estado },
-        { new: true }
-    );
+    const order = await Order.findOne({ _id: orderId, supermercadoId });
+    if (!order) return null;
+
+    const estadoAnterior = order.estado;
+
+    // 1. Lógica de REDUÇÃO de Stock
+    // Se passar de 'pendente' para um estado ativo (confirmada, em entrega, entregue), reduzimos o stock
+    if (estadoAnterior === 'pendente' && (estado === 'confirmada' || estado === 'em entrega' || estado === 'entregue')) {
+        for (const item of order.produtos) {
+            const produto = await Product.findOneAndUpdate(
+                { 
+                    _id: item.produtoId, 
+                    stockDisponivel: { $gte: item.quantidade } 
+                },
+                { 
+                    $inc: { stockDisponivel: -item.quantidade } 
+                },
+                { new: true }
+            );
+
+            if (!produto) {
+                // Se um dos produtos falhar por falta de stock, lançamos erro e não mudamos o estado
+                const pInfo = await Product.findById(item.produtoId);
+                throw new Error(`Stock insuficiente para confirmar a encomenda: ${pInfo ? pInfo.nome : 'Produto desconhecido'}`);
+            }
+        }
+    }
+
+    // 2. Lógica de REPOSIÇÃO de Stock
+    // Se o novo estado for 'cancelada', só repomos se o estado anterior não fosse 'pendente' 
+    // (ou seja, se o stock já tivesse sido reduzido anteriormente)
+    if (estado === 'cancelada' && estadoAnterior !== 'cancelada' && estadoAnterior !== 'pendente') {
+        for (const item of order.produtos) {
+            await Product.findByIdAndUpdate(item.produtoId, {
+                $inc: { stockDisponivel: item.quantidade }
+            });
+        }
+    }
+
+    order.estado = estado;
+    return order.save();
 };
 supermarketService.registarVenda = async function (supermercadoId, saleData) {
-    const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, listaItens } = saleData;
+    const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, listaItens, metodoEntrega } = saleData;
 
     const emailFinal = emailCliente || 'cliente@teste.com';
     let cliente = await User.findOne({ email: emailFinal });
@@ -140,7 +181,6 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
         const passwordTemp = process.env.DEFAULT_USER_PASSWORD || 'Teste12345';
         const hash = await bcrypt.hash(passwordTemp, 12);
         const nifFinal = '999999990';
-
 
         cliente = await User.create({
             nome: nomeCliente || (emailFinal === 'cliente@teste.com' ? 'Consumidor Final' : 'Cliente Loja'),
@@ -157,9 +197,21 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
     let valorTotal = 0;
 
     for (const item of listaItens) {
-        const produto = await Product.findById(item.produtoId);
-        if (!produto || produto.stockDisponivel < item.quantidade) {
-            throw new Error(`Stock insuficiente para ${produto ? produto.nome : 'produto desconhecido'}.`);
+        // Atualização atómica: só subtrai se houver stock suficiente
+        const produto = await Product.findOneAndUpdate(
+            { 
+                _id: item.produtoId, 
+                stockDisponivel: { $gte: item.quantidade } 
+            },
+            { 
+                $inc: { stockDisponivel: -item.quantidade } 
+            },
+            { new: true }
+        );
+
+        if (!produto) {
+            const pInfo = await Product.findById(item.produtoId);
+            throw new Error(`Stock insuficiente ou produto não encontrado: ${pInfo ? pInfo.nome : 'ID ' + item.produtoId}`);
         }
 
         produtosEncomenda.push({
@@ -168,18 +220,21 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
             precoUnitario: produto.preco
         });
         valorTotal += produto.preco * item.quantidade;
-
-        produto.stockDisponivel -= item.quantidade;
-        await produto.save();
     }
+
+    // Se for para entregar, o estado deve ser 'confirmada' para aparecer para o estafeta.
+    // Se for levantamento, marcamos logo como 'entregue'.
+    const eDomicilio = metodoEntrega === 'entrega ao domicilio';
+    const estadoFinal = eDomicilio ? 'confirmada' : 'entregue';
 
     return Order.create({
         supermercadoId,
         clienteId: cliente._id,
         produtos: produtosEncomenda,
         valorTotal,
-        estado: 'entregue',
-        metodoEntrega: 'levantamento em loja'
+        estado: estadoFinal,
+        metodoEntrega: metodoEntrega || 'levantamento em loja',
+        moradaEntrega: eDomicilio ? moradaCliente : null
     });
 };
 supermarketService.getMercadosComInterseccao = async function (supermercadoId) {

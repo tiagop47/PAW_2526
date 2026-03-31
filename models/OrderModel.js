@@ -22,7 +22,14 @@ const OrderSchema = new mongoose.Schema({
     },
     metodoEntrega: {
         type: String,
+        enum: ['levantamento em loja', 'entrega ao domicilio'],
         default: 'levantamento em loja'
+    },
+    moradaEntrega: {
+        type: String,
+        required: function () {
+            return this.metodoEntrega === 'entrega ao domicilio';
+        }
     },
     criadoEm: { type: Date, default: Date.now }
 });

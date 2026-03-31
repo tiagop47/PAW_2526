@@ -16,38 +16,71 @@
 
             <div class="row">
                 <div class="col-md-7">
-                    <% entregas.forEach(entrega=> { %>
-                        <div class="card mb-2">
-                            <div class="card-body py-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>#<%= entrega._id.toString().slice(-6).toUpperCase() %></strong>
-                                        <span class="text-muted small ms-2">
-                                            <%= entrega.supermercadoId?.nome || 'N/A' %>
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <span class="text-success me-2">
-                                            <%= (entrega.supermercadoId?.custoEntrega || 0).toFixed(2) %>&euro;
-                                        </span>
-                                        <button class="btn btn-sm btn-primary btn-aceitar-entrega"
-                                            data-id="<%= entrega._id %>">Aceitar</button>
+                    <div id="lista-encomendas">
+                        <% if (entregas && entregas.length> 0) { %>
+                            <% entregas.forEach(entrega=> { %>
+                                <div class="card mb-3 shadow-sm order-card" data-id="<%= entrega._id %>">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="mb-1 fw-bold">Encomenda #<%=
+                                                        entrega._id.toString().slice(-6).toUpperCase() %>
+                                                </h6>
+                                                <p class="text-muted small mb-0">
+                                                    <%= entrega.supermercadoId?.nome %>
+                                                </p>
+                                                <a href="javascript:void(0)"
+                                                    onclick="focarNoMapa('<%= (entrega.supermercadoId && entrega.supermercadoId._id) ? entrega.supermercadoId._id : '' %>')"
+                                                    class="text-decoration-none small">
+                                                     Ver no Mapa
+                                                </a>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="h5 mb-0">
+                                                    <%= (entrega.valorTotal || 0).toFixed(2) %>€
+                                                </div>
+                                                <small class="text-muted">Taxa: <%=
+                                                        (entrega.supermercadoId?.custoEntrega || 0).toFixed(2) %>
+                                                        €</small>
+                                            </div>
+                                        </div>
+
+                                        <hr class="my-2">
+
+                                        <div class="mb-3">
+                                            <span class="text-muted small d-block">Morada de Destino:</span>
+                                            <span>
+                                                <%= entrega.moradaEntrega || (entrega.clienteId ?
+                                                    entrega.clienteId.morada : 'Morada não especificada' ) %>
+                                            </span>
+                                        </div>
+
+                                        <div class="d-grid">
+                                            <button class="btn btn-dark btn-sm btn-aceitar-entrega"
+                                                data-id="<%= entrega._id %>">
+                                                Aceitar Entrega
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <small class="text-muted">Para: <%= entrega.clienteId?.morada || 'N/A' %></small>
-                            </div>
-                        </div>
-                        <% }); %>
+                                <% }); %>
+                                    <% } else { %>
+                                        <div class="alert alert-info border-0 shadow-sm text-center py-4">
+                                            <p class="mb-0">Não existem encomendas disponíveis para entrega de momento.
+                                            </p>
+                                        </div>
+                                        <% } %>
+                    </div>
                 </div>
 
                 <div class="col-md-5">
-                    <%- include('../partials/mapaComponent', { mapaId: 'mapa-entregas' , mapaAltura: '350px' ,
-                        mapaTitulo: 'Mapa' ,
-                        mapaAcoes: '<button id="btn-minha-posicao" class="btn btn-sm btn-outline-primary">Minha Posição</button>'
-                        , mapaFooter: '<small class="text-muted" id="status-localizacao">' + ((locals.lat && locals.lng)
-                        ? 'Filtrado por localização' : 'Mostrando todas as encomendas' ) + '</small>' }) %>
+                    <%- include('../partials/mapaComponent', { mapaId: 'mapa-entregas' , mapaAltura: '500px' ,
+                        mapaTitulo: 'Visão Global de Entregas' ,
+                        mapaAcoes: '<button id="btn-minha-posicao" class="btn btn-sm btn-outline-primary">Centrar Mapa</button>'
+                        ,
+                        mapaFooter: '<small class="text-muted">As encomendas aparecem agrupadas por área de supermercado no mapa.</small>'
+                        }) %>
                 </div>
-
             </div>
         </div>
 

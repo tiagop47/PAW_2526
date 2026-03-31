@@ -23,23 +23,18 @@ estafetaController.exibirDashboard = async function (req, res) {
 
 estafetaController.listarEntregasDisponiveis = async function (req, res) {
     try {
-        const { lat, lng } = req.query;
-        let entregas;
-        let supermercadosCobertura = [];
+        // Agora carregamos sempre todas as disponíveis para a lista e para o mapa
+        const [entregas, supermercados] = await Promise.all([
+            estafetaService.obterEntregasDisponiveis(),
+            estafetaService.obterSupermercadosAtivos()
+        ]);
 
-        if (lat && lng) {
-            const [entregasFiltradas, mercadosCobertura] = await Promise.all([
-                estafetaService.obterEntregasPorLocalizacao(lat, lng),
-                estafetaService.obterSupermercadosCoberturaPorLocalizacao(lat, lng)
-            ]);
-
-            entregas = entregasFiltradas;
-            supermercadosCobertura = mercadosCobertura;
-        } else {
-            entregas = await estafetaService.obterEntregasDisponiveis();
-        }
-
-        res.render('estafeta/entregas', { entregas, lat, lng, supermercadosCobertura });
+        res.render('estafeta/entregas', { 
+            entregas, 
+            supermercadosCobertura: supermercados,
+            lat: null, 
+            lng: null 
+        });
     } catch (error) {
         console.error('Erro ao listar entregas:', error);
         res.render('estafeta/entregas', { entregas: [], erro: 'Erro ao carregar entregas' });

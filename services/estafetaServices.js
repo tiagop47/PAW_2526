@@ -1,5 +1,6 @@
 const Supermarket = require("../models/SupermarketModel");
 const Order = require("../models/OrderModel");
+const mongoose = require("mongoose");
 
 const estafetaService = {};
 
@@ -32,13 +33,12 @@ estafetaService.obterEstatisticas = async function (estafetaId) {
         Order.countDocuments({ estafetaId, estado: 'em entrega' }),
         Order.countDocuments({
             estafetaId: null,
-            estado: 'confirmada',
-            metodoEntrega: { $ne: 'levantamento em loja' }
+            estado: 'confirmada'
         })
     ]);
 
     const ganhos = await Order.aggregate([
-        { $match: { estafetaId: estafetaId, estado: 'entregue' } },
+        { $match: { estafetaId: new mongoose.Types.ObjectId(estafetaId), estado: 'entregue' } },
         { $lookup: { from: 'supermarkets', localField: 'supermercadoId', foreignField: '_id', as: 'supermercado' } },
         { $unwind: { path: '$supermercado', preserveNullAndEmptyArrays: true } },
         { $group: { _id: null, total: { $sum: { $ifNull: ['$supermercado.custoEntrega', 0] } } } }
@@ -55,8 +55,7 @@ estafetaService.obterEstatisticas = async function (estafetaId) {
 estafetaService.obterEntregasDisponiveis = async function () {
     const entregas = await Order.find({
         estafetaId: null,
-        estado: 'confirmada',
-        metodoEntrega: { $ne: 'levantamento em loja' }
+        estado: 'confirmada'
     })
         .populate('supermercadoId', 'nome localizacao localizacaoGeo custoEntrega raioAtuacao')
         .populate('clienteId', 'nome morada')
@@ -139,8 +138,7 @@ estafetaService.obterEntregasPorLocalizacao = async function (lat, lng) {
     const entregas = await Order.find({
         supermercadoId: { $in: idsSupermercados },
         estafetaId: null,
-        estado: 'confirmada',
-        metodoEntrega: { $ne: 'levantamento em loja' }
+        estado: 'confirmada'
     })
         .populate('supermercadoId', 'nome localizacao localizacaoGeo custoEntrega raioAtuacao')
         .populate('clienteId', 'nome morada')
@@ -160,6 +158,17 @@ estafetaService.obterMinhasEntregas = async function (estafetaId) {
 };
 
 estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
+    // 1. Verificar se o estafeta já atingiu o limite de encomendas em curso (ex: 3)
+    const LIMITE_ENTREGAS = 3;
+    const entregasAtivas = await Order.countDocuments({ 
+        estafetaId, 
+        estado: 'em entrega' 
+    });
+
+    if (entregasAtivas >= LIMITE_ENTREGAS) {
+        throw new Error(`Atingiu o limite de ${LIMITE_ENTREGAS} entregas em curso. Finalize as atuais antes de aceitar novas.`);
+    }
+
     const encomenda = await Order.findById(encomendaId);
 
     if (!encomenda) {
