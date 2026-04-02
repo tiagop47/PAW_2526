@@ -1,0 +1,17 @@
+:root {
+  --cor-principal: #0d6efd;
+  --fundo: #f1f3f5;
+  --borda: #dee2e6;
+}
+
+body {
+  background-color: var(--fundo);
+  font-family: system-ui, sans-serif;
+  color: #333;
+}
+
+/* Modal manual sem JavaScript do Bootstrap */
+.modal.show {
+  display: block;
+  background: rgba(0, 0, 0, 0.5);
+}

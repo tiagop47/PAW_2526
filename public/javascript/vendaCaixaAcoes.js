@@ -12,6 +12,9 @@ const hintMorada = document.getElementById('hintMorada');
 const latitudeEntregaInput = document.getElementById('latitudeEntrega');
 const longitudeEntregaInput = document.getElementById('longitudeEntrega');
 const coordsSelecionadas = document.getElementById('coordsSelecionadas');
+const colProdutosVenda = document.getElementById('colProdutosVenda');
+const colMapaEntrega = document.getElementById('colMapaEntrega');
+const mapaEntregaElemento = document.getElementById('mapaEscolherEntrega');
 
 let mapaEntrega;
 let marcadorEntrega = null;
@@ -96,10 +99,16 @@ function limparCoordenadasEntrega() {
 function atualizarUIEntrega() {
     const entregaDomicilio = metodoEntregaSelect.value === ENTREGA_DOMICILIO;
 
+
     if (entregaDomicilio) {
         labelMorada.innerHTML = 'Morada de Destino <span class="text-danger">*</span>';
         moradaInput.required = true;
         hintMorada.textContent = 'Obrigatória para entregas por estafeta.';
+
+        if (mapaEntrega) {
+            requestAnimationFrame(() => mapaEntrega.invalidateSize());
+        }
+
         return;
     }
 
@@ -110,11 +119,33 @@ function atualizarUIEntrega() {
 }
 
 function inicializarMapaEntrega() {
-    mapaEntrega = L.map('mapaEscolherEntrega').setView([41.1579, -8.6291], 12);
+    const latSuper = Number(mapaEntregaElemento?.dataset.superLat);
+    const lngSuper = Number(mapaEntregaElemento?.dataset.superLng);
+    const raioSuperKm = Number(mapaEntregaElemento?.dataset.superRaio || 5);
+    const nomeSuper = mapaEntregaElemento?.dataset.superNome || 'Supermercado';
+
+    const temCoordenadasSuper = Number.isFinite(latSuper) && Number.isFinite(lngSuper);
+    const centroInicial = temCoordenadasSuper ? [latSuper, lngSuper] : [41.1579, -8.6291];
+
+    mapaEntrega = L.map('mapaEscolherEntrega').setView(centroInicial, 12);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap'
     }).addTo(mapaEntrega);
+
+    if (temCoordenadasSuper) {
+        L.marker([latSuper, lngSuper]).addTo(mapaEntrega).bindPopup(`<b>${nomeSuper}</b>`);
+
+        // Mantem o mesmo estilo de circulo usado nos outros mapas da aplicacao.
+        const circuloAtuacao = L.circle([latSuper, lngSuper], {
+            color: '#007bff',
+            fillColor: '#007bff',
+            fillOpacity: 0.1,
+            radius: (raioSuperKm * 1000) / 5
+        }).addTo(mapaEntrega);
+
+        mapaEntrega.fitBounds(circuloAtuacao.getBounds(), { padding: [30, 30] });
+    }
 
     mapaEntrega.on('click', function (event) {
         if (metodoEntregaSelect.value !== ENTREGA_DOMICILIO) return;

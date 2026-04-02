@@ -230,7 +230,8 @@ supermarketController.exibirVendaCaixa = async function (req, res) {
 
         res.render('supermercado/vendaCaixa', {
             title: 'Registar Venda',
-            produtos
+            produtos,
+            supermercado: req.supermercado
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar formulário de venda.');
