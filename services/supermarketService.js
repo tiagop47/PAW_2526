@@ -96,6 +96,7 @@ supermarketService.pesquisarProdutos = async function (supermercadoId, { q, cate
 supermarketService.obterProdutosDisponiveis = async function (supermercadoId) {
     return Product.find({ supermercadoId, stockDisponivel: { $gt: 0 } });
 };
+
 supermarketService.atualizarSupermercado = async function (supermercadoId, dadosSupermercado) {
     const { latitude, longitude } = dadosSupermercado;
 
@@ -114,9 +115,11 @@ supermarketService.atualizarSupermercado = async function (supermercadoId, dados
 
     return Supermarket.findByIdAndUpdate(supermercadoId, dadosSupermercado, { new: true });
 };
+
 supermarketService.getUserByIdSemPassword = async function (userId) {
     return User.findById(userId).select('-password');
 };
+
 supermarketService.obterEncomendas = async function (supermercadoId) {
     return Order.find({ supermercadoId })
         .populate('clienteId', 'nome email telefone')
@@ -139,12 +142,12 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
     if (estadoAnterior === 'pendente' && (estado === 'confirmada' || estado === 'em entrega' || estado === 'entregue')) {
         for (const item of order.produtos) {
             const produto = await Product.findOneAndUpdate(
-                { 
-                    _id: item.produtoId, 
-                    stockDisponivel: { $gte: item.quantidade } 
+                {
+                    _id: item.produtoId,
+                    stockDisponivel: { $gte: item.quantidade }
                 },
-                { 
-                    $inc: { stockDisponivel: -item.quantidade } 
+                {
+                    $inc: { stockDisponivel: -item.quantidade }
                 },
                 { new: true }
             );
@@ -172,7 +175,7 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
     return order.save();
 };
 supermarketService.registarVenda = async function (supermercadoId, saleData) {
-    const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, listaItens, metodoEntrega } = saleData;
+    const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, listaItens, metodoEntrega } = saleData;
 
     const emailFinal = emailCliente || 'cliente@teste.com';
     let cliente = await User.findOne({ email: emailFinal });
@@ -199,12 +202,12 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
     for (const item of listaItens) {
         // Atualização atómica: só subtrai se houver stock suficiente
         const produto = await Product.findOneAndUpdate(
-            { 
-                _id: item.produtoId, 
-                stockDisponivel: { $gte: item.quantidade } 
+            {
+                _id: item.produtoId,
+                stockDisponivel: { $gte: item.quantidade }
             },
-            { 
-                $inc: { stockDisponivel: -item.quantidade } 
+            {
+                $inc: { stockDisponivel: -item.quantidade }
             },
             { new: true }
         );
@@ -226,6 +229,9 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
     // Se for levantamento, marcamos logo como 'entregue'.
     const eDomicilio = metodoEntrega === 'entrega ao domicilio';
     const estadoFinal = eDomicilio ? 'confirmada' : 'entregue';
+    const lat = Number(latitudeEntrega);
+    const lng = Number(longitudeEntrega);
+    const temCoordenadasValidas = Number.isFinite(lat) && Number.isFinite(lng);
 
     return Order.create({
         supermercadoId,
@@ -234,7 +240,8 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
         valorTotal,
         estado: estadoFinal,
         metodoEntrega: metodoEntrega || 'levantamento em loja',
-        moradaEntrega: eDomicilio ? moradaCliente : null
+        moradaEntrega: eDomicilio ? moradaCliente : null,
+        coordenadasEntrega: (eDomicilio && temCoordenadasValidas) ? { lat, lng } : undefined
     });
 };
 supermarketService.getMercadosComInterseccao = async function (supermercadoId) {

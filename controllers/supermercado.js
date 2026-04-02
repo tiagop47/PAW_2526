@@ -242,11 +242,11 @@ supermarketController.exibirVendaCaixa = async function (req, res) {
  */
 supermarketController.registarVenda = async function (req, res) {
     try {
-        const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, itens, metodoEntrega } = req.body;
+        const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, itens, metodoEntrega } = req.body;
         const listaItens = JSON.parse(itens);
 
         await supermarketService.registarVenda(req.supermercado._id, {
-            emailCliente, nomeCliente, telefoneCliente, moradaCliente, listaItens, metodoEntrega
+            emailCliente, nomeCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, listaItens, metodoEntrega
         });
 
         res.redirect('/supermercado/encomendas?success=Venda registada com sucesso');

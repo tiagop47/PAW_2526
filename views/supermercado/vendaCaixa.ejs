@@ -3,6 +3,7 @@
 
 <head>
     <%- include('../partials/head') %>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body class="bg-light">
@@ -104,10 +105,20 @@
                     </table>
                 </div>
 
+                <h2 class="h6 fw-bold mb-3" id="tituloMapaEntrega">Localização de Entrega</h2>
+                <div class="card border-0 bg-light mb-3 p-3" id="blocoMapaEntrega">
+                    <p class="small text-muted mb-2">Clique no mapa para escolher as coordenadas da entrega ao domicílio.</p>
+                    <div id="mapaEscolherEntrega" style="height: 320px; border-radius: 8px;"></div>
+                    <small class="text-muted mt-2 d-block" id="coordsSelecionadas">Nenhuma coordenada selecionada.</small>
+                </div>
+
                 <input type="hidden" id="itensVenda" name="itens" value="[]">
+                <input type="hidden" id="latitudeEntrega" name="latitudeEntrega" value="">
+                <input type="hidden" id="longitudeEntrega" name="longitudeEntrega" value="">
             </form>
         </main>
 
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <script src="/javascript/pesquisaProdutos.js"></script>
         <script src="/javascript/vendaCaixaAcoes.js"></script>
 

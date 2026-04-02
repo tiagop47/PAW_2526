@@ -31,6 +31,10 @@ const OrderSchema = new mongoose.Schema({
             return this.metodoEntrega === 'entrega ao domicilio';
         }
     },
+    coordenadasEntrega: {
+        lat: { type: Number },
+        lng: { type: Number }
+    },
     criadoEm: { type: Date, default: Date.now }
 });
 

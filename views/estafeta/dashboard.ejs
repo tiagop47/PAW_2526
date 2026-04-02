@@ -61,15 +61,27 @@
                     <h2 class="h6 text-muted fw-bold text-uppercase mb-3">Ações rápidas</h2>
                     <div class="row g-2">
                         <div class="col-md-4">
-                            <a href="/estafeta/entregas" class="btn btn-secondary w-100">Encomendas Disponíveis</a>
+                            <label for="zonaTrabalhoDashboard" class="form-label small fw-bold mb-1">Zona de Trabalho</label>
+                            <select id="zonaTrabalhoDashboard" class="form-select form-select-sm" data-estafeta-id="<%= estafetaId || '' %>">
+                                <option value="">Selecione a zona</option>
+                                <% (zonasTrabalho || []).forEach((zona) => { %>
+                                    <option value="<%= zona.value %>"><%= zona.label %></option>
+                                <% }); %>
+                            </select>
+                            <small class="text-muted d-block mt-1">Define a zona antes de abrir as encomendas.</small>
                         </div>
                         <div class="col-md-4">
-                            <a href="/estafeta/minhas-entregas" class="btn btn-secondary w-100">Minhas Entregas</a>
+                            <button id="btnIrEntregasComZona" type="button" class="btn btn-secondary w-100 mt-md-4">Encomendas Disponíveis</button>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="/estafeta/minhas-entregas" class="btn btn-secondary w-100 mt-md-4">Minhas Entregas</a>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
+
+        <script src="/javascript/estafetaDashboardAcoes.js"></script>
 
 </body>
 

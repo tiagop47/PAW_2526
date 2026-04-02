@@ -27,7 +27,12 @@
                                             <strong>De:</strong>
                                             <%= entrega.supermercadoId?.nome || 'N/A' %><br>
                                                 <strong>Para:</strong>
-                                                <%= entrega.clienteId?.morada || 'N/A' %>
+                                                <%= entrega.moradaEntrega || entrega.clienteId?.morada || 'N/A' %>
+                                                <% if (entrega.coordenadasEntrega && Number.isFinite(entrega.coordenadasEntrega.lat) && Number.isFinite(entrega.coordenadasEntrega.lng)) { %>
+                                                    <br>
+                                                    <strong>Coords:</strong> <%= entrega.coordenadasEntrega.lat %>, <%= entrega.coordenadasEntrega.lng %>
+                                                    <a class="ms-1" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q=<%= entrega.coordenadasEntrega.lat %>,<%= entrega.coordenadasEntrega.lng %>">Mapa</a>
+                                                <% } %>
                                         </p>
                                         <button class="btn btn-sm btn-success btn-confirmar-entrega"
                                             data-id="<%= entrega._id %>">
@@ -61,7 +66,13 @@
                                                     <%= entrega.supermercadoId?.nome || 'N/A' %>
                                                 </td>
                                                 <td>
-                                                    <%= entrega.clienteId?.morada || 'N/A' %>
+                                                    <%= entrega.moradaEntrega || entrega.clienteId?.morada || 'N/A' %>
+                                                    <% if (entrega.coordenadasEntrega && Number.isFinite(entrega.coordenadasEntrega.lat) && Number.isFinite(entrega.coordenadasEntrega.lng)) { %>
+                                                        <br>
+                                                        <small>
+                                                            <a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q=<%= entrega.coordenadasEntrega.lat %>,<%= entrega.coordenadasEntrega.lng %>">Ver no mapa</a>
+                                                        </small>
+                                                    <% } %>
                                                 </td>
                                                 <td>
                                                     <%= new Date(entrega.criadoEm).toLocaleDateString('pt-PT') %>

@@ -160,9 +160,9 @@ estafetaService.obterMinhasEntregas = async function (estafetaId) {
 estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
     // 1. Verificar se o estafeta já atingiu o limite de encomendas em curso (ex: 3)
     const LIMITE_ENTREGAS = 3;
-    const entregasAtivas = await Order.countDocuments({ 
-        estafetaId, 
-        estado: 'em entrega' 
+    const entregasAtivas = await Order.countDocuments({
+        estafetaId,
+        estado: 'em entrega'
     });
 
     if (entregasAtivas >= LIMITE_ENTREGAS) {

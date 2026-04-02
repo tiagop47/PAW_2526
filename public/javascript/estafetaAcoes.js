@@ -1,22 +1,8 @@
+const estafetaId = document.body.getAttribute('data-estafeta-id') || '';
+const storageZonaKey = `estafeta_zona_trabalho_${estafetaId || 'default'}`;
+const paginaEntregas = !!estafetaId;
 
-
-const selectFiltroEstado = document.getElementById('filtroEstadoEntrega');
-const btnMinhaPosicao = document.getElementById('btn-minha-posicao');
-const elementoMapaEstafeta = document.getElementById('mapa-estafeta');
-
-const filtrarLinhasPorEstado = function () {
-    const estadoSelecionado = selectFiltroEstado.value;
-    const linhas = document.querySelectorAll('table tbody tr');
-
-    linhas.forEach(function (linha) {
-        const estadoLinha = linha.getAttribute('data-estado');
-        if (estadoSelecionado === 'todas' || estadoLinha === estadoSelecionado) {
-            linha.style.display = '';
-        } else {
-            linha.style.display = 'none';
-        }
-    });
-};
+let zonaTrabalhoAtiva = '';
 
 const tratarAceitarEntrega = async (id, btn) => {
 
@@ -74,13 +60,40 @@ const tratarConfirmarEntrega = async (id, btn) => {
     }
 };
 
+const aplicarFiltroZona = function () {
+    if (!paginaEntregas) return;
 
-if (selectFiltroEstado) {
-    selectFiltroEstado.addEventListener('change', filtrarLinhasPorEstado);
-}
+    const cards = document.querySelectorAll('.order-card');
+
+    cards.forEach((card) => {
+        const zonaCard = (card.getAttribute('data-zona') || '').trim().toLowerCase();
+        card.style.display = (!zonaTrabalhoAtiva || zonaCard === zonaTrabalhoAtiva) ? '' : 'none';
+    });
+
+    filtrarMercadosNoMapa(zonaTrabalhoAtiva);
+};
+
+window.aplicarFiltroZonaAtiva = aplicarFiltroZona;
+
+const atualizarZonaAtual = function () {
+    return;
+};
+
+const carregarZonaDaSessao = function () {
+    zonaTrabalhoAtiva = (sessionStorage.getItem(storageZonaKey) || '').trim().toLowerCase();
+    if (zonaTrabalhoAtiva) return;
+
+    alert('Define a zona de trabalho no dashboard antes de abrir as encomendas.');
+    location.href = '/estafeta/dashboard';
+};
 
 document.addEventListener('click', async function (e) {
     const btn = e.target;
+
+    if (btn.classList.contains('link-focar-destino')) {
+        e.preventDefault();
+        focarDestinoNoMapa(btn.dataset.lat, btn.dataset.lng);
+    }
 
     if (btn.classList.contains('btn-aceitar-entrega')) {
         await tratarAceitarEntrega(btn.dataset.id, btn);
@@ -92,24 +105,13 @@ document.addEventListener('click', async function (e) {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (typeof AppMapa !== 'undefined' && elementoMapaEstafeta) {
-        AppMapa.init('mapa-estafeta');
-        AppMapa.carregarSupermercados({ endpoint: '/estafeta/api/supermercados' });
-    }
+    if (paginaEntregas) {
+        carregarZonaDaSessao();
+        if (!zonaTrabalhoAtiva) return;
 
-    if (btnMinhaPosicao) {
-        btnMinhaPosicao.addEventListener('click', () => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    const { latitude, longitude } = pos.coords;
-                    if (typeof AppMapa !== 'undefined' && AppMapa.map) {
-                        AppMapa.map.setView([latitude, longitude], 13);
-                        AppMapa.addEstafeta(latitude, longitude);
-                    }
-                });
-            } else {
-                alert("O seu navegador não suporta geolocalização.");
-            }
-        });
+        inicializarMapa('mapa-entregas');
+        carregarMercadosDoServidor();
+        atualizarZonaAtual();
+        aplicarFiltroZona();
     }
 });

@@ -5,12 +5,36 @@ const estafetaController = {};
 estafetaController.exibirDashboard = async function (req, res) {
     try {
         const estafetaId = req.user.id;
-        const stats = await estafetaService.obterEstatisticas(estafetaId);
-        res.render('estafeta/dashboard', { title: 'Painel do Estafeta', stats });
+        const [stats, supermercados] = await Promise.all([
+            estafetaService.obterEstatisticas(estafetaId),
+            estafetaService.obterSupermercadosAtivos()
+        ]);
+
+        const zonasMap = new Map();
+        supermercados.forEach((s) => {
+            const zonaOriginal = (s.localizacao || '').trim();
+            const zonaKey = zonaOriginal.toLowerCase();
+            if (zonaOriginal && !zonasMap.has(zonaKey)) {
+                zonasMap.set(zonaKey, zonaOriginal);
+            }
+        });
+
+        const zonasTrabalho = Array.from(zonasMap.entries())
+            .sort((a, b) => a[1].localeCompare(b[1], 'pt'))
+            .map(([value, label]) => ({ value, label }));
+
+        res.render('estafeta/dashboard', {
+            title: 'Painel do Estafeta',
+            stats,
+            estafetaId,
+            zonasTrabalho
+        });
     } catch (error) {
         console.error('Erro ao carregar dashboard:', error);
         res.render('estafeta/dashboard', {
             title: 'Painel do Estafeta',
+            estafetaId: req.user ? req.user.id : '',
+            zonasTrabalho: [],
             stats: {
                 entregasRealizadas: 0,
                 entregasEmCurso: 0,
@@ -23,6 +47,7 @@ estafetaController.exibirDashboard = async function (req, res) {
 
 estafetaController.listarEntregasDisponiveis = async function (req, res) {
     try {
+        const estafetaId = req.user.id;
         // Agora carregamos sempre todas as disponíveis para a lista e para o mapa
         const [entregas, supermercados] = await Promise.all([
             estafetaService.obterEntregasDisponiveis(),
@@ -32,6 +57,7 @@ estafetaController.listarEntregasDisponiveis = async function (req, res) {
         res.render('estafeta/entregas', { 
             entregas, 
             supermercadosCobertura: supermercados,
+            estafetaId,
             lat: null, 
             lng: null 
         });
