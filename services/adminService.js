@@ -6,14 +6,24 @@ const Order = require('../models/OrderModel');
 const adminService = {};
 
 adminService.getDashboardStats = async function () {
-    const [totalUsers, totalEstafetas, pendentes, ativos, totalProdutos, totalEncomendas] = await Promise.all([
+    const [totalUsers, totalEstafetas, pendentes, ativos, totalProdutos, totalEncomendas, totalFaturadoAgg] = await Promise.all([
         User.countDocuments(),
         User.countDocuments({ role: 'estafetas' }),
         Supermarket.countDocuments({ estadoAprovacao: 'Pendente' }),
         Supermarket.countDocuments({ estadoAprovacao: 'Aprovado' }),
         Product.countDocuments(),
-        Order.countDocuments()
+        Order.countDocuments(),
+        Order.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: '$valorTotal' }
+                }
+            }
+        ])
     ]);
+
+    const valorTotal = totalFaturadoAgg[0]?.total || 0;
 
     return {
         totalUsers,
@@ -21,7 +31,8 @@ adminService.getDashboardStats = async function () {
         pendentes,
         ativos,
         totalProdutos,
-        totalEncomendas
+        totalEncomendas,
+        valorTotal,
     };
 };
 

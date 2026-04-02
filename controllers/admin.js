@@ -12,7 +12,7 @@ adminController.exibirDashboard = async function (req, res) {
     } catch (err) {
         res.render('admin/dashboard', {
             title: 'Painel Admin',
-            stats: { totalUsers: 0, totalEstafetas: 0, pendentes: 0, ativos: 0, totalProdutos: 0, totalEncomendas: 0 }
+            stats: { totalUsers: 0, totalEstafetas: 0, pendentes: 0, ativos: 0, totalProdutos: 0, totalEncomendas: 0, valorTotal: 0 }
         });
     }
 };
