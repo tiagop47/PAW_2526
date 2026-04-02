@@ -118,8 +118,11 @@ adminController.editarUser = function (req, res) {
  */
 adminController.guardarUser = async function (req, res) {
     try {
-        const { nome, email, telefone, morada, role } = req.body;
-        await adminService.atualizarUserById(req.targetUser._id, { nome, email, telefone, morada, role });
+        const { nome, email, nif, telefone, morada, role } = req.body;
+        await adminService.atualizarUserById(
+            req.targetUser._id,
+            { nome, email, nif, telefone, morada, role }
+        );
         res.redirect('/admin/exibirUtilizadores');
     } catch (err) {
         res.status(500).send('Erro ao guardar alterações.');

@@ -18,6 +18,7 @@
                         <tr>
                             <th>Utilizador</th>
                             <th>Telefone</th>
+                            <th>NIF</th>
                             <th>Cargo/Função</th>
                             <th class="text-end pe-3">Ações</th>
                         </tr>
@@ -36,6 +37,11 @@
                                     <td class="fw-bold">
                                         <%= utilizador.telefone %>
                                     </td>
+
+                                    <td class="fw-bold">
+                                        <%= utilizador.nif%>
+                                    </td>
+
                                     <td>
                                         <span class="badge bg-secondary">
                                             <%= utilizador.role %>
@@ -47,12 +53,7 @@
                                     </td>
                                 </tr>
                                 <% }); %>
-                                    <% } else { %>
-                                        <tr>
-                                            <td colspan="4" class="text-center py-5 text-muted">Não existem pedidos de
-                                                registo pendentes.</td>
-                                        </tr>
-                                        <% } %>
+                                    <% } %>
                     </tbody>
                 </table>
             </div>
@@ -66,7 +67,7 @@
                         <% } %>
 
                             <span class="btn btn-sm btn-light disabled">Página <%= paginaAtual %> de <%= totalPaginas %>
-                                        </span>
+                            </span>
 
                             <% if (paginaAtual < totalPaginas) { %>
                                 <a href="/admin/exibirUtilizadores?pagina=<%= paginaAtual + 1 %>"

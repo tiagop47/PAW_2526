@@ -84,7 +84,10 @@ adminService.getUserByIdSemPassword = async function (id) {
 };
 
 adminService.atualizarUserById = async function (id, dados) {
-    return User.findByIdAndUpdate(id, dados);
+    return User.findByIdAndUpdate(id, dados, {
+        new: true,
+        runValidators: true
+    });
 };
 
 adminService.getMercadosAtivos = async function (contador, limite) {
