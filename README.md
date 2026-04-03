@@ -13,7 +13,7 @@ Pode utilizar as seguintes credenciais para testar as diferentes áreas da plata
 | **Supermercado** | `supermercado@teste.com` | `Teste12345` |
 | **Cliente** | `cliente@teste.com` | `Teste12345` |
 
-### 🛒 Venda em Caixa (Default)
+###  Venda em Caixa (Default)
 Para vendas sem cliente identificado, o sistema utiliza automaticamente o seguinte perfil:
 - **Email:** `cliente@teste.com`
 - **NIF:** `999999990`
