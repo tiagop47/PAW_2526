@@ -11,9 +11,10 @@ estafetaController.exibirDashboard = async function (req, res) {
         ]);
 
         const zonasMap = new Map();
-        supermercados.forEach((s) => {
-            const zonaOriginal = (s.localizacao || '').trim();
+        supermercados.forEach((supermercado) => {
+            const zonaOriginal = (supermercado.localizacao || '').trim();
             const zonaKey = zonaOriginal.toLowerCase();
+
             if (zonaOriginal && !zonasMap.has(zonaKey)) {
                 zonasMap.set(zonaKey, zonaOriginal);
             }
@@ -54,12 +55,12 @@ estafetaController.listarEntregasDisponiveis = async function (req, res) {
             estafetaService.obterSupermercadosAtivos()
         ]);
 
-        res.render('estafeta/entregas', { 
-            entregas, 
+        res.render('estafeta/entregas', {
+            entregas,
             supermercadosCobertura: supermercados,
             estafetaId,
-            lat: null, 
-            lng: null 
+            lat: null,
+            lng: null
         });
     } catch (error) {
         console.error('Erro ao listar entregas:', error);
@@ -82,7 +83,7 @@ estafetaController.aceitarEntrega = async function (req, res) {
     try {
         const estafetaId = req.user.id;
         const encomenda = req.encomenda; // Carregada pelo router.param
-        
+
         if (encomenda.estafetaId) {
             throw new Error('Esta entrega já foi aceite por outro estafeta');
         }

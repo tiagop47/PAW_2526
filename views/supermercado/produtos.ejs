@@ -20,11 +20,11 @@
             <div class="card border-0 shadow-sm mb-3 p-3">
                 <div class="row g-2">
                     <div class="col-md-8">
-                        <input id="pesquisa-produto" type="text" class="form-control"
+                        <input id="produtoPesquisaInput" data-produto-pesquisa="input" type="text" class="form-control"
                             placeholder="Pesquisar por nome...">
                     </div>
                     <div class="col-md-4">
-                        <select id="filtro-categoria" class="form-select">
+                        <select id="produtoPesquisaCategoria" data-produto-pesquisa="categoria" class="form-select">
                             <option value="">Todas as categorias</option>
                             <option value="Frutas">Frutas e Legumes</option>
                             <option value="Carne">Carne e Peixe</option>
@@ -48,7 +48,7 @@
                         </tr>
                     </thead>
 
-                    <tbody id="tabela-produtos">
+                    <tbody id="produtoPesquisaTabelaBody" data-produto-pesquisa="tabela">
                         <% if (locals.produtos && produtos.length> 0) { %>
                             <% produtos.forEach(function(p) { %>
                                 <tr>
@@ -90,6 +90,9 @@
 
         <script src="/javascript/supermercadoAcoes.js"></script>
         <script src="/javascript/pesquisaProdutos.js"></script>
+        <script>
+            inicializarPesquisaProdutos();
+        </script>
 
 </body>
 

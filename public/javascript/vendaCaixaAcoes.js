@@ -2,7 +2,7 @@ const ENTREGA_DOMICILIO = 'entrega ao domicilio';
 const SEM_COORDS = 'Nenhuma coordenada selecionada.';
 const quantidadesSelecionadas = {};
 
-const tabelaCorpo = document.querySelector('#tabelaProdutosVenda tbody');
+const tabelaCorpo = document.querySelector('[data-produto-pesquisa="tabela"]');
 const formVenda = document.getElementById('formVendaCaixa');
 const hiddenItens = document.getElementById('itensVenda');
 const metodoEntregaSelect = document.getElementById('metodoEntregaVenda');
@@ -73,15 +73,7 @@ function renderizarTabelaProdutos(produtos, tabelaBody) {
 
 function inicializarPesquisa() {
     inicializarPesquisaProdutos({
-        pagina: 'venda',
-        endpoint: '/supermercado/api/produtos',
         debounceMs: 250,
-        montarParams: ({ texto, categoria }) => {
-            const params = new URLSearchParams();
-            if (texto) params.set('q', texto);
-            if (categoria) params.set('categoria', categoria);
-            return params;
-        },
         renderTabela: renderizarTabelaProdutos
     });
 }

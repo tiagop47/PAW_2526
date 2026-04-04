@@ -1,12 +1,8 @@
-const inputProdutosPagina = document.querySelector('#pesquisa-produto');
-const filtroCategoriaProdutosPagina = document.querySelector('#filtro-categoria');
-const tabelaProdutosPagina = document.querySelector('#tabela-produtos');
-const inputVendaPagina = document.querySelector('#pesquisaProdutoVenda');
-const filtroCategoriaVendaPagina = document.querySelector('#filtroCategoriaVenda');
-const tabelaProdutosVendaPagina = document.querySelector('#tabelaProdutosVenda tbody');
-
-
-inicializarPesquisaProdutos();
+const ENDPOINT_PRODUTOS = '/supermercado/api/produtos';
+const DEBOUNCE_PADRAO_MS = 300;
+const SELECTOR_INPUT = '[data-produto-pesquisa="input"]';
+const SELECTOR_CATEGORIA = '[data-produto-pesquisa="categoria"]';
+const SELECTOR_TABELA_BODY = '[data-produto-pesquisa="tabela"]';
 
 function tabelaDefault(produtos, tabelaBody) {
     if (!Array.isArray(produtos) || produtos.length === 0) {
@@ -40,44 +36,37 @@ function tabelaDefault(produtos, tabelaBody) {
 }
 
 function inicializarPesquisaProdutos(config = {}) {
-    const pagina = config.pagina || 'produtos';
-    const inputPesquisa = config.inputElemento
-        || (pagina === 'venda' ? inputVendaPagina : inputProdutosPagina);
-    const selectCategoria = config.categoriaElemento
-        || (pagina === 'venda' ? filtroCategoriaVendaPagina : filtroCategoriaProdutosPagina);
-    const tabelaBody = config.tabelaBodyElemento
-        || (pagina === 'venda' ? tabelaProdutosVendaPagina : tabelaProdutosPagina);
+    const {
+        root = document,
+        renderTabela = tabelaDefault
+    } = config;
 
-    if (!inputPesquisa || !tabelaBody) return null;
-
-    const endpoint = config.endpoint || '/supermercado/api/produtos';
-    const debounceMs = Number.isFinite(config.debounceMs) ? config.debounceMs : 300;
-    const montarParams = typeof config.montarParams === 'function'
-        ? config.montarParams
-        : ({ texto, categoria }) => {
-            const params = new URLSearchParams();
-
-            if (texto) {
-                params.set('q', texto);
-            }
-            if (categoria) {
-                params.set('categoria', categoria);
-            }
-
-            return params;
-        };
-    const renderTabela = typeof config.renderTabela === 'function' ? config.renderTabela : tabelaDefault;
+    const inputPesquisa = root.querySelector(SELECTOR_INPUT);
+    const selectCategoria = root.querySelector(SELECTOR_CATEGORIA);
+    const tabelaBody = root.querySelector(SELECTOR_TABELA_BODY);
 
     async function pesquisarProdutos() {
         const texto = inputPesquisa.value.trim();
-        const categoria = selectCategoria ? selectCategoria.value : '';
-        const params = montarParams({ texto, categoria, config });
+        const categoria = selectCategoria.value;
+        const params = new URLSearchParams();
+
+        if (texto) {
+            params.set('q', texto);
+        }
+
+        if (categoria) {
+            params.set('categoria', categoria);
+        }
+
         const query = params.toString();
-        const url = query ? `${endpoint}?${query}` : endpoint;
+        const url = query ? `${ENDPOINT_PRODUTOS}?${query}` : ENDPOINT_PRODUTOS;
 
         try {
             const resposta = await fetch(url);
-            if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+            if (!resposta.ok) {
+                throw new Error(`HTTP ${resposta.status}`);
+            }
+
             const produtos = await resposta.json();
             renderTabela(produtos, tabelaBody);
         } catch (err) {
@@ -88,12 +77,10 @@ function inicializarPesquisaProdutos(config = {}) {
     let timer;
     inputPesquisa.addEventListener('input', () => {
         clearTimeout(timer);
-        timer = setTimeout(pesquisarProdutos, debounceMs);
+        timer = setTimeout(pesquisarProdutos, DEBOUNCE_PADRAO_MS);
     });
 
-    if (selectCategoria) {
-        selectCategoria.addEventListener('change', pesquisarProdutos);
-    }
+    selectCategoria.addEventListener('change', pesquisarProdutos);
 
     return { pesquisarProdutos };
 }

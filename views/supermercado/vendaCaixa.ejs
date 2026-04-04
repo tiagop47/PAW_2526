@@ -51,10 +51,10 @@
                         <div class="card border-0 bg-light mb-2 p-2 venda-caixa-filtros">
                             <div class="row g-2">
                                 <div class="col-md-8">
-                                    <input type="text" id="pesquisaProdutoVenda" class="form-control form-control-sm" placeholder="Pesquisar por nome do produto...">
+                                    <input type="text" id="produtoPesquisaInput" data-produto-pesquisa="input" class="form-control form-control-sm" placeholder="Pesquisar por nome do produto...">
                                 </div>
                                 <div class="col-md-4">
-                                    <select id="filtroCategoriaVenda" class="form-select form-select-sm">
+                                    <select id="produtoPesquisaCategoria" data-produto-pesquisa="categoria" class="form-select form-select-sm">
                                         <option value="">Todas as categorias</option>
                                         <option value="Frutas">Frutas e Legumes</option>
                                         <option value="Carne">Carne e Peixe</option>
@@ -76,7 +76,7 @@
                                         <th>Quantidade</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="produtoPesquisaTabelaBody" data-produto-pesquisa="tabela">
                                     <% if (produtos && produtos.length> 0) { %>
                                         <% produtos.forEach(function(produto) { %>
                                             <tr>
