@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const Supermarket = require('../models/SupermarketModel'); 
+const config = require('../config/config');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback';
+const JWT_SECRET = config.JWT_SECRET;
 const DASHBOARDS = {
     administrador: "/admin/dashboard",
     supermercados: "/supermercado/dashboard",

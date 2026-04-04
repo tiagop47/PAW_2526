@@ -1,4 +1,3 @@
-require('dotenv').config();
 const mongoose = require('mongoose');
 const createError = require('http-errors');
 const express = require('express');
@@ -6,6 +5,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
+const config = require('./config/config');
 const { injetarUserNasViews } = require('./middlewares/authMiddleware');
 
 const app = express();
@@ -24,7 +24,7 @@ const swaggerOptions = {
 };
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(config.MONGODB_URI)
     .then(() => console.log('Ligado ao MongoDB!'))
     .catch(err => console.error('Erro MongoDB:', err));
 

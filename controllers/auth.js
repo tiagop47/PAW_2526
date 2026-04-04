@@ -1,4 +1,5 @@
 const authService = require('../services/authService');
+const config = require('../config/config');
 const { getDashboardUrl } = require('../middlewares/authMiddleware');
 
 var authController = {};
@@ -10,7 +11,7 @@ authController.exibirLogin = function (req, res) {
 authController.exibirRegisto = function (req, res) {
     res.render("loginRegisto/registar", {
         errorMessage: null,
-        siteKey: process.env.CAPTCHA_API_KEY, // Enviar chave pública
+        siteKey: config.CAPTCHA_API_KEY, // Enviar chave pública
         dados: {}
     });
 };
@@ -24,7 +25,7 @@ authController.registar = async function (req, res) {
     } catch (err) {
         res.render("loginRegisto/registar", {
             errorMessage: err.message,
-            siteKey: process.env.CAPTCHA_API_KEY,
+            siteKey: config.CAPTCHA_API_KEY,
             dados: req.body
         });
     }
@@ -37,7 +38,7 @@ authController.login = async function (req, res) {
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: config.IS_PRODUCTION,
             maxAge: 24 * 60 * 60 * 1000
         });
 

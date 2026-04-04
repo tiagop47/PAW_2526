@@ -4,6 +4,7 @@ const Order = require('../models/OrderModel');
 const User = require('../models/UserModel');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const config = require('../config/config');
 
 const RAIO_TERRA_KM = 6371;
 const paraRadianos = (value) => value * (Math.PI / 180);
@@ -181,7 +182,7 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
     let cliente = await User.findOne({ email: emailFinal });
 
     if (!cliente) {
-        const passwordTemp = process.env.DEFAULT_USER_PASSWORD || 'Teste12345';
+        const passwordTemp = config.DEFAULT_USER_PASSWORD;
         const hash = await bcrypt.hash(passwordTemp, 12);
         const nifFinal = '999999990';
 

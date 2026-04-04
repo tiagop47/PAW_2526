@@ -3,13 +3,14 @@ const Supermarket = require('../models/SupermarketModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { validarRegisto, rolesPublicas } = require('../utils/userValidator');
+const config = require('../config/config');
 
 const authService = {};
 
-authService.verificarCaptcha = async function(recaptchaResponse) {
+authService.verificarCaptcha = async function (recaptchaResponse) {
     if (!recaptchaResponse) throw new Error("Erro de segurança: Token não encontrado.");
 
-    const secretKey = process.env.CAPTCHA_API_SECRET;
+    const secretKey = config.CAPTCHA_API_SECRET;
     const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaResponse}`;
 
     const googleResponse = await fetch(verifyUrl, { method: "POST" });
@@ -21,10 +22,10 @@ authService.verificarCaptcha = async function(recaptchaResponse) {
     return true;
 };
 
-authService.registarUtilizador = async function(userData) {
+authService.registarUtilizador = async function (userData) {
     const {
         nome, email, password, nif, telefone, morada, role,
-        localizacao, latitude, longitude, horario, custoEntrega, raioAtuacao, descricaoLoja, metodosEntrega
+        latitude, longitude, horario, custoEntrega, raioAtuacao, descricaoLoja, metodosEntrega
     } = userData;
 
     const roleFinal = rolesPublicas.includes(role) ? role : "clientes";
@@ -39,7 +40,7 @@ authService.registarUtilizador = async function(userData) {
         throw new Error("Este email já está registado.");
     }
 
-    const saltRounds = parseInt(process.env.SALT_ROUNDS) || 10;
+    const saltRounds = config.SALT_ROUNDS;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const novoUser = new User({
@@ -53,9 +54,9 @@ authService.registarUtilizador = async function(userData) {
             throw new Error("É obrigatório selecionar a localização da loja no mapa.");
         }
 
-        const coordenadas = { 
-            type: 'Point', 
-            coordinates: [parseFloat(longitude), parseFloat(latitude)] 
+        const coordenadas = {
+            type: 'Point',
+            coordinates: [parseFloat(longitude), parseFloat(latitude)]
         };
 
         const metodos = Array.isArray(metodosEntrega) ? metodosEntrega : (metodosEntrega ? [metodosEntrega] : ['levantamento em loja']);
@@ -77,14 +78,14 @@ authService.registarUtilizador = async function(userData) {
     return userGuardado;
 };
 
-authService.autenticarUtilizador = async function(email, password) {
+authService.autenticarUtilizador = async function (email, password) {
     const user = await User.findOne({ email });
     if (!user) throw new Error("Credenciais inválidas.");
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new Error("Credenciais inválidas.");
 
-    const secret = process.env.JWT_SECRET || 'fallback';
+    const secret = config.JWT_SECRET;
     const token = jwt.sign(
         { id: user._id, role: user.role, nome: user.nome },
         secret,

@@ -1,0 +1,21 @@
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const parseIntOr = (value, fallback) => {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isNaN(parsed) ? fallback : parsed;
+};
+
+const NODE_ENV = process.env.NODE_ENV || 'development';
+
+module.exports = {
+    NODE_ENV,
+    IS_PRODUCTION: NODE_ENV === 'production',
+    MONGODB_URI: process.env.MONGODB_URI,
+    CAPTCHA_API_KEY: process.env.CAPTCHA_API_KEY,
+    CAPTCHA_API_SECRET: process.env.CAPTCHA_API_SECRET,
+    JWT_SECRET: process.env.JWT_SECRET || 'fallback',
+    SALT_ROUNDS: parseIntOr(process.env.SALT_ROUNDS, 10),
+    DEFAULT_USER_PASSWORD: process.env.DEFAULT_USER_PASSWORD
+};
