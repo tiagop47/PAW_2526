@@ -23,7 +23,7 @@ authService.verificarCaptcha = async function(recaptchaResponse) {
 
 authService.registarUtilizador = async function(userData) {
     const {
-        nome, email, password, telefone, morada, role,
+        nome, email, password, nif, telefone, morada, role,
         localizacao, latitude, longitude, horario, custoEntrega, raioAtuacao, descricaoLoja, metodosEntrega
     } = userData;
 
@@ -43,7 +43,7 @@ authService.registarUtilizador = async function(userData) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const novoUser = new User({
-        nome, email, password: hashedPassword, telefone, morada, role: roleFinal
+        nome, email, password: hashedPassword, nif, telefone, morada, role: roleFinal
     });
 
     const userGuardado = await novoUser.save();

@@ -12,7 +12,7 @@ adminController.exibirDashboard = async function (req, res) {
     } catch (err) {
         res.render('admin/dashboard', {
             title: 'Painel Admin',
-            stats: { totalUsers: 0, totalEstafetas: 0, pendentes: 0, ativos: 0, totalProdutos: 0, totalEncomendas: 0, valorTotal: 0 }
+            stats: { totalUsers: 0, totalEstafetas: 0, pendentes: 0, ativos: 0, bloqueados: 0, totalProdutos: 0, totalEncomendas: 0, valorTotal: 0 }
         });
     }
 };
@@ -38,6 +38,22 @@ adminController.rejeitarSupermercado = async function (req, res) {
         res.redirect('/admin/supermercados/pendentes');
     } catch (err) {
         res.status(500).send('Erro ao rejeitar supermercado.');
+    }
+};
+
+/**
+ * Bloquear Supermercado
+ */
+
+adminController.bloquearSupermercado = async function (req, res){
+    try {
+        const supermarketId = req.params.supermarketId
+        
+        await adminService.alternarBloqueio(supermarketId);
+        res.redirect('/admin/supermercados/ativos');
+
+    } catch (err) {
+        res.status(500).send("Erro a tentar bloquear o supermercado.");
     }
 };
 
@@ -105,29 +121,7 @@ adminController.listarSupermercados = async function (req, res) {
     }
 };
 
-/**
- * Exibe formulário de edição de utilizador.
- * O utilizador é carregado pelo middleware router.param('userId')
- */
-adminController.editarUser = function (req, res) {
-    res.render('admin/editarUtilizador', { title: 'Editar Utilizador', user: req.targetUser });
-};
 
-/**
- * Guarda alterações de utilizador.
- */
-adminController.guardarUser = async function (req, res) {
-    try {
-        const { nome, email, nif, telefone, morada, role } = req.body;
-        await adminService.atualizarUserById(
-            req.targetUser._id,
-            { nome, email, nif, telefone, morada, role }
-        );
-        res.redirect('/admin/exibirUtilizadores');
-    } catch (err) {
-        res.status(500).send('Erro ao guardar alterações.');
-    }
-};
 
 /**
  * Lista estafetas para gestão admin (Limite 3).

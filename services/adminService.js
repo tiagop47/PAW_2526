@@ -6,11 +6,12 @@ const Order = require('../models/OrderModel');
 const adminService = {};
 
 adminService.getDashboardStats = async function () {
-    const [totalUsers, totalEstafetas, pendentes, ativos, totalProdutos, totalEncomendas, totalFaturadoAgg] = await Promise.all([
+    const [totalUsers, totalEstafetas, pendentes, ativos, bloqueados, totalProdutos, totalEncomendas, totalFaturadoAgg] = await Promise.all([
         User.countDocuments(),
         User.countDocuments({ role: 'estafetas' }),
         Supermarket.countDocuments({ estadoAprovacao: 'Pendente' }),
         Supermarket.countDocuments({ estadoAprovacao: 'Aprovado' }),
+        Supermarket.countDocuments({ estadoAprovacao: 'Bloqueado'}),
         Product.countDocuments(),
         Order.countDocuments(),
         Order.aggregate([
@@ -30,6 +31,7 @@ adminService.getDashboardStats = async function () {
         totalEstafetas,
         pendentes,
         ativos,
+        bloqueados,
         totalProdutos,
         totalEncomendas,
         valorTotal,
@@ -59,6 +61,18 @@ adminService.aprovarSupermercadoById = async function (id) {
 adminService.rejeitarSupermercadoById = async function (id) {
     return Supermarket.findByIdAndUpdate(id, { estadoAprovacao: 'Rejeitado' });
 };
+
+adminService.alternarBloqueio = async function (id){
+    const loja = await Supermarket.findById(id)
+  
+    let estadoSeguinte = 'Bloqueado'; 
+
+    if(loja.estadoAprovacao === 'Bloqueado') {
+         estadoSeguinte = 'Aprovado';
+    }
+
+    return Supermarket.findByIdAndUpdate(id, { estadoAprovacao: estadoSeguinte });
+}
 
 adminService.getUsersDocumentos = async function (pagina, limite) {
     const contador = (pagina - 1) * limite;
@@ -102,8 +116,8 @@ adminService.atualizarUserById = async function (id, dados) {
 };
 
 adminService.getMercadosAtivos = async function (contador, limite) {
-    const total = await Supermarket.countDocuments({ estadoAprovacao: 'Aprovado' });
-    const supermercados = await Supermarket.find({ estadoAprovacao: 'Aprovado' })
+    const total = await Supermarket.countDocuments({ estadoAprovacao: { $in: ['Aprovado', 'Bloqueado'] }});
+    const supermercados = await Supermarket.find({ estadoAprovacao: { $in: ['Aprovado', 'Bloqueado'] } })
         .populate('userId')
         .skip(Number(contador))
         .limit(Number(limite));

@@ -10,13 +10,11 @@ router.get('/dashboard', adminController.exibirDashboard);
 router.get('/exibirUtilizadores', adminController.listarUtilizadores);
 router.get('/estafetas', adminController.listarEstafetas);
 
-router.get('/exibirUtilizadores/:userId/detalhes', adminController.editarUser);
-router.post('/exibirUtilizadores/:userId/editar', adminController.guardarUser);
-
 router.get('/supermercados/ativos', adminController.listarSupermercados);
 router.get('/supermercados/pendentes', adminController.listarPendentes);
 router.post('/supermercados/aprovar/:supermarketId', adminController.aprovarSupermercado);
 router.post('/supermercados/rejeitar/:supermarketId', adminController.rejeitarSupermercado);
+router.get('/supermercados/bloquear/:supermarketId', adminController.bloquearSupermercado);
 
 /**
  * Middleware de Parâmetro: Carrega o utilizador quando :userId está no URL.

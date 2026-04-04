@@ -20,7 +20,6 @@
                             <th>Telefone</th>
                             <th>NIF</th>
                             <th>Cargo/Função</th>
-                            <th class="text-end pe-3">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -47,10 +46,7 @@
                                             <%= utilizador.role %>
                                         </span>
                                     </td>
-                                    <td class="text-end pe-3">
-                                        <a href="/admin/exibirUtilizadores/<%= utilizador._id %>/detalhes"
-                                            class="btn btn-sm btn-secondary">Editar</a>
-                                    </td>
+                                
                                 </tr>
                                 <% }); %>
                                     <% } %>

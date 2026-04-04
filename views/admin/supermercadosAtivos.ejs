@@ -20,6 +20,7 @@
                                     <th>Responsável</th>
                                     <th>Localização</th>
                                     <th>Raio</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="corpo-supermercados">
@@ -39,6 +40,13 @@
                                                 <%= Number(s.raioAtuacao || 5).toLocaleString('pt-PT', {
                                                     minimumFractionDigits: 0, maximumFractionDigits: 0 }) %>km
                                             </td>
+                                            <td class="text-end">
+                                                 <% if (s.estadoAprovacao === 'Bloqueado') { %>
+                                                     <a href="/admin/supermercados/bloquear/<%= s._id %>" class="btn btn-sm btn-success">Desbloquear</a>
+                                                 <% } else { %>
+                                                     <a href="/admin/supermercados/bloquear/<%= s._id %>" class="btn btn-sm btn-danger">Bloquear</a>
+                                                 <% } %>
+                                             </td>
                                         </tr>
                                         <% }); %>
                                             <% } else { %>

@@ -38,7 +38,7 @@ const SupermarketSchema = new mongoose.Schema({
     },
     estadoAprovacao: {
         type: String,
-        enum: ['Pendente', 'Aprovado', 'Rejeitado'],
+        enum: ['Pendente', 'Aprovado', 'Rejeitado', 'Bloqueado'],
         default: 'Pendente'
     },
     criadoEm: { type: Date, default: Date.now }
