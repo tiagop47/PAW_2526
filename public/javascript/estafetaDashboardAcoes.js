@@ -10,6 +10,7 @@ if (zonaGuardadaDashboard) {
 
 btnIrEntregasComZona.addEventListener('click', () => {
     const zonaSelecionada = (zonaSelectDashboard.value || '').trim();
+
     if (!zonaSelecionada) {
         alert('Escolhe a zona de trabalho antes de continuar.');
         zonaSelectDashboard.focus();

@@ -198,7 +198,9 @@ function validarFormulario() {
 async function submeterVendaComValidacoes(event) {
     event.preventDefault();
 
-    if (!validarFormulario()) return;
+    if (!validarFormulario()) {
+        return;
+    }
 
     const itensParaEnviar = obterItensSelecionados();
     if (itensParaEnviar.length === 0) {

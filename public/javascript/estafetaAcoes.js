@@ -2,61 +2,53 @@ const estafetaId = document.body.getAttribute('data-estafeta-id') || '';
 const storageZonaKey = `estafeta_zona_trabalho_${estafetaId || 'default'}`;
 const paginaEntregas = !!estafetaId;
 
-let zonaTrabalhoAtiva = '';
-
-const tratarAceitarEntrega = async (id, btn) => {
-
-    btn.disabled = true;
-    const textoOriginal = btn.textContent;
-    btn.textContent = 'A processar...';
-
-    try {
-        const response = await fetch(`/estafeta/api/entregas/${id}/aceitar`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await response.json();
-
-        if (data.sucesso) {
-            alert('Entrega aceite com sucesso!');
-            location.reload();
-        } else {
-            alert('Erro: ' + (data.erro || 'Não foi possível aceitar a entrega'));
-            btn.disabled = false;
-            btn.textContent = textoOriginal;
-        }
-    } catch (error) {
-        alert('Erro de comunicação com o servidor');
-        btn.disabled = false;
-        btn.textContent = textoOriginal;
+const CLASSE_FOCAR_DESTINO = 'link-focar-destino';
+const CLASSE_BTN_ACEITAR = 'btn-aceitar-entrega';
+const CLASSE_BTN_CONFIRMAR = 'btn-confirmar-entrega';
+const ACOES_BOTOES_ENTREGA = {
+    [CLASSE_BTN_ACEITAR]: {
+        endpoint: 'aceitar',
+        mensagemSucesso: 'Entrega aceite com sucesso!',
+        mensagemErro: 'Não foi possível aceitar a entrega'
+    },
+    [CLASSE_BTN_CONFIRMAR]: {
+        confirmacao: 'Confirmar que a entrega foi realizada com sucesso?',
+        endpoint: 'confirmar',
+        mensagemSucesso: 'Entrega confirmada com sucesso!',
+        mensagemErro: 'Não foi possível confirmar a entrega'
     }
 };
 
-const tratarConfirmarEntrega = async (id, btn) => {
-    if (!confirm('Confirmar que a entrega foi realizada com sucesso?')) return;
+let zonaTrabalhoAtiva = '';
 
+const atualizarEstadoBotao = (btn, disabled, texto) => {
+    btn.disabled = disabled;
+    if (texto) btn.textContent = texto;
+};
+
+const submeterAcaoEntrega = async ({ id, btn, endpoint, textoAProcessar, mensagemSucesso, mensagemErro }) => {
     btn.disabled = true;
     const textoOriginal = btn.textContent;
+    atualizarEstadoBotao(btn, true, textoAProcessar || 'A processar...');
 
     try {
-        const response = await fetch(`/estafeta/api/entregas/${id}/confirmar`, {
+        const response = await fetch(`/estafeta/api/entregas/${id}/${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
         const data = await response.json();
 
         if (data.sucesso) {
-            alert('Entrega confirmada com sucesso!');
+            alert(mensagemSucesso);
             location.reload();
-        } else {
-            alert('Erro: ' + (data.erro || 'Não foi possível confirmar a entrega'));
-            btn.disabled = false;
-            btn.textContent = textoOriginal;
+            return;
         }
+
+        alert('Erro: ' + (data.erro || mensagemErro));
+        atualizarEstadoBotao(btn, false, textoOriginal);
     } catch (error) {
         alert('Erro de comunicação com o servidor');
-        btn.disabled = false;
-        btn.textContent = textoOriginal;
+        atualizarEstadoBotao(btn, false, textoOriginal);
     }
 };
 
@@ -73,12 +65,6 @@ const aplicarFiltroZona = function () {
     filtrarMercadosNoMapa(zonaTrabalhoAtiva);
 };
 
-window.aplicarFiltroZonaAtiva = aplicarFiltroZona;
-
-const atualizarZonaAtual = function () {
-    return;
-};
-
 const carregarZonaDaSessao = function () {
     zonaTrabalhoAtiva = (sessionStorage.getItem(storageZonaKey) || '').trim().toLowerCase();
     if (zonaTrabalhoAtiva) return;
@@ -88,30 +74,40 @@ const carregarZonaDaSessao = function () {
 };
 
 document.addEventListener('click', async function (e) {
-    const btn = e.target;
+    const btn = e.target.closest('button, a');
+    if (!btn) return;
 
-    if (btn.classList.contains('link-focar-destino')) {
+    if (btn.classList.contains(CLASSE_FOCAR_DESTINO)) {
         e.preventDefault();
         focarDestinoNoMapa(btn.dataset.lat, btn.dataset.lng);
+        return;
     }
 
-    if (btn.classList.contains('btn-aceitar-entrega')) {
-        await tratarAceitarEntrega(btn.dataset.id, btn);
-    }
+    const classeAcao = Object.keys(ACOES_BOTOES_ENTREGA).find((classe) => btn.classList.contains(classe));
+    if (!classeAcao) return;
 
-    if (btn.classList.contains('btn-confirmar-entrega')) {
-        await tratarConfirmarEntrega(btn.dataset.id, btn);
-    }
+    const configAcao = ACOES_BOTOES_ENTREGA[classeAcao];
+    if (configAcao.confirmacao && !confirm(configAcao.confirmacao)) return;
+
+    await submeterAcaoEntrega({
+        id: btn.dataset.id,
+        btn,
+        endpoint: configAcao.endpoint,
+        mensagemSucesso: configAcao.mensagemSucesso,
+        mensagemErro: configAcao.mensagemErro
+    });
 });
 
 document.addEventListener('DOMContentLoaded', () => {
     if (paginaEntregas) {
         carregarZonaDaSessao();
-        if (!zonaTrabalhoAtiva) return;
+
+        if (!zonaTrabalhoAtiva) {
+            return;
+        }
 
         inicializarMapa('mapa-entregas');
         carregarMercadosDoServidor();
-        atualizarZonaAtual();
         aplicarFiltroZona();
     }
 });
