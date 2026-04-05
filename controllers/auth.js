@@ -1,6 +1,6 @@
 const authService = require('../services/authService');
 const config = require('../config/config');
-const { getDashboardUrl } = require('../middlewares/authMiddleware');
+const { getDashboardUrl } = require('../utils/authUtils');
 
 var authController = {};
 
@@ -48,7 +48,7 @@ authController.login = async function (req, res) {
     }
 };
 
-authController.exibirRecuperarPassword = (req, res) => {
+authController.exibirRecuperarPassword = function (req, res) {
     res.render("loginRegisto/recuperarPassword");
 };
 

@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 const { validarEmail, validarPassword, validarTelefone } = require('../utils/userValidator');
+const config = require('../config/config');
 
 const UserSchema = new mongoose.Schema({
     nome: {
@@ -51,6 +53,21 @@ const UserSchema = new mongoose.Schema({
         required: true
     },
     criadoEm: { type: Date, default: Date.now }
+});
+
+//Se alguém tentar "save" via outros caminhos que não o nosso frontend garantimos o hashing à mesma!
+UserSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) {
+        return next();
+    }
+
+    try {
+        const saltRounds = config.SALT_ROUNDS;
+        this.password = await bcrypt.hash(this.password, saltRounds);
+        next();
+    } catch (error) {
+        next(error);
+    }
 });
 
 module.exports = mongoose.model('User', UserSchema);

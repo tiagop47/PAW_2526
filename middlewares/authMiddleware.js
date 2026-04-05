@@ -1,23 +1,16 @@
 const jwt = require('jsonwebtoken');
 const Supermarket = require('../models/SupermarketModel'); 
 const config = require('../config/config');
+const { getDashboardUrl } = require('../utils/authUtils');
 
 const JWT_SECRET = config.JWT_SECRET;
-const DASHBOARDS = {
-    administrador: "/admin/dashboard",
-    supermercados: "/supermercado/dashboard",
-    estafetas: "/estafeta/dashboard",
-    clientes: "/cliente/dashboard",
-};
 
-function getDashboardUrl(role) {
-    return DASHBOARDS[role];
-}
+var authMiddleware = {};
 
 /**
  * Helper interno — descodifica o token JWT do cookie.
  */
-const descodificarToken = (req, res) => {
+authMiddleware.descodificarToken = function (req, res) {
     const token = req.cookies.token;
     if (!token) return null;
 
@@ -32,15 +25,15 @@ const descodificarToken = (req, res) => {
 /**
  * Middleware global — injeta `res.locals.user` em todas as views.
  */
-const injetarUserNasViews = (req, res, next) => {
-    res.locals.user = descodificarToken(req, res);
+authMiddleware.injetarUserNasViews = function (req, res, next) {
+    res.locals.user = authMiddleware.descodificarToken(req, res);
     next();
 };
 
 /**
  * Middleware — bloqueia acesso se não estiver autenticado.
  */
-const verificarAutenticacao = (req, res, next) => {
+authMiddleware.verificarAutenticacao = function (req, res, next) {
     if (!res.locals.user) {
         return res.redirect('/auth/login');
     }
@@ -51,7 +44,7 @@ const verificarAutenticacao = (req, res, next) => {
 /**
  * Middleware — redireciona utilizadores já logados.
  */
-const redirecionarLogged = (req, res, next) => {
+authMiddleware.redirecionarLogged = function (req, res, next) {
     if (res.locals.user) {
         return res.redirect(getDashboardUrl(res.locals.user.role));
     }
@@ -61,19 +54,19 @@ const redirecionarLogged = (req, res, next) => {
 /**
  * Middleware factory — restringe acesso a roles específicas.
  */
-function verificarRole(rolesPermitidas) {
+authMiddleware.verificarRole = function (rolesPermitidas) {
     return function (req, res, next) {
         if (!req.user || !rolesPermitidas.includes(req.user.role)) {
             return res.status(403).send('Acesso Restrito.');
         }
         next();
     };
-}
+};
 
 /**
  * Middleware — garante que o supermercado já foi aprovado.
  */
-const verificarAprovacaoSupermercado = async (req, res, next) => {
+authMiddleware.verificarAprovacaoSupermercado = async function (req, res, next) {
     if (req.user && req.user.role === 'supermercados') {
         try {
             const superMercado = await Supermarket.findOne({ userId: req.user.id });
@@ -91,11 +84,4 @@ const verificarAprovacaoSupermercado = async (req, res, next) => {
     next();
 };
 
-module.exports = {
-    injetarUserNasViews,
-    verificarAutenticacao,
-    redirecionarLogged,
-    verificarRole,
-    getDashboardUrl,
-    verificarAprovacaoSupermercado
-};
+module.exports = authMiddleware;

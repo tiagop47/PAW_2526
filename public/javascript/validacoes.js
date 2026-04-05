@@ -4,13 +4,22 @@ const formRegistar = document.querySelector('form[action="/auth/registar"]');
 const campoEmailLogin = document.getElementById('emailInput');
 const campoPasswordLogin = document.getElementById('password');
 
+// Configurações de Validação (Sincronizadas com o Backend)
+const EMAIL_REGEX = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
 const campoNomeRegisto = document.getElementById('nome');
 const campoEmailRegisto = document.getElementById('email');
 const campoPasswordRegisto = document.getElementById('password');
+const campoNifRegisto = document.getElementById('nif');
+const campoTelefoneRegisto = document.getElementById('telefone');
 
 function validarEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
+    return EMAIL_REGEX.test(email);
+}
+
+function validarPassword(password) {
+    return PASSWORD_REGEX.test(password);
 }
 
 function exibirErro(idCampo, mensagem) {
@@ -54,20 +63,33 @@ function validarSubmitLogin(e) {
 function validarSubmitRegisto(e) {
     let temErro = false;
 
-    if (campoNomeRegisto && campoNomeRegisto.value.length < 3) {
-        exibirErro('nome', 'Nome demasiado curto.');
+    if (campoNomeRegisto && campoNomeRegisto.value.trim().length < 3) {
+        exibirErro('nome', 'O nome deve ter pelo menos 3 caracteres.');
         temErro = true;
     }
     if (campoEmailRegisto && !validarEmail(campoEmailRegisto.value)) {
-        exibirErro('email', 'Email inválido.');
+        exibirErro('email', 'Formato de email inválido.');
         temErro = true;
     }
-    if (campoPasswordRegisto && campoPasswordRegisto.value.length < 6) {
-        exibirErro('password', 'Mínimo 6 caracteres.');
+    if (campoPasswordRegisto && !validarPassword(campoPasswordRegisto.value)) {
+        exibirErro('password', 'Mínimo 8 caracteres (com Maiúscula, Minúscula e Número).');
+        temErro = true;
+    }
+    if (campoNifRegisto && campoNifRegisto.value.length !== 9) {
+        exibirErro('nif', 'O NIF deve ter exatamente 9 dígitos.');
+        temErro = true;
+    }
+    if (campoTelefoneRegisto && campoTelefoneRegisto.value.toString().trim().length < 9) {
+        exibirErro('telefone', 'O telefone deve ter pelo menos 9 dígitos.');
         temErro = true;
     }
 
-    if (temErro) e.preventDefault();
+    if (temErro) {
+        e.preventDefault();
+        // Scroll para o primeiro erro
+        const primeiroErro = document.querySelector('.is-invalid');
+        if (primeiroErro) primeiroErro.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 }
 
 if (formLogin) {

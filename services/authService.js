@@ -2,7 +2,7 @@ const User = require('../models/UserModel');
 const Supermarket = require('../models/SupermarketModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { validarRegisto, rolesPublicas } = require('../utils/userValidator');
+const { rolesPublicas } = require('../utils/userValidator');
 const config = require('../config/config');
 
 const authService = {};
@@ -30,21 +30,8 @@ authService.registarUtilizador = async function (userData) {
 
     const roleFinal = rolesPublicas.includes(role) ? role : "clientes";
 
-    const erroValidacao = validarRegisto({ nome, email, password, morada, telefone, role: roleFinal });
-    if (erroValidacao) {
-        throw new Error(erroValidacao);
-    }
-
-    const userExistente = await User.findOne({ email });
-    if (userExistente) {
-        throw new Error("Este email já está registado.");
-    }
-
-    const saltRounds = config.SALT_ROUNDS;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
     const novoUser = new User({
-        nome, email, password: hashedPassword, nif, telefone, morada, role: roleFinal
+        nome, email, password, nif, telefone, morada, role: roleFinal
     });
 
     const userGuardado = await novoUser.save();
@@ -80,10 +67,14 @@ authService.registarUtilizador = async function (userData) {
 
 authService.autenticarUtilizador = async function (email, password) {
     const user = await User.findOne({ email });
-    if (!user) throw new Error("Credenciais inválidas.");
+    if (!user) {
+        throw new Error("Credenciais inválidas.");
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) throw new Error("Credenciais inválidas.");
+    if (!isMatch) {
+        throw new Error("Credenciais inválidas.");
+    }
 
     const secret = config.JWT_SECRET;
     const token = jwt.sign(
