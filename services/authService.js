@@ -95,7 +95,7 @@ authService.inicializarAdmin = async function () {
 
             const adminData = {
                 nome: "Administrador do Sistema",
-                email: "admin@admin.com",
+                email: "admin@gmail.com",
                 password: config.DEFAULT_ADMIN_PASSWORD,
                 telefone: "999999999",
                 nif: "999999999",
@@ -105,9 +105,6 @@ authService.inicializarAdmin = async function () {
             const novoAdmin = new User(adminData);
             await novoAdmin.save();
 
-            console.log("Administrador criado com sucesso!");
-            console.log(`Email: admin@admin.com`);
-            console.log(`Password: ${config.DEFAULT_ADMIN_PASSWORD}`);
         } else {
             console.log("Administrador ja existe na base de dados.");
         }
