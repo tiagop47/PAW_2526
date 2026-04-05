@@ -38,7 +38,8 @@ function tabelaDefault(produtos, tabelaBody) {
 function inicializarPesquisaProdutos(config = {}) {
     const {
         root = document,
-        renderTabela = tabelaDefault
+        renderTabela = tabelaDefault,
+        debounceMs = DEBOUNCE_PADRAO_MS
     } = config;
 
     const inputPesquisa = root.querySelector(SELECTOR_INPUT);
@@ -77,7 +78,7 @@ function inicializarPesquisaProdutos(config = {}) {
     let timer;
     inputPesquisa.addEventListener('input', () => {
         clearTimeout(timer);
-        timer = setTimeout(pesquisarProdutos, DEBOUNCE_PADRAO_MS);
+        timer = setTimeout(pesquisarProdutos, debounceMs);
     });
 
     selectCategoria.addEventListener('change', pesquisarProdutos);

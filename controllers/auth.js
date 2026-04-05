@@ -1,6 +1,6 @@
 const authService = require('../services/authService');
 const config = require('../config/config');
-const { getDashboardUrl } = require('../utils/authUtils');
+const { getDashboardUrl } = require('../middlewares/authMiddleware');
 
 var authController = {};
 

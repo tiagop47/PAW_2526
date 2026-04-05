@@ -1,35 +1,17 @@
 const latInput = document.getElementById('input-lat');
 const lonInput = document.getElementById('input-lon');
-const mapaContainer = document.getElementById('mapa-edicao');
 
-/**
- * Lógica para Edição de Localização e Configurações do Supermercado
- */
-document.addEventListener('DOMContentLoaded', function () {
+if (latInput && lonInput) {
+    document.addEventListener('DOMContentLoaded', function () {
+        const latInicial = parseFloat(latInput.value) || 41.15;
+        const lonInicial = parseFloat(lonInput.value) || -8.61;
 
-    const latInicial = parseFloat(latInput.value) || 41.15;
-    const lonInicial = parseFloat(lonInput.value) || -8.61;
+        const map = inicializarMapa('mapa-edicao', latInicial, lonInicial, 15);
+        if (!map) return;
 
-    const map = L.map('mapa-edicao').setView([latInicial, lonInicial], 15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
+        L.marker([latInicial, lonInicial]).addTo(map);
+        configurarCliqueMarcador(map, latInput, lonInput);
 
-    let marker = L.marker([latInicial, lonInicial]).addTo(map);
-
-    map.on('click', function (e) {
-        const { lat, lng } = e.latlng;
-
-        latInput.value = lat.toFixed(6);
-        lonInput.value = lng.toFixed(6);
-
-        if (marker) {
-            marker.setLatLng(e.latlng);
-        } else {
-            marker = L.marker(e.latlng).addTo(map);
-        }
+        setTimeout(() => map.invalidateSize(), 200);
     });
-
-    //Tempo de renderizar
-    setTimeout(() => map.invalidateSize(), 200);
-});
+}

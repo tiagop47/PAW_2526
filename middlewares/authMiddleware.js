@@ -1,11 +1,24 @@
 const jwt = require('jsonwebtoken');
 const Supermarket = require('../models/SupermarketModel'); 
 const config = require('../config/config');
-const { getDashboardUrl } = require('../utils/authUtils');
 
 const JWT_SECRET = config.JWT_SECRET;
 
+const DASHBOARDS = {
+    administrador: "/admin/dashboard",
+    supermercados: "/supermercado/dashboard",
+    estafetas: "/estafeta/dashboard",
+    clientes: "/cliente/dashboard",
+};
+
 var authMiddleware = {};
+
+/**
+ * Retorna a URL do dashboard baseada na role do utilizador.
+ */
+authMiddleware.getDashboardUrl = function (role) {
+    return DASHBOARDS[role] || "/auth/login";
+};
 
 /**
  * Helper interno — descodifica o token JWT do cookie.
@@ -46,7 +59,7 @@ authMiddleware.verificarAutenticacao = function (req, res, next) {
  */
 authMiddleware.redirecionarLogged = function (req, res, next) {
     if (res.locals.user) {
-        return res.redirect(getDashboardUrl(res.locals.user.role));
+        return res.redirect(authMiddleware.getDashboardUrl(res.locals.user.role));
     }
     next();
 };

@@ -47,11 +47,11 @@
                         <div class="row g-3 mb-4">
                             <div class="col-6">
                                 <label class="form-label fw-bold small">Preço (€)</label>
-                                <input type="number" step="0.01" name="preco" class="form-control" required>
+                                <input type="number" step="0.01" min="0.01" name="preco" class="form-control" required>
                             </div>
                             <div class="col-6">
                                 <label class="form-label fw-bold small">Stock</label>
-                                <input type="number" name="stockDisponivel" class="form-control" required>
+                                <input type="number" min="0" name="stockDisponivel" class="form-control" required>
                             </div>
                         </div>
 
@@ -64,6 +64,7 @@
         </main>
 
         <script src="/javascript/supermercadoAcoes.js"></script>
+        <script src="/javascript/userValidator.js"></script>
         <script src="/javascript/produtoCriarEditar.js"></script>
 
 </body>

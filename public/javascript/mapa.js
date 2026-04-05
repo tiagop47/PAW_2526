@@ -6,15 +6,35 @@ const ROTA_ENTREGAS_ESTAFETA = '/estafeta/api/entregas';
 const COR_MERCADO = '#007bff';
 const COR_DESTINO = '#dc3545';
 
-function inicializarMapa(idElemento, lat = 41.15, lon = -8.61) {
+function inicializarMapa(idElemento, lat = 41.15, lon = -8.61, zoom = 12) {
     const container = document.getElementById(idElemento);
-    if (!container) return;
+    if (!container) return null;
 
-    meuMapa = L.map(idElemento).setView([lat, lon], 12);
+    meuMapa = L.map(idElemento).setView([lat, lon], zoom);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap'
     }).addTo(meuMapa);
+
+    return meuMapa;
+}
+
+function configurarCliqueMarcador(mapa, inputLat, inputLon) {
+    let marcador;
+    mapa.on('click', function (e) {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+
+        inputLat.value = lat.toFixed(6);
+        inputLon.value = lon.toFixed(6);
+
+        if (marcador) {
+            marcador.setLatLng([lat, lon]);
+        } else {
+            marcador = L.marker([lat, lon]).addTo(mapa);
+        }
+    });
+    return marcador;
 }
 
 const marcadoresSupermercados = {};
@@ -202,5 +222,3 @@ function focarDestinoNoMapa(lat, lng) {
         destino.marker.openPopup();
     }
 }
-
-

@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Centralizar o mapa para mostrar todos os mercados
     if (coordenadasParaCentro.length > 0 && meuMapa) {
         const bounds = L.latLngBounds(coordenadasParaCentro);
         meuMapa.fitBounds(bounds, { padding: [50, 50] });

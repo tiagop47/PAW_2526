@@ -119,16 +119,11 @@ function inicializarMapaEntrega() {
     const temCoordenadasSuper = Number.isFinite(latSuper) && Number.isFinite(lngSuper);
     const centroInicial = temCoordenadasSuper ? [latSuper, lngSuper] : [41.1579, -8.6291];
 
-    mapaEntrega = L.map('mapaEscolherEntrega').setView(centroInicial, 12);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(mapaEntrega);
+    mapaEntrega = inicializarMapa('mapaEscolherEntrega', centroInicial[0], centroInicial[1]);
 
     if (temCoordenadasSuper) {
         L.marker([latSuper, lngSuper]).addTo(mapaEntrega).bindPopup(`<b>${nomeSuper}</b>`);
 
-        // Mantem o mesmo estilo de circulo usado nos outros mapas da aplicacao.
         const circuloAtuacao = L.circle([latSuper, lngSuper], {
             color: '#007bff',
             fillColor: '#007bff',

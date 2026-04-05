@@ -2,7 +2,7 @@ const User = require('../models/UserModel');
 const Supermarket = require('../models/SupermarketModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { rolesPublicas } = require('../utils/userValidator');
+const { rolesPublicas, validarPassword } = require('../public/javascript/userValidator');
 const config = require('../config/config');
 
 const authService = {};

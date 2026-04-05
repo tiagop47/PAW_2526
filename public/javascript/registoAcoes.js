@@ -1,33 +1,16 @@
-const mapaRegisto = document.getElementById('mapa-registo');
 const latInput = document.getElementById('input-lat');
 const lonInput = document.getElementById('input-lon');
 const seletor = document.getElementById('seletor-role');
 const camposSuper = document.getElementById('campos-supermercado');
-let marcador;
 
 document.addEventListener('DOMContentLoaded', function () {
+    const mapaRegisto = document.getElementById('mapa-registo');
+
     if (mapaRegisto) {
         inicializarMapa('mapa-registo');
-    }
-
-    if (typeof meuMapa !== 'undefined' && meuMapa) {
-        meuMapa.on('click', function (e) {
-            const lat = e.latlng.lat;
-            const lon = e.latlng.lng;
-
-            if (latInput) {
-                latInput.value = lat.toFixed(6);
-            }
-            if (lonInput) {
-                lonInput.value = lon.toFixed(6);
-            }
-
-            if (marcador) {
-                marcador.setLatLng([lat, lon]);
-            } else {
-                marcador = L.marker([lat, lon]).addTo(meuMapa);
-            }
-        });
+        if (meuMapa) {
+            configurarCliqueMarcador(meuMapa, latInput, lonInput);
+        }
     }
 
     if (seletor && camposSuper) {

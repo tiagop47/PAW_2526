@@ -3,7 +3,7 @@
 
 <head>
     <%- include('../partials/head') %>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body class="bg-light">
@@ -51,10 +51,13 @@
                         <div class="card border-0 bg-light mb-2 p-2 venda-caixa-filtros">
                             <div class="row g-2">
                                 <div class="col-md-8">
-                                    <input type="text" id="produtoPesquisaInput" data-produto-pesquisa="input" class="form-control form-control-sm" placeholder="Pesquisar por nome do produto...">
+                                    <input type="text" id="produtoPesquisaInput" data-produto-pesquisa="input"
+                                        class="form-control form-control-sm"
+                                        placeholder="Pesquisar por nome do produto...">
                                 </div>
                                 <div class="col-md-4">
-                                    <select id="produtoPesquisaCategoria" data-produto-pesquisa="categoria" class="form-select form-select-sm">
+                                    <select id="produtoPesquisaCategoria" data-produto-pesquisa="categoria"
+                                        class="form-select form-select-sm">
                                         <option value="">Todas as categorias</option>
                                         <option value="Frutas">Frutas e Legumes</option>
                                         <option value="Carne">Carne e Peixe</option>
@@ -90,15 +93,16 @@
                                                     <%= produto.stockDisponivel %>
                                                 </td>
                                                 <td style="max-width: 120px;">
-                                                    <input type="number" min="0" max="<%= produto.stockDisponivel %>" value="0"
-                                                        class="form-control form-control-sm js-quantidade"
+                                                    <input type="number" min="0" max="<%= produto.stockDisponivel %>"
+                                                        value="0" class="form-control form-control-sm js-quantidade"
                                                         data-produto-id="<%= produto._id %>">
                                                 </td>
                                             </tr>
                                             <% }) %>
                                                 <% } else { %>
                                                     <tr>
-                                                        <td colspan="4" class="text-center text-muted py-3">Sem produtos com
+                                                        <td colspan="4" class="text-center text-muted py-3">Sem produtos
+                                                            com
                                                             stock disponível.</td>
                                                     </tr>
                                                     <% } %>
@@ -111,13 +115,16 @@
                         <div class="venda-caixa-mapa-sticky">
                             <h2 class="h6 fw-bold mb-3" id="tituloMapaEntrega">Localização de Entrega</h2>
                             <div class="card border-0 bg-light p-3" id="blocoMapaEntrega">
-                                <p class="small text-muted mb-2">Clique no mapa para escolher as coordenadas da entrega ao domicílio.</p>
+                                <p class="small text-muted mb-2">Clique no mapa para escolher as coordenadas da entrega
+                                    ao domicílio.</p>
                                 <div id="mapaEscolherEntrega" class="venda-caixa-mapa"
                                     data-super-lat="<%= supermercado && supermercado.localizacaoGeo && supermercado.localizacaoGeo.coordinates ? supermercado.localizacaoGeo.coordinates[1] : '' %>"
                                     data-super-lng="<%= supermercado && supermercado.localizacaoGeo && supermercado.localizacaoGeo.coordinates ? supermercado.localizacaoGeo.coordinates[0] : '' %>"
                                     data-super-raio="<%= supermercado && supermercado.raioAtuacao ? supermercado.raioAtuacao : 5 %>"
-                                    data-super-nome="<%= supermercado && supermercado.nome ? supermercado.nome : 'Supermercado' %>"></div>
-                                <small class="text-muted mt-2 d-block" id="coordsSelecionadas">Nenhuma coordenada selecionada.</small>
+                                    data-super-nome="<%= supermercado && supermercado.nome ? supermercado.nome : 'Supermercado' %>">
+                                </div>
+                                <small class="text-muted mt-2 d-block" id="coordsSelecionadas">Nenhuma coordenada
+                                    selecionada.</small>
                             </div>
                         </div>
                     </div>
@@ -130,6 +137,7 @@
         </main>
 
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="/javascript/mapa.js"></script>
         <script src="/javascript/pesquisaProdutos.js"></script>
         <script src="/javascript/vendaCaixaAcoes.js"></script>
 

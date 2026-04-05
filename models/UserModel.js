@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const { validarEmail, validarPassword, validarTelefone } = require('../utils/userValidator');
+const { validarEmail, validarPassword, validarTelefone } = require('../public/javascript/userValidator');
 const config = require('../config/config');
 
 const UserSchema = new mongoose.Schema({
