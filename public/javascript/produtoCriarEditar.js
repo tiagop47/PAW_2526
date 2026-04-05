@@ -1,13 +1,13 @@
 // Seletores de Elementos (Topo do documento)
-var formCriar = document.querySelector('#formCriar');
-var formEditar = document.querySelector("#formEditar");
-var formEliminar = document.querySelector("#formEliminar");
+const formCriar = document.querySelector('#formCriar');
+const formEditar = document.querySelector("#formEditar");
+const formEliminar = document.querySelector("#formEliminar");
 
 function validarFormularioProduto(form) {
-    var campoNome = form.querySelector('[name="nome"]');
-    var campoPreco = form.querySelector('[name="preco"]');
-    var campoStock = form.querySelector('[name="stockDisponivel"]');
-    var campoImagem = form.querySelector('[name="imagem"]');
+    const campoNome = form.querySelector('[name="nome"]');
+    const campoPreco = form.querySelector('[name="preco"]');
+    const campoStock = form.querySelector('[name="stockDisponivel"]');
+    const campoImagem = form.querySelector('[name="imagem"]');
 
     var erro = false;
 
@@ -43,7 +43,12 @@ function tratarSubmitEliminar(e) {
     }
 }
 
-// Event Listeners
-if (formCriar) formCriar.addEventListener('submit', tratarSubmit);
-if (formEditar) formEditar.addEventListener('submit', tratarSubmit);
-if (formEliminar) formEliminar.addEventListener('submit', tratarSubmitEliminar);
+if (formCriar) {
+    formCriar.addEventListener('submit', tratarSubmit);
+}
+if (formEditar) {
+    formEditar.addEventListener('submit', tratarSubmit);
+}
+if (formEliminar) {
+    formEliminar.addEventListener('submit', tratarSubmitEliminar);
+}

@@ -1,10 +1,10 @@
 // Seletores de Elementos (Topo)
-var formRegistar = document.querySelector('form[action="/auth/registar"]');
-var campoNome = document.getElementById('nome');
-var campoEmail = document.getElementById('email');
-var campoPass = document.getElementById('password');
-var campoNif = document.getElementById('nif');
-var campoTel = document.getElementById('telefone');
+const formRegistar = document.querySelector('form[action="/auth/registar"]');
+const campoNome = document.getElementById('nome');
+const campoEmail = document.getElementById('email');
+const campoPass = document.getElementById('password');
+const campoNif = document.getElementById('nif');
+const campoTel = document.getElementById('telefone');
 
 function validarRegisto(e) {
     var temErro = false;

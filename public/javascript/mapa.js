@@ -105,13 +105,11 @@ async function carregarMercadosDoServidor() {
             coordenadasParaCentro.push([latM, lon]);
         });
 
-        // Ajustar o mapa para mostrar todos os marcadores (Centralização Automática)
         if (coordenadasParaCentro.length > 0 && meuMapa) {
             const bounds = L.latLngBounds(coordenadasParaCentro);
             meuMapa.fitBounds(bounds, { padding: [50, 50] });
         }
 
-        // Só carregar contagem de encomendas se NÃO for admin
         if (!isAdmin) {
             carregarEntregasDisponiveis();
         }
