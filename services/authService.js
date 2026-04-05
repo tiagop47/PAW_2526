@@ -2,7 +2,7 @@ const User = require('../models/UserModel');
 const Supermarket = require('../models/SupermarketModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { rolesPublicas, validarPassword } = require('../public/javascript/userValidator');
+const { rolesPublicas } = require('../public/javascript/userValidator');
 const config = require('../config/config');
 
 const authService = {};
@@ -84,6 +84,36 @@ authService.autenticarUtilizador = async function (email, password) {
     );
 
     return { token, role: user.role };
+};
+
+authService.inicializarAdmin = async function () {
+    try {
+        const adminExistente = await User.findOne({ role: 'administrador' });
+
+        if (!adminExistente) {
+            console.log("Nenhum administrador encontrado. A criar conta de administrador por defeito...");
+
+            const adminData = {
+                nome: "Administrador do Sistema",
+                email: "admin@admin.com",
+                password: config.DEFAULT_ADMIN_PASSWORD,
+                telefone: "999999999",
+                nif: "999999999",
+                morada: "Rua do Administrador, nº 1",
+                role: "administrador"
+            };
+            const novoAdmin = new User(adminData);
+            await novoAdmin.save();
+
+            console.log("Administrador criado com sucesso!");
+            console.log(`Email: admin@admin.com`);
+            console.log(`Password: ${config.DEFAULT_ADMIN_PASSWORD}`);
+        } else {
+            console.log("Administrador ja existe na base de dados.");
+        }
+    } catch (error) {
+        console.error("Erro ao inicializar administrador:", error.message);
+    }
 };
 
 module.exports = authService;

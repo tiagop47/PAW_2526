@@ -175,6 +175,7 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
     order.estado = estado;
     return order.save();
 };
+
 supermarketService.registarVenda = async function (supermercadoId, saleData) {
     const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, listaItens, metodoEntrega } = saleData;
 

@@ -25,7 +25,10 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 mongoose.connect(config.MONGODB_URI)
-    .then(() => console.log('Ligado ao MongoDB!'))
+    .then(() => {
+        console.log('Ligado ao MongoDB!');
+        require('./services/authService').inicializarAdmin();
+    })
     .catch(err => console.error('Erro MongoDB:', err));
 
 // Configurações do Express e EJS
