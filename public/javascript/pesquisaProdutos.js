@@ -37,14 +37,13 @@ function tabelaDefault(produtos, tabelaBody) {
 
 function inicializarPesquisaProdutos(config = {}) {
     const {
-        root = document,
         renderTabela = tabelaDefault,
         debounceMs = DEBOUNCE_PADRAO_MS
     } = config;
 
-    const inputPesquisa = root.querySelector(SELECTOR_INPUT);
-    const selectCategoria = root.querySelector(SELECTOR_CATEGORIA);
-    const tabelaBody = root.querySelector(SELECTOR_TABELA_BODY);
+    const inputPesquisa = document.querySelector(SELECTOR_INPUT);
+    const selectCategoria = document.querySelector(SELECTOR_CATEGORIA);
+    const tabelaBody = document.querySelector(SELECTOR_TABELA_BODY);
 
     async function pesquisarProdutos() {
         const texto = inputPesquisa.value.trim();
