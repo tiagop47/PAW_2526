@@ -1,15 +1,17 @@
-const ENDPOINT_PRODUTOS = '/supermercado/api/produtos';
-
 const inputPesquisa = document.querySelector('[data-produto-pesquisa="input"]');
 const selectCategoria = document.querySelector('[data-produto-pesquisa="categoria"]');
 const tabelaBody = document.querySelector('[data-produto-pesquisa="tabela"]');
 
-function tabelaDefault(produtos, tabelaBody) {
+function atualizarTabela(produtos) {
+    if (!tabelaBody) {
+        return;
+    }
+
     if (!Array.isArray(produtos) || produtos.length === 0) {
         tabelaBody.innerHTML = `
             <tr>
                 <td colspan="5" class="text-center text-muted py-4">
-                    Nenhum produto registado.
+                    Nenhum produto encontrado.
                 </td>
             </tr>`;
         return;
@@ -35,52 +37,42 @@ function tabelaDefault(produtos, tabelaBody) {
     `).join('');
 }
 
-function inicializarPesquisaProdutos(config = {}) {
-    if (!inputPesquisa || !selectCategoria || !tabelaBody) {
-        return;
+async function pesquisarProdutos() {
+    const texto = inputPesquisa?.value.trim() || '';
+    const categoria = selectCategoria?.value || '';
+
+    //os parâmetros URL ?q=frango&categoria=talho
+    const params = new URLSearchParams();
+    if (texto) {
+        params.set('q', texto);
+    }
+    if (categoria) {
+        params.set('categoria', categoria);
     }
 
-    const {
-        renderTabela = tabelaDefault,
-        debounceMs = 300
-    } = config;
+    const url = `/supermercado/api/produtos?${params.toString()}`;
 
-    async function pesquisarProdutos() {
-        const params = new URLSearchParams();
-        const texto = inputPesquisa.value.trim();
-        const categoria = selectCategoria.value;
+    try {
+        const resposta = await fetch(url);
 
-        if (texto) {
-            params.set('q', texto);
-        }
-        if (categoria) {
-            params.set('categoria', categoria);
+        if (!resposta.ok) {
+            throw new Error(`Erro HTTP: ${resposta.status}`);
         }
 
-        const query = params.toString();
-        const url = query ? `${ENDPOINT_PRODUTOS}?${query}` : ENDPOINT_PRODUTOS;
-
-        try {
-            const resposta = await fetch(url);
-            if (!resposta.ok) {
-                throw new Error(`HTTP ${resposta.status}`);
-            }
-
-            const produtos = await resposta.json();
-            renderTabela(produtos, tabelaBody);
-        } catch (err) {
-            console.error('Erro na pesquisa:', err);
-        }
+        const produtos = await resposta.json();
+        atualizarTabela(produtos);
+    } catch (err) {
+        console.error('Erro na pesquisa:', err);
     }
+}
 
-    let timer;
+if (inputPesquisa && selectCategoria) {
+    let tempoEspera;
+
     inputPesquisa.addEventListener('input', () => {
-        clearTimeout(timer);
-        timer = setTimeout(pesquisarProdutos, debounceMs);
+        clearTimeout(tempoEspera);
+        tempoEspera = setTimeout(pesquisarProdutos, 300);
     });
 
     selectCategoria.addEventListener('change', pesquisarProdutos);
-
-    return { pesquisarProdutos };
 }
-
