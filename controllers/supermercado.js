@@ -25,7 +25,8 @@ supermarketController.exibirDashboard = async function (req, res) {
         totalProdutos: dashboardData.totalProdutos,
         totalEncomendas: dashboardData.totalEncomendas,
         vendasTotais: dashboardData.vendasTotais,
-        encomendas: dashboardData.encomendas
+        encomendas: dashboardData.encomendas,
+        top5Produtos: dashboardData.top5Produtos
     });
 };
 

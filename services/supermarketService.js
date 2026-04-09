@@ -34,7 +34,7 @@ supermarketService.getSupermercado = async function (userId) {
     return supermercado;
 };
 supermarketService.obterDadosDashboard = async function (supermercadoId) {
-    const [totalProdutos, totalEncomendas, encomendas, vendasStats] = await Promise.all([
+    const [totalProdutos, totalEncomendas, encomendas, vendasStats, top5Produtos] = await Promise.all([
         Product.countDocuments({ supermercadoId }),
         Order.countDocuments({ supermercadoId, estado: { $ne: 'cancelada' } }),
         Order.find({ supermercadoId })
@@ -49,6 +49,40 @@ supermarketService.obterDadosDashboard = async function (supermercadoId) {
                 }
             },
             { $group: { _id: null, total: { $sum: "$valorTotal" } } }
+        ]),
+        Order.aggregate([
+            { 
+                $match: { 
+                    supermercadoId: new mongoose.Types.ObjectId(supermercadoId),
+                    estado: 'entregue' 
+                } 
+            },
+            { $unwind: '$produtos' },
+            { 
+                $group: { 
+                    _id: '$produtos.produtoId', 
+                    totalVendido: { $sum: '$produtos.quantidade' },
+                    faturado: { $sum: { $multiply: ['$produtos.quantidade', '$produtos.precoUnitario'] } }
+                } 
+            },
+            { $sort: { totalVendido: -1 } },
+            { $limit: 5 },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'detalhes'
+                }
+            },
+            { $unwind: '$detalhes' },
+            {
+                $project: {
+                    nome: '$detalhes.nome',
+                    totalVendido: 1,
+                    faturado: 1
+                }
+            }
         ])
     ]);
 
@@ -56,7 +90,8 @@ supermarketService.obterDadosDashboard = async function (supermercadoId) {
         totalProdutos,
         totalEncomendas,
         vendasTotais: vendasStats.length > 0 ? vendasStats[0].total : 0,
-        encomendas
+        encomendas,
+        top5Produtos
     };
 };
 supermarketService.obterProdutos = async function (supermercadoId) {

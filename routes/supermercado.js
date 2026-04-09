@@ -28,6 +28,7 @@ router.get('/produtos/novo', supermarketController.exibirFormularioNovo);
 router.get('/produtos/:productId', supermarketController.exibirDetalhes);
 router.get('/produtos/editar/:productId', supermarketController.exibirFormularioEditar);
 
+
 router.get('/api/produtos', supermarketController.pesquisarProdutos);
 
 router.post('/produtos', upload.single('imagem'), supermarketController.criarProduto);
