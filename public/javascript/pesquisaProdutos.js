@@ -1,8 +1,8 @@
 const ENDPOINT_PRODUTOS = '/supermercado/api/produtos';
-const DEBOUNCE_PADRAO_MS = 300;
-const SELECTOR_INPUT = '[data-produto-pesquisa="input"]';
-const SELECTOR_CATEGORIA = '[data-produto-pesquisa="categoria"]';
-const SELECTOR_TABELA_BODY = '[data-produto-pesquisa="tabela"]';
+
+const inputPesquisa = document.querySelector('[data-produto-pesquisa="input"]');
+const selectCategoria = document.querySelector('[data-produto-pesquisa="categoria"]');
+const tabelaBody = document.querySelector('[data-produto-pesquisa="tabela"]');
 
 function tabelaDefault(produtos, tabelaBody) {
     if (!Array.isArray(produtos) || produtos.length === 0) {
@@ -36,24 +36,23 @@ function tabelaDefault(produtos, tabelaBody) {
 }
 
 function inicializarPesquisaProdutos(config = {}) {
+    if (!inputPesquisa || !selectCategoria || !tabelaBody) {
+        return;
+    }
+
     const {
         renderTabela = tabelaDefault,
-        debounceMs = DEBOUNCE_PADRAO_MS
+        debounceMs = 300
     } = config;
 
-    const inputPesquisa = document.querySelector(SELECTOR_INPUT);
-    const selectCategoria = document.querySelector(SELECTOR_CATEGORIA);
-    const tabelaBody = document.querySelector(SELECTOR_TABELA_BODY);
-
     async function pesquisarProdutos() {
+        const params = new URLSearchParams();
         const texto = inputPesquisa.value.trim();
         const categoria = selectCategoria.value;
-        const params = new URLSearchParams();
 
         if (texto) {
             params.set('q', texto);
         }
-
         if (categoria) {
             params.set('categoria', categoria);
         }
