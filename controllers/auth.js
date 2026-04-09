@@ -57,4 +57,57 @@ authController.logout = function (req, res) {
     res.redirect('/auth/login');
 };
 
+authController.processarRecuperarPassword = async function (req, res) {
+    try {
+        const { email } = req.body;
+        
+        const { user, token } = await authService.gerarTokenRecuperacao(email);
+        await authService.enviarEmailRecuperacao(email, token, req);
+
+        res.render("loginRegisto/recuperarPassword", { 
+            successMessage: `Foi enviado um email para ${email} com as instruções.`,
+            errorMessage: null 
+        });
+    } catch (err) {
+        res.render("loginRegisto/recuperarPassword", { 
+            errorMessage: err.message,
+            successMessage: null 
+        });
+    }
+}
+
+authController.exibirResetPassword = async function(req, res){
+    try {
+        res.render("loginRegisto/resetPassword", { 
+            token: req.params.token,
+            errorMessage: null
+        });
+    } catch (err) {
+        res.redirect('/auth/login');
+    }
+};
+
+authController.processarResetPassword = async function (req, res) {
+    try {
+        const { password, confirmPassword } = req.body;
+        const { token } = req.params;
+
+        if (password !== confirmPassword) {
+            throw new Error("As palavras-passe não coincidem.");
+        }
+        
+        await authService.redefinirPassword(token, password);
+        
+        res.render("loginRegisto/login", { 
+            errorMessage: null,
+            successMessage: "Palavra-passe alterada com sucesso! Já podes iniciar sessão."
+        });
+    } catch (err) {
+        res.render("loginRegisto/resetPassword", { 
+            token: req.params.token,
+            errorMessage: err.message
+        });
+    }
+};
+
 module.exports = authController;

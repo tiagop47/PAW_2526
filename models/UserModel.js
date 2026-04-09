@@ -52,22 +52,24 @@ const UserSchema = new mongoose.Schema({
         default: 'clientes',
         required: true
     },
-    criadoEm: { type: Date, default: Date.now }
+    criadoEm: { type: Date, default: Date.now },
+
+    resetPasswordToken: {
+        type: String
+    },
+    resetPasswordExpires:{ 
+        type: Date
+    }
 });
 
 //Se alguém tentar "save" via outros caminhos que não o nosso frontend garantimos o hashing à mesma!
 UserSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
-        return next();
+        return;
     }
 
-    try {
-        const saltRounds = config.SALT_ROUNDS;
-        this.password = await bcrypt.hash(this.password, saltRounds);
-        next();
-    } catch (error) {
-        next(error);
-    }
+   const saltRounds = config.SALT_ROUNDS;
+   this.password = await bcrypt.hash(this.password, saltRounds);
 });
 
 module.exports = mongoose.model('User', UserSchema);
