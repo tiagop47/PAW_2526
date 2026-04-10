@@ -173,6 +173,17 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
 
     const estadoAnterior = order.estado;
 
+    // Regra de negócio: cliente só pode cancelar até 5 minutos após confirmação
+    if (estado === 'cancelada') {
+
+        const agora = Date.now();
+        const limiteCancelamento = new Date(order.criadoEm).getTime() + (5 * 60 * 1000);
+
+        if(agora > limiteCancelamento) {
+            throw new Error('O prazo de 5 minutos para cancelamento já expirou.');
+        }
+    }
+
     // 1. Lógica de REDUÇÃO de Stock
     // Se passar de 'pendente' para um estado ativo (confirmada, em entrega, entregue), reduzimos o stock
     if (estadoAnterior === 'pendente' && (estado === 'confirmada' || estado === 'em entrega' || estado === 'entregue')) {
