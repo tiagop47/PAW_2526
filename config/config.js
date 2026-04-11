@@ -17,5 +17,9 @@ module.exports = {
     CAPTCHA_API_SECRET: process.env.CAPTCHA_API_SECRET,
     JWT_SECRET: process.env.JWT_SECRET || 'fallback',
     SALT_ROUNDS: parseIntOr(process.env.SALT_ROUNDS, 10),
-    DEFAULT_ADMIN_PASSWORD: process.env.DEFAULT_ADMIN_PASSWORD
+    DEFAULT_ADMIN_PASSWORD: process.env.DEFAULT_ADMIN_PASSWORD,
+    EMAIL_HOST: process.env.EMAIL_HOST || 'smtp.ethereal.email',
+    EMAIL_PORT: parseIntOr(process.env.EMAIL_PORT, 587),
+    EMAIL_USER: process.env.EMAIL_USER,
+    EMAIL_PASS: process.env.EMAIL_PASS
 };

@@ -63,13 +63,13 @@ const UserSchema = new mongoose.Schema({
 });
 
 //Se alguém tentar "save" via outros caminhos que não o nosso frontend garantimos o hashing à mesma!
-UserSchema.pre('save', async function (next) {
+UserSchema.pre('save', async function () {
     if (!this.isModified('password')) {
         return;
     }
 
-   const saltRounds = config.SALT_ROUNDS;
-   this.password = await bcrypt.hash(this.password, saltRounds);
+    const saltRounds = config.SALT_ROUNDS || 10;
+    this.password = await bcrypt.hash(this.password, saltRounds);
 });
 
 module.exports = mongoose.model('User', UserSchema);

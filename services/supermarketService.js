@@ -149,7 +149,10 @@ supermarketService.atualizarSupermercado = async function (supermercadoId, dados
             : [dadosSupermercado.metodosEntrega];
     }
 
-    return Supermarket.findByIdAndUpdate(supermercadoId, dadosSupermercado, { new: true });
+    return Supermarket.findByIdAndUpdate(supermercadoId, {
+        ...dadosSupermercado,
+        estadoAprovacao: 'Pendente'
+    }, { new: true });
 };
 
 supermarketService.getUserByIdSemPassword = async function (userId) {

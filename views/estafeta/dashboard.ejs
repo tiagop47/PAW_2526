@@ -54,6 +54,21 @@
                         </div>
                     </div>
                 </div>
+                <% if (stats.zonaMaisEncomendas) { %>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Zona com + Encomendas</small>
+                                <div class="h3 mb-0 mt-1">
+                                    <%= stats.zonaMaisEncomendas %>
+                                </div>
+                                <small class="text-muted" style="font-size: 0.7rem;">
+                                    <%= stats.maxEncomendas %> <%= stats.maxEncomendas === 1 ? 'encomenda' : 'encomendas' %>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
             </div>
 
             <div class="card border-0 shadow-sm">

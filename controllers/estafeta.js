@@ -5,28 +5,47 @@ const estafetaController = {};
 estafetaController.exibirDashboard = async function (req, res) {
     try {
         const estafetaId = req.user.id;
-        const [stats, supermercados] = await Promise.all([
+        const [stats, supermercados, entregas] = await Promise.all([
             estafetaService.obterEstatisticas(estafetaId),
-            estafetaService.obterSupermercadosAtivos()
+            estafetaService.obterSupermercadosAtivos(),
+            estafetaService.obterEntregasDisponiveis()
         ]);
 
-        const zonasMap = new Map();
-        supermercados.forEach((supermercado) => {
-            const zonaOriginal = (supermercado.localizacao || '').trim();
-            const zonaKey = zonaOriginal.toLowerCase();
+        const zonasObjeto = {};
+        supermercados.forEach(s => {
+            const zona = (s.localizacao || '').trim();
+            if (zona) zonasObjeto[zona.toLowerCase()] = zona;
+        });
 
-            if (zonaOriginal && !zonasMap.has(zonaKey)) {
-                zonasMap.set(zonaKey, zonaOriginal);
+        const zonasTrabalho = Object.keys(zonasObjeto)
+            .sort((a, b) => zonasObjeto[a].localeCompare(zonasObjeto[b], 'pt'))
+            .map(key => ({ value: key, label: zonasObjeto[key] }));
+
+        const contagem = {};
+        let zonaMaisEncomendas = null;
+        let maxEncomendas = 0;
+
+        entregas.forEach(e => {
+            const zona = e.supermercadoId && e.supermercadoId.localizacao;
+            if (zona) {
+                contagem[zona] = (contagem[zona] || 0) + 1;
+                if (contagem[zona] > maxEncomendas) {
+                    maxEncomendas = contagem[zona];
+                    zonaMaisEncomendas = zona;
+                }
             }
         });
 
-        const zonasTrabalho = Array.from(zonasMap.entries())
-            .sort((a, b) => a[1].localeCompare(b[1], 'pt'))
-            .map(([value, label]) => ({ value, label }));
-
         res.render('estafeta/dashboard', {
             title: 'Painel do Estafeta',
-            stats,
+            stats: {
+                entregasRealizadas: stats.entregasRealizadas,
+                entregasEmCurso: stats.entregasEmCurso,
+                entregasDisponiveis: stats.entregasDisponiveis,
+                ganhosTotais: stats.ganhosTotais,
+                zonaMaisEncomendas: zonaMaisEncomendas,
+                maxEncomendas: maxEncomendas
+            },
             estafetaId,
             zonasTrabalho
         });
@@ -40,7 +59,9 @@ estafetaController.exibirDashboard = async function (req, res) {
                 entregasRealizadas: 0,
                 entregasEmCurso: 0,
                 entregasDisponiveis: 0,
-                ganhosTotais: 0
+                ganhosTotais: 0,
+                zonaMaisEncomendas: null,
+                maxEncomendas: 0
             }
         });
     }
@@ -48,80 +69,39 @@ estafetaController.exibirDashboard = async function (req, res) {
 
 estafetaController.listarEntregasDisponiveis = async function (req, res) {
     try {
-        const estafetaId = req.user.id;
-        // Agora carregamos sempre todas as disponíveis para a lista e para o mapa
         const [entregas, supermercados] = await Promise.all([
             estafetaService.obterEntregasDisponiveis(),
             estafetaService.obterSupermercadosAtivos()
         ]);
-
-        res.render('estafeta/entregas', {
-            entregas,
-            supermercadosCobertura: supermercados,
-            estafetaId,
-            lat: null,
-            lng: null
-        });
+        res.render('estafeta/entregas', { entregas, supermercadosCobertura: supermercados, estafetaId: req.user.id, lat: null, lng: null });
     } catch (error) {
-        console.error('Erro ao listar entregas:', error);
         res.render('estafeta/entregas', { entregas: [], erro: 'Erro ao carregar entregas' });
     }
 };
 
 estafetaController.listarMinhasEntregas = async function (req, res) {
     try {
-        const estafetaId = req.user.id;
-        const entregas = await estafetaService.obterMinhasEntregas(estafetaId);
+        const entregas = await estafetaService.obterMinhasEntregas(req.user.id);
         res.render('estafeta/minhasEntregas', { entregas });
     } catch (error) {
-        console.error('Erro ao listar minhas entregas:', error);
         res.render('estafeta/minhasEntregas', { entregas: [], erro: 'Erro ao carregar entregas' });
     }
 };
 
 estafetaController.aceitarEntrega = async function (req, res) {
     try {
-        const estafetaId = req.user.id;
-        const encomenda = req.encomenda; // Carregada pelo router.param
-
-        if (encomenda.estafetaId) {
-            throw new Error('Esta entrega já foi aceite por outro estafeta');
-        }
-
-        if (encomenda.estado !== 'confirmada') {
-            throw new Error('Esta encomenda não está disponível para entrega');
-        }
-
-        encomenda.estafetaId = estafetaId;
-        encomenda.estado = 'em entrega';
-        await encomenda.save();
-
+        await estafetaService.aceitarEntrega(req.encomenda._id, req.user.id);
         res.json({ sucesso: true, mensagem: 'Entrega aceite com sucesso' });
     } catch (error) {
-        console.error('Erro ao aceitar entrega:', error);
         res.status(400).json({ sucesso: false, erro: error.message });
     }
 };
 
 estafetaController.confirmarEntrega = async function (req, res) {
     try {
-        const estafetaId = req.user.id;
-        const encomenda = req.encomenda; // Carregada pelo router.param
-
-        if (!encomenda.estafetaId || encomenda.estafetaId.toString() !== estafetaId.toString()) {
-            throw new Error('Esta entrega não pertence a este estafeta');
-        }
-
-        if (encomenda.estado !== 'em entrega') {
-            throw new Error('Esta encomenda não está em entrega');
-        }
-
-        encomenda.estado = 'entregue';
-        await encomenda.save();
-
+        await estafetaService.confirmarEntrega(req.encomenda._id, req.user.id);
         res.json({ sucesso: true, mensagem: 'Entrega confirmada com sucesso' });
     } catch (error) {
-        console.error('Erro ao confirmar entrega:', error);
         res.status(400).json({ sucesso: false, erro: error.message });
     }
 };
@@ -129,24 +109,11 @@ estafetaController.confirmarEntrega = async function (req, res) {
 estafetaController.obterEntregasAPI = async function (req, res) {
     try {
         const { lat, lng } = req.query;
-        let entregas;
-        let supermercadosCobertura = [];
-
-        if (lat && lng) {
-            const [entregasFiltradas, mercadosCobertura] = await Promise.all([
-                estafetaService.obterEntregasPorLocalizacao(lat, lng),
-                estafetaService.obterSupermercadosCoberturaPorLocalizacao(lat, lng)
-            ]);
-
-            entregas = entregasFiltradas;
-            supermercadosCobertura = mercadosCobertura;
-        } else {
-            entregas = await estafetaService.obterEntregasDisponiveis();
-        }
-
+        const [entregas, supermercadosCobertura] = (lat && lng) 
+            ? await Promise.all([estafetaService.obterEntregasPorLocalizacao(lat, lng), estafetaService.obterSupermercadosCoberturaPorLocalizacao(lat, lng)])
+            : [await estafetaService.obterEntregasDisponiveis(), []];
         res.json({ sucesso: true, entregas, supermercadosCobertura });
     } catch (error) {
-        console.error('Erro ao obter entregas:', error);
         res.status(500).json({ sucesso: false, erro: 'Erro ao carregar entregas' });
     }
 };
@@ -154,15 +121,10 @@ estafetaController.obterEntregasAPI = async function (req, res) {
 estafetaController.obterSupermercadosCoberturaAPI = async function (req, res) {
     try {
         const { lat, lng } = req.query;
-
-        if (!lat || !lng) {
-            return res.status(400).json({ sucesso: false, erro: 'Parâmetros lat e lng são obrigatórios' });
-        }
-
+        if (!lat || !lng) return res.status(400).json({ sucesso: false, erro: 'Parâmetros lat e lng são obrigatórios' });
         const supermercados = await estafetaService.obterSupermercadosCoberturaPorLocalizacao(lat, lng);
         res.json({ sucesso: true, supermercados });
     } catch (error) {
-        console.error('Erro ao obter cobertura de supermercados:', error);
         res.status(500).json({ sucesso: false, erro: error.message || 'Erro ao carregar cobertura' });
     }
 };

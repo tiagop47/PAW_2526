@@ -19,7 +19,13 @@
                 <div class="alert alert-danger small">
                     <%= errorMessage %>
                 </div>
-                <% } %>
+            <% } %>
+
+            <% if (locals.successMessage) { %>
+                <div class="alert alert-success small">
+                    <%= successMessage %>
+                </div>
+            <% } %>
 
                     <form action="/auth/login" method="POST">
                         <div class="mb-3">
