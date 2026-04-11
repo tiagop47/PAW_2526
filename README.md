@@ -32,37 +32,30 @@ CAPTCHA_API_SECRET=(...)
 CAPTCHA_MIN_SCORE=(...)
 NODE_ENV=(...)
 DEFAULT_ADMIN_PASSWORD=(...) 
+# Configurações do Mailgun (SMTP)
+EMAIL_HOST=(...) 
+EMAIL_PORT=(...) 
+EMAIL_USER=(...) 
+EMAIL_PASS=(...) 
 
 o ficheiro .env é usado como garantia de segurança já o ficheiro config.js utiliza estas variáveis para 
 que possamos de forma segura utilizar estes valores.
-## 📧 Sistema de Envio de Emails (Recuperação de Password)
+##  Sistema de Envio de Emails (Recuperação de Password)
 
-O projeto utiliza uma arquitetura robusta para o envio de emails, combinando a biblioteca **Nodemailer** com o serviço profissional **Mailgun**.
+O projeto utiliza a biblioteca **Nodemailer** com o serviço **Mailgun**.
 
 ### Arquitetura
 1.  **Nodemailer**: Atua como o cliente SMTP dentro da aplicação Node.js, facilitando a construção e o envio de mensagens HTML formatadas.
-2.  **Mailgun**: Utilizado como o servidor de saída (MTA) para garantir uma alta taxa de entrega e segurança no envio de credenciais.
+2.  **Mailgun**: Utilizado como servidor de saída para garantir a entrega e segurança no envio do token para atualizar palavra-passe.
 
 ### Configuração para Testes (Ambiente de Desenvolvimento)
-Devido às restrições de segurança do plano **Mailgun Sandbox** (domínio de teste), o envio de emails reais está limitado apenas a destinatários autorizados.
+Devido às restrições do plano grátis, o envio de emails reais está limitado apenas a destinatários autorizados e o uso de dominios institucionais não funcionam...
 
-#### Como o Professor pode testar:
-
-**Opção A: Verificação via Terminal (Recomendado)**
-Se não pretender configurar uma conta Mailgun própria, o sistema possui um mecanismo de *fallback* automático:
-1. Deixe as variáveis `EMAIL_USER` e `EMAIL_PASS` vazias no ficheiro `.env`.
+**Verificação via Terminal (Recomendado), caso contrário apenas com Email pessoal**
+Ao não configurar uma conta email pessoal o sistema possui um mecanismo de *fallback* automático:
+1. Variáveis `EMAIL_USER` e `EMAIL_PASS` vazias no ficheiro `.env`.
 2. Ao solicitar a recuperação de password, o sistema usará o **Ethereal Email**.
 3. O link para visualizar o email gerado será impresso diretamente no **terminal do servidor**.
 
-**Opção B: Envio Real via Mailgun**
-Caso deseje receber o email numa caixa de entrada real:
-1. As credenciais do grupo já estão configuradas no `.env`.
-2. Por restrição do Mailgun Sandbox, o destinatário deve estar na lista de **Authorized Recipients**.
-3. Utilize o email de teste `8240128@estg.ipp.pt` na página de recuperação para ver o fluxo completo (o email será enviado para a caixa institucional do aluno).
-
-### Segurança e Boas Práticas
-*   **Tokens Temporários**: Os links de recuperação utilizam tokens criptográficos de uso único que expiram após 1 hora.
-*   **Hashing**: Todas as passwords redefinidas passam pelo processo de *hashing* (Bcrypt) através de um *hook* de pré-gravação no modelo do Mongoose.
-*   **Fallback Seguro**: Se o serviço de email falhar, o sistema captura o erro e informa o utilizador, garantindo que a aplicação não bloqueia.
 
 ---
