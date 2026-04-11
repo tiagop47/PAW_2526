@@ -2,10 +2,10 @@ const User = require('../models/UserModel');
 const Supermarket = require('../models/SupermarketModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const { rolesPublicas } = require('../public/javascript/userValidator');
 const config = require('../config/config');
+const emailService = require('./emailService');
 
 
 const authService = {};
@@ -117,10 +117,10 @@ authService.inicializarAdmin = async function () {
 };
 
 authService.gerarTokenRecuperacao = async function (email) {
+    
+    const user = await User.findOne({email});
 
-    const user = await User.findOne({ email });
-
-    if (!user) {
+    if(!user){
         throw new Error("Não existe nenhuma conta com esse email.")
     }
 
@@ -136,63 +136,10 @@ authService.gerarTokenRecuperacao = async function (email) {
 
 
 authService.enviarEmailRecuperacao = async function (email, token, req) {
-    let transporter;
-
-    if (config.EMAIL_USER && config.EMAIL_PASS) {
-        transporter = nodemailer.createTransport({
-            host: config.EMAIL_HOST,
-            port: config.EMAIL_PORT,
-            secure: config.EMAIL_PORT === 465,
-            auth: {
-                user: config.EMAIL_USER,
-                pass: config.EMAIL_PASS
-            }
-        });
-    } else {
-        // Fallback para desenvolvimento (Ethereal)
-        const testAccount = await nodemailer.createTestAccount();
-        transporter = nodemailer.createTransport({
-            host: "smtp.ethereal.email",
-            port: 587,
-            secure: false,
-            auth: { user: testAccount.user, pass: testAccount.pass }
-        });
-        console.warn("AVISO: A enviar via Ethereal. Configura EMAIL_USER e EMAIL_PASS no .env para enviar emails reais.");
-    }
-
-    const link = `http://${req.headers.host}/auth/reset-password/${token}`;
     try {
-        const info = await transporter.sendMail({
-            from: `"Suporte PAW" <${config.EMAIL_USER || 'suporte@paw.com'}>`,
-            to: email,
-            subject: "Recuperação de Palavra-passe",
-            text: `Olá! Pediste para redefinir a tua password. Clica no link para continuar: ${link}`,
-            html: `
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                    <h2 style="color: #007bff; text-align: center;">Recuperação de Password</h2>
-                    <p>Recebemos um pedido para redefinir a password da tua conta.</p>
-                    <p style="font-size: 0.8rem; word-break: break-all; color: #007bff;">${link}</p>
-                    <p style="font-size: 0.9rem; color: #666;">Se não pediste esta alteração, podes ignorar este email com segurança.</p>
-                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                    <p style="font-size: 0.8rem; color: #999; text-align: center;">Equipa PAW 2026</p>
-                </div>
-            `
-        });
-
-        if (!config.EMAIL_USER) {
-            console.log("EMAIL DE TESTE (ETHEREAL) ENVIADO!");
-            console.log("Clica aqui para ver o email:");
-            console.log(nodemailer.getTestMessageUrl(info));
-        } else {
-            console.log("Email real enviado para %s via Mailgun", email);
-        }
+        await emailService.enviarEmailRecuperacao(email, token, req.headers.host);
     } catch (error) {
-        console.error("ERRO AO ENVIAR EMAIL REAL:");
-        console.error("Mensagem: %s", error.message);
-        if (error.response) {
-            console.error("Resposta do Mailgun: %s", error.response);
-        }
-
+        console.error("ERRO AO ENVIAR EMAIL DE RECUPERAÇÃO:", error);
         throw new Error("Não foi possível enviar o email de recuperação. Por favor, tenta mais tarde.");
     }
 };
@@ -208,6 +155,7 @@ authService.redefinirPassword = async function (token, novaPassword) {
     }
 
     user.password = novaPassword;
+    
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
 
