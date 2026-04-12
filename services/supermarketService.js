@@ -129,7 +129,7 @@ supermarketService.atualizarSupermercado = async function (supermercadoId, dados
     if (latitude && longitude) {
         dadosSupermercado.localizacaoGeo = {
             type: 'Point',
-            coordinates: [parseFloat(longitude), parseFloat(latitude)]
+            coordinates: [Number.parseFloat(longitude), Number.parseFloat(latitude)]
         };
     }
 
@@ -219,7 +219,7 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
     let cliente = await User.findOne({ $or: [{ email: emailFinal }, { nif: nifFinal }] });
 
     if (!cliente) {
-        const passwordTemp = 'VendaLoja123!';
+        const passwordTemp = config.DEFAULT_ADMIN_PASSWORD;
         const saltRounds = config.SALT_ROUNDS || 10;
         const hash = await bcrypt.hash(passwordTemp, saltRounds);
 
