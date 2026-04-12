@@ -53,10 +53,7 @@
                             <% produtos.forEach(function(p) { %>
                                 <tr>
                                     <td>
-                                        <a href="/supermercado/produtos/<%= p._id %>"
-                                            class="text-decoration-none text-dark">
-                                            <%= p.nome %>
-                                        </a>
+                                        <%= p.nome %>
                                     </td>
                                     <td>
                                         <%= p.categoria %>
@@ -68,12 +65,14 @@
                                         <%= p.stockDisponivel %>
                                     </td>
                                     <td>
-                                        <a href="/supermercado/produtos/editar/<%= p._id %>"
-                                            class="btn btn-sm">Editar</a>
-                                        <form action="/supermercado/produtos/eliminar/<%= p._id %>" method="POST"
-                                            class="d-inline">
-                                            <button type="submit" class="btn btn-sm text-danger">Eliminar</button>
-                                        </form>
+                                        <a href="/supermercado/produtos/<%= p._id %>"
+                                            class="text-decoration-none text-dark">Detalhes</a>
+                                            <a href="/supermercado/produtos/editar/<%= p._id %>"
+                                                class="btn btn-sm">Editar</a>
+                                            <form action="/supermercado/produtos/eliminar/<%= p._id %>" method="POST"
+                                                class="d-inline">
+                                                <button type="submit" class="btn btn-sm text-danger">Eliminar</button>
+                                            </form>
                                     </td>
                                 </tr>
                                 <% }); %>

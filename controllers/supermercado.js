@@ -85,7 +85,12 @@ supermarketController.criarProduto = async function (req, res) {
         res.redirect('/supermercado/produtos');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Erro ao guardar produto.');
+        const mensagem = err.name === 'ValidationError' 
+            ? Object.values(err.errors).map(e => e.message).join(', ')
+            : (err.message || 'Erro ao guardar produto.');
+        
+        // Redireciona de volta para o formulário com a mensagem no URL
+        res.redirect(`/supermercado/produtos/novo?error=${encodeURIComponent(mensagem)}`);
     }
 };
 
@@ -103,7 +108,12 @@ supermarketController.atualizarProduto = async function (req, res) {
         res.redirect('/supermercado/produtos');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Erro ao atualizar produto.');
+        const mensagem = err.name === 'ValidationError' 
+            ? Object.values(err.errors).map(e => e.message).join(', ')
+            : (err.message || 'Erro ao atualizar produto.');
+        
+        // Redireciona de volta para a edição com a mensagem no URL
+        res.redirect(`/supermercado/produtos/editar/${req.params.productId}?error=${encodeURIComponent(mensagem)}`);
     }
 };
 
@@ -244,11 +254,11 @@ supermarketController.exibirVendaCaixa = async function (req, res) {
  */
 supermarketController.registarVenda = async function (req, res) {
     try {
-        const { emailCliente, nomeCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, itens, metodoEntrega } = req.body;
+        const { emailCliente, nomeCliente, nifCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, itens, metodoEntrega } = req.body;
         const listaItens = JSON.parse(itens);
 
         await supermarketService.registarVenda(req.supermercado._id, {
-            emailCliente, nomeCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, listaItens, metodoEntrega
+            emailCliente, nomeCliente, nifCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, listaItens, metodoEntrega
         });
 
         res.redirect('/supermercado/encomendas?success=Venda registada com sucesso');

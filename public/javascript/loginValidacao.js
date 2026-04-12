@@ -1,23 +1,28 @@
-// Seletores de Elementos (Topo)
-var formLogin = document.querySelector('form[action="/auth/login"]');
-var campoEmail = document.getElementById('emailInput');
-var campoPass = document.getElementById('password');
+
+/**
+ * Validação de Login Simplificada (com alert)
+ */
+
+const formLogin = document.querySelector('form[action="/auth/login"]');
+const campoEmail = document.getElementById('emailInput');
+const campoPass = document.getElementById('password');
 
 function validarLogin(e) {
-    var temErro = false;
+    const validator = window.userValidator;
 
-    if (!userValidator.validarEmail(campoEmail.value)) {
-        userValidator.exibirErro(campoEmail, 'Email inválido.');
-        temErro = true;
-    }
-    if (campoPass.value.length < 1) {
-        userValidator.exibirErro(campoPass, 'Password obrigatória.');
-        temErro = true;
-    }
-
-    if (temErro) {
+    if (campoEmail && !validator.validarEmail(campoEmail.value)) {
+        alert('Por favor, introduza um email válido.');
         e.preventDefault();
+        return;
+    }
+
+    if (campoPass && campoPass.value.length < 1) {
+        alert('Por favor, introduza a sua password.');
+        e.preventDefault();
+        return;
     }
 }
 
-formLogin.addEventListener('submit', validarLogin);
+if (formLogin) {
+    formLogin.addEventListener('submit', validarLogin);
+}

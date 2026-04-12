@@ -12,20 +12,36 @@ const ProductSchema = new mongoose.Schema({
     categoria: {
         type: String,
         required: [true, "A categoria é obrigatória"],
-        minlength: [3, "Categoria inválida"],
-        maxlength: [30, "Categoria demasiado longa"]
+        enum: {
+            values: ['Frutas', 'Carne', 'Laticinios', 'Bebidas', 'Outros'],
+            message: '{VALUE} não é uma categoria válida'
+        }
     },
     preco: {
         type: Number,
         required: [true, "O preço é obrigatório"],
         min: [0, "O preço deve ser positivo"]
     },
+    precoAntigo: {
+        type: Number,
+        default: 0,
+        min: [0, "O preço antigo deve ser positivo"],
+        validate: {
+            validator: function (v) {
+                return v === 0 || v > this.preco;
+            },
+            message: "O preço antigo deve ser superior ao preço atual para ser uma promoção válida."
+        }
+    },
     stockDisponivel: {
         type: Number,
         required: [true, "O stock é obrigatório"],
         min: [0, "O stock deve ser positivo"]
     },
-    imagem: String,
+    imagem: {
+        type: String,
+        required: [true, "A imagem do produto é obrigatória"]
+    },
     criadoEm: { type: Date, default: Date.now }
 });
 

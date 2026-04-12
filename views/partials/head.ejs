@@ -12,3 +12,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('error')) {
+            alert(urlParams.get('error'));
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        if (urlParams.has('success')) {
+            alert(urlParams.get('success'));
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
+</script>

@@ -60,8 +60,6 @@ emailService.enviarEmailRecuperacao = async (email, token, host) => {
     });
 
     if (!config.EMAIL_USER) {
-        console.log("-----------------------------------------");
-        console.log("EMAIL DE TESTE (ETHEREAL) ENVIADO!");
         console.log("Clica aqui para ver o email:");
         console.log(nodemailer.getTestMessageUrl(info));
         console.log("-----------------------------------------");

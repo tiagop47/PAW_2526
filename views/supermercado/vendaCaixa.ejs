@@ -12,24 +12,30 @@
 
         <main class="container py-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <div class="d-flex gap-2 mb-4">
-                    <button type="submit" class="btn btn-primary">Registar Venda</button>
-                </div>
                 <h1 class="h4 fw-bold m-0">Registar Venda em Caixa</h1>
+                <button type="submit" form="formVendaCaixa" class="btn btn-primary fw-bold px-4">Registar Venda</button>
             </div>
 
             <form id="formVendaCaixa" action="/supermercado/vendas" method="POST" class="card border-0 shadow-sm p-4">
 
-                <h2 class="h6 fw-bold mb-3">Dados da Encomenda</h2>
+                <h2 class="h6 fw-bold mb-3">Dados do Cliente</h2>
                 <div class="row g-3 mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label small fw-bold">Email do Cliente</label>
-                        <input type="email" name="emailCliente" class="form-control" required>
+                        <input type="email" name="emailCliente" class="form-control" placeholder="exemplo@email.com">
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label small fw-bold">Nome do Cliente</label>
-                        <input type="text" name="nomeCliente" class="form-control">
+                        <input type="text" name="nomeCliente" class="form-control" placeholder="Nome Completo">
                     </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">NIF (Opcional)</label>
+                        <input type="text" name="nifCliente" class="form-control" placeholder="999999999" maxlength="9">
+                    </div>
+                </div>
+
+                <h2 class="h6 fw-bold mb-3">Entrega e Logística</h2>
+                <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <label class="form-label small fw-bold">Método de Entrega</label>
                         <select name="metodoEntrega" id="metodoEntregaVenda" class="form-select" required>

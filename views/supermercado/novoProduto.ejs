@@ -14,10 +14,11 @@
                 <div class="card p-4 border-0 shadow-sm">
                     <h2 class="h4 fw-bold mb-4 text-center">Novo Produto</h2>
 
-                    <form action="/supermercado/produtos" method="POST" id="formCriar" enctype="multipart/form-data">
+                    <form action="/supermercado/produtos" method="POST" id="formCriar" enctype="multipart/form-data" novalidate>
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Nome do Produto</label>
                             <input type="text" name="nome" class="form-control" required>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="mb-3">
@@ -29,41 +30,51 @@
                                 <option value="Bebidas">Bebidas</option>
                                 <option value="Outros">Outros</option>
                             </select>
+                            <div class="invalid-feedback"></div>
                         </div>
 
-                        <div class="mb-3 text-center">
-                            <label class="form-label fw-bold small d-block">Imagem do Produto</label>
-                            <div class="input-group">
-                                <input type="file" name="imagem" class="form-control" accept="image/*" required>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Imagem do Produto</label>
+                            <input type="file" name="imagem" class="form-control" accept="image/*" required>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Descrição (Opcional)</label>
                             <textarea name="descricao" class="form-control" rows="2"
                                 placeholder="Breve descrição do produto"></textarea>
+                            <div class="invalid-feedback"></div>
                         </div>
 
-                        <div class="row g-3 mb-4">
+                        <div class="row g-3 mb-2">
                             <div class="col-6">
-                                <label class="form-label fw-bold small">Preço (€)</label>
+                                <label class="form-label fw-bold small">Preço Atual (€)</label>
                                 <input type="number" step="0.01" min="0.01" name="preco" class="form-control" required>
+                                <div class="invalid-feedback"></div>
                             </div>
                             <div class="col-6">
                                 <label class="form-label fw-bold small">Stock</label>
                                 <input type="number" min="0" name="stockDisponivel" class="form-control" required>
+                                <div class="invalid-feedback"></div>
                             </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small">Preço Original / Promoção (Opcional)</label>
+                            <input type="number" step="0.01" min="0" name="precoAntigo" class="form-control" value="0">
+                            <div class="invalid-feedback"></div>
+                            <div id="previsaoDesconto" class="mt-2"></div>
                         </div>
 
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary w-100 fw-bold">Guardar Produto</button>
+                            <a href="/supermercado/produtos" class="btn btn-light w-100">Cancelar</a>
                         </div>
                     </form>
                 </div>
             </div>
         </main>
 
-        <script src="/javascript/supermercadoAcoes.js"></script>
         <script src="/javascript/userValidator.js"></script>
         <script src="/javascript/produtoCriarEditar.js"></script>
 
