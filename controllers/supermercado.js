@@ -39,7 +39,7 @@ supermarketController.exibirProdutos = async function (req, res) {
             supermarketService.obterProdutos(req.supermercado._id),
             supermarketService.listarCategorias()
         ]);
-        
+
         res.render('supermercado/produtos', {
             title: 'Gerir Produtos',
             produtos,
@@ -93,10 +93,10 @@ supermarketController.criarProduto = async function (req, res) {
         res.redirect('/supermercado/produtos');
     } catch (err) {
         console.error(err);
-        const mensagem = err.name === 'ValidationError' 
+        const mensagem = err.name === 'ValidationError'
             ? Object.values(err.errors).map(e => e.message).join(', ')
             : (err.message || 'Erro ao guardar produto.');
-        
+
         // Redireciona de volta para o formulário com a mensagem no URL
         res.redirect(`/supermercado/produtos/novo?error=${encodeURIComponent(mensagem)}`);
     }
@@ -116,10 +116,10 @@ supermarketController.atualizarProduto = async function (req, res) {
         res.redirect('/supermercado/produtos');
     } catch (err) {
         console.error(err);
-        const mensagem = err.name === 'ValidationError' 
+        const mensagem = err.name === 'ValidationError'
             ? Object.values(err.errors).map(e => e.message).join(', ')
             : (err.message || 'Erro ao atualizar produto.');
-        
+
         // Redireciona de volta para a edição com a mensagem no URL
         res.redirect(`/supermercado/produtos/editar/${req.params.productId}?error=${encodeURIComponent(mensagem)}`);
     }
@@ -258,7 +258,7 @@ supermarketController.exibirFatura = async function (req, res) {
             title: 'Fatura ' + encomenda.faturaNumero,
             encomenda,
             supermercado: req.supermercado,
-            layout: false 
+            layout: false
         });
     } catch (err) {
         console.error(err);

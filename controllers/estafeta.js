@@ -5,49 +5,13 @@ const estafetaController = {};
 estafetaController.exibirDashboard = async function (req, res) {
     try {
         const estafetaId = req.user.id;
-        const [stats, supermercados, entregas] = await Promise.all([
-            estafetaService.obterEstatisticas(estafetaId),
-            estafetaService.obterSupermercadosAtivos(),
-            estafetaService.obterEntregasDisponiveis()
-        ]);
-
-        const zonasObjeto = {};
-        supermercados.forEach(s => {
-            const zona = (s.localizacao || '').trim();
-            if (zona) zonasObjeto[zona.toLowerCase()] = zona;
-        });
-
-        const zonasTrabalho = Object.keys(zonasObjeto)
-            .sort((a, b) => zonasObjeto[a].localeCompare(zonasObjeto[b], 'pt'))
-            .map(key => ({ value: key, label: zonasObjeto[key] }));
-
-        const contagem = {};
-        let zonaMaisEncomendas = null;
-        let maxEncomendas = 0;
-
-        entregas.forEach(e => {
-            const zona = e.supermercadoId && e.supermercadoId.localizacao;
-            if (zona) {
-                contagem[zona] = (contagem[zona] || 0) + 1;
-                if (contagem[zona] > maxEncomendas) {
-                    maxEncomendas = contagem[zona];
-                    zonaMaisEncomendas = zona;
-                }
-            }
-        });
+        const dados = await estafetaService.obterDadosDashboard(estafetaId);
 
         res.render('estafeta/dashboard', {
             title: 'Painel do Estafeta',
-            stats: {
-                entregasRealizadas: stats.entregasRealizadas,
-                entregasEmCurso: stats.entregasEmCurso,
-                entregasDisponiveis: stats.entregasDisponiveis,
-                ganhosTotais: stats.ganhosTotais,
-                zonaMaisEncomendas: zonaMaisEncomendas,
-                maxEncomendas: maxEncomendas
-            },
-            estafetaId,
-            zonasTrabalho
+            stats: dados.stats,
+            estafetaId: estafetaId,
+            zonasTrabalho: dados.zonasTrabalho
         });
     } catch (error) {
         console.error('Erro ao carregar dashboard:', error);
@@ -109,7 +73,7 @@ estafetaController.confirmarEntrega = async function (req, res) {
 estafetaController.obterEntregasAPI = async function (req, res) {
     try {
         const { lat, lng } = req.query;
-        const [entregas, supermercadosCobertura] = (lat && lng) 
+        const [entregas, supermercadosCobertura] = (lat && lng)
             ? await Promise.all([estafetaService.obterEntregasPorLocalizacao(lat, lng), estafetaService.obterSupermercadosCoberturaPorLocalizacao(lat, lng)])
             : [await estafetaService.obterEntregasDisponiveis(), []];
         res.json({ sucesso: true, entregas, supermercadosCobertura });

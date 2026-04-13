@@ -32,9 +32,9 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label small">Descrição (Opcional)</label>
-                                            <textarea name="descricao" class="form-control" rows="2"></textarea>
+                                            <textarea name="descricao" class="form-control" rows="2" style="resize: none;"></textarea>
                                         </div>
-                                        <button type="submit" class="btn btn-dark btn-sm w-100">Criar Categoria</button>
+                                        <button type="submit" class="btn btn-dark btn-sm">Criar Categoria</button>
                                     </form>
                                 </div>
                             </div>
@@ -48,35 +48,29 @@
                                             <tr>
                                                 <th>Nome</th>
                                                 <th>Descrição</th>
+                                                <th class="text-center">Nº Produtos</th>
                                                 <th class="text-end">Ação</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <% if (categorias && categorias.length> 0) { %>
+                                            <% if (categorias && categorias.length > 0) { %>
                                                 <% categorias.forEach(function(cat) { %>
-                                                    <tr>
-                                                        <td class="fw-bold">
-                                                            <%= cat.nome %>
-                                                        </td>
-                                                        <td class="text-muted small">
-                                                            <%= cat.descricao || '—' %>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <form action="/admin/categorias/eliminar/<%= cat._id %>"
-                                                                method="POST"
-                                                                onsubmit="return confirm('Tens a certeza?')">
-                                                                <button type="submit"
-                                                                    class="btn btn-sm btn-light border">Eliminar</button>
-                                                            </form>
-                                                        </td>
-                                                    </tr>
-                                                    <% }) %>
-                                                        <% } else { %>
-                                                            <tr>
-                                                                <td colspan="3" class="text-center py-4 text-muted">
-                                                                    Nenhuma categoria criada.</td>
-                                                            </tr>
-                                                            <% } %>
+                                                <tr>
+                                                    <td class="fw-bold"><%= cat.nome %></td>
+                                                    <td class="text-muted small"><%= cat.descricao || '—' %></td>
+                                                    <td class="text-center"><%= cat.totalProdutos %></td>
+                                                    <td class="text-end">
+                                                        <form action="/admin/categorias/eliminar/<%= cat._id %>" method="POST">
+                                                            <button type="submit" class="btn btn-sm btn-light border">Eliminar</button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="4" class="text-center py-4 text-muted">Nenhuma categoria criada.</td>
+                                                </tr>
+                                            <% } %>
                                         </tbody>
                                     </table>
                                 </div>

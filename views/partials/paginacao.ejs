@@ -1,0 +1,18 @@
+<!-- Paginação: requer variáveis paginaAtual, totalPaginas e paginaUrl -->
+<% if (locals.totalPaginas > 1) { %>
+    <div class="d-flex justify-content-center align-items-center mt-4 gap-2">
+        <% if (paginaAtual > 1) { %>
+            <a href="<%= paginaUrl %>?pagina=<%= paginaAtual - 1 %>" class="btn btn-sm btn-light border">Anterior</a>
+        <% } else { %>
+            <button class="btn btn-sm btn-light border" disabled>Anterior</button>
+        <% } %>
+
+        <span class="small text-muted">Página <%= paginaAtual %> de <%= totalPaginas %></span>
+
+        <% if (paginaAtual < totalPaginas) { %>
+            <a href="<%= paginaUrl %>?pagina=<%= paginaAtual + 1 %>" class="btn btn-sm btn-light border">Próximo</a>
+        <% } else { %>
+            <button class="btn btn-sm btn-light border" disabled>Próximo</button>
+        <% } %>
+    </div>
+<% } %>

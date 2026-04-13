@@ -36,7 +36,7 @@
                     <div class="col-4 border-start ps-3">
                         <label class="form-label fw-bold small text-muted d-block mb-1">Categoria</label>
                         <span class="badge bg-white text-dark border fw-normal px-2 py-1">
-                            <%= produto.categoria %>
+                            <%= produto.categoriaId ? produto.categoriaId.nome : 'Sem categoria' %>
                         </span>
                     </div>
                 </div>

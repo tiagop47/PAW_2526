@@ -88,16 +88,21 @@ td {
 }
 
 @media print {
-    .no-print {
-        display: none;
+    .no-print, 
+    .cabecalho-principal {
+        display: none !important;
     }
 
     body {
         padding: 0;
+        background: white;
     }
 
     .invoice-box {
         border: none;
         box-shadow: none;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
     }
 }

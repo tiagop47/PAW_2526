@@ -34,7 +34,7 @@ async function gerarNumeroFatura(supermercadoId) {
 }
 
 supermarketService.getSupermercado = async function (userId) {
-    const supermercado = await Supermarket.findOne({ userId });
+    const supermercado = await Supermarket.findOne({ userId }).populate('userId', 'nif');
     if (!supermercado) {
         throw new Error('Supermercado não encontrado');
     }

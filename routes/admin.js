@@ -18,6 +18,7 @@ router.get('/supermercados/bloquear/:supermarketId', adminController.bloquearSup
 
 // Monitorização Global
 router.get('/encomendas', adminController.monitorizarEncomendas);
+router.get('/encomendas/:orderId/fatura', adminController.exibirFatura);
 
 // Gestão de Categorias
 router.get('/categorias', adminController.exibirCategorias);

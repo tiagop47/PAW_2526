@@ -30,7 +30,7 @@
                     <p>
                         <%= supermercado.localizacao %>
                     </p>
-                    <p>NIF: N/A</p>
+                    <p>NIF: <%= (supermercado.userId && supermercado.userId.nif) ? supermercado.userId.nif : 'N/A' %></p>
                 </div>
                 <div class="invoice-meta" style="text-align: right;">
                     <h2>FATURA</h2>

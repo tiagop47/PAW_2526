@@ -195,4 +195,32 @@ adminController.monitorizarEncomendas = async function (req, res) {
     }
 };
 
+/**
+ * Exibe a fatura de uma encomenda para o administrador.
+ */
+adminController.exibirFatura = async function (req, res) {
+    try {
+        const encomenda = await adminService.getFaturaEncomenda(req.params.orderId);
+
+        res.render('supermercado/fatura', {
+            title: 'Fatura ' + encomenda.faturaNumero,
+            encomenda,
+            supermercado: encomenda.supermercadoId,
+            layout: false
+        });
+    } catch (err) {
+        if (err.codigo === 'NAO_ENCONTRADA') {
+            return res.status(404).send(err.message);
+        }
+        if (err.codigo === 'SEM_FATURA') {
+            return res.status(404).render('error', {
+                tituloErro: 'Fatura Indisponível',
+                detalheErro: err.message
+            });
+        }
+        console.error(err);
+        res.status(500).send('Erro ao carregar fatura.');
+    }
+};
+
 module.exports = adminController;

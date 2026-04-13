@@ -32,7 +32,8 @@ function inicializarPesquisaProdutos(config = {}) {
 
     const {
         renderTabela = tabelaDefault,
-        debounceMs = 300
+        debounceMs = 300,
+        apiUrl = '/supermercado/api/produtos' // URL padrão
     } = config;
 
     async function executarPesquisa() {
@@ -48,7 +49,7 @@ function inicializarPesquisaProdutos(config = {}) {
         }
 
         try {
-            const resposta = await fetch(`/supermercado/api/produtos?${params.toString()}`);
+            const resposta = await fetch(`${apiUrl}?${params.toString()}`);
             if (!resposta.ok) return;
 
             const produtos = await resposta.json();

@@ -56,7 +56,7 @@
                                         <%= p.nome %>
                                     </td>
                                     <td>
-                                        <%= p.categoriaId %>
+                                        <%= p.categoriaId ? p.categoriaId.nome : 'Sem categoria' %>
                                     </td>
                                     <td>
                                         <%= p.preco %>€

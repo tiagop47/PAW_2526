@@ -11,7 +11,23 @@ const adminService = {};
  */
 
 adminService.listarCategorias = async function () {
-    return Category.find().sort({ nome: 1 });
+    const [categorias, contagens] = await Promise.all([
+        Category.find().sort({ nome: 1 }).lean(),
+        Product.aggregate([
+            { $group: { _id: '$categoriaId', total: { $sum: 1 } } }
+        ])
+    ]);
+
+    const mapaContagens = {};
+    contagens.forEach(c => { mapaContagens[c._id?.toString()] = c.total; });
+
+    return categorias.map(cat => ({
+        _id: cat._id,
+        nome: cat.nome,
+        descricao: cat.descricao,
+        criadoEm: cat.criadoEm,
+        totalProdutos: mapaContagens[cat._id.toString()] || 0
+    }));
 };
 
 adminService.criarCategoria = async function (dados) {
@@ -19,10 +35,19 @@ adminService.criarCategoria = async function (dados) {
 };
 
 adminService.eliminarCategoria = async function (id) {
-    // Verificar se existem produtos que usam esta categoria
     const produtosUsam = await Product.countDocuments({ categoriaId: id });
+
     if (produtosUsam > 0) {
-        throw new Error('Não é possível eliminar: existem produtos nesta categoria.');
+        let categoriaOutros = await Category.findOne({ nome: 'Outros' });
+        if (!categoriaOutros) {
+            categoriaOutros = await Category.create({ nome: 'Outros', descricao: 'Categoria padrão para produtos sem categoria' });
+        }
+
+        if (id === categoriaOutros._id.toString()) {
+            throw new Error('Não é possível eliminar a categoria padrão "Outros".');
+        }
+
+        await Product.updateMany({ categoriaId: id }, { categoriaId: categoriaOutros._id });
     }
 
     return Category.findByIdAndDelete(id);
@@ -174,6 +199,40 @@ adminService.getEncomendasPaginadas = async function (pagina, limite) {
         encomendas,
         totalPaginas: Math.ceil(total / limite)
     };
+};
+
+/**
+ * Obtém uma encomenda específica por ID, populando produtos e supermercado.
+ */
+adminService.getEncomendaPorId = async function (orderId) {
+    return Order.findById(orderId)
+        .populate('produtos.produtoId')
+        .populate({
+            path: 'supermercadoId',
+            populate: { path: 'userId', select: 'nif' }
+        })
+        .populate('clienteId', 'nome email nif morada telefone');
+};
+
+/**
+ * Obtém os dados da fatura de uma encomenda, validando existência e disponibilidade.
+ */
+adminService.getFaturaEncomenda = async function (orderId) {
+    const encomenda = await adminService.getEncomendaPorId(orderId);
+
+    if (!encomenda) {
+        const erro = new Error('Encomenda não encontrada.');
+        erro.codigo = 'NAO_ENCONTRADA';
+        throw erro;
+    }
+
+    if (!encomenda.faturaNumero) {
+        const erro = new Error('Esta encomenda ainda não tem uma fatura gerada. A fatura é criada automaticamente quando a encomenda é confirmada ou entregue.');
+        erro.codigo = 'SEM_FATURA';
+        throw erro;
+    }
+
+    return encomenda;
 };
 
 module.exports = adminService;

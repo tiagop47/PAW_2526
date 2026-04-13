@@ -119,4 +119,56 @@ estafetaService.obterEncomendaPorId = async function (id) {
         .populate('clienteId', 'nome morada');
 };
 
+/**
+ * Obtém todos os dados necessários para o dashboard do estafeta.
+ */
+estafetaService.obterDadosDashboard = async function (estafetaId) {
+    const [stats, supermercados, entregas] = await Promise.all([
+        estafetaService.obterEstatisticas(estafetaId),
+        estafetaService.obterSupermercadosAtivos(),
+        estafetaService.obterEntregasDisponiveis()
+    ]);
+
+    // Zonas de trabalho únicas
+    const zonasObjeto = {};
+    supermercados.forEach(function (supermercado) {
+        var zona = (supermercado.localizacao || '').trim();
+        if (zona) {
+            zonasObjeto[zona.toLowerCase()] = zona;
+        }
+    });
+
+    var zonasTrabalho = Object.keys(zonasObjeto)
+        .sort(function (a, b) { return zonasObjeto[a].localeCompare(zonasObjeto[b], 'pt'); })
+        .map(function (key) { return { value: key, label: zonasObjeto[key] }; });
+
+    // Zona com mais encomendas
+    var contagem = {};
+    var zonaMaisEncomendas = null;
+    var maxEncomendas = 0;
+
+    entregas.forEach(function (e) {
+        var zona = e.supermercadoId && e.supermercadoId.localizacao;
+        if (zona) {
+            contagem[zona] = (contagem[zona] || 0) + 1;
+            if (contagem[zona] > maxEncomendas) {
+                maxEncomendas = contagem[zona];
+                zonaMaisEncomendas = zona;
+            }
+        }
+    });
+
+    return {
+        stats: {
+            entregasRealizadas: stats.entregasRealizadas,
+            entregasEmCurso: stats.entregasEmCurso,
+            entregasDisponiveis: stats.entregasDisponiveis,
+            ganhosTotais: stats.ganhosTotais,
+            zonaMaisEncomendas: zonaMaisEncomendas,
+            maxEncomendas: maxEncomendas
+        },
+        zonasTrabalho: zonasTrabalho
+    };
+};
+
 module.exports = estafetaService;
