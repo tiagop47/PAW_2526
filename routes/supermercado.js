@@ -72,6 +72,7 @@ router.post('/api/verificar-stock', async (req, res) => {
 
 // Encomendas
 router.get('/encomendas', supermarketController.listarEncomendas);
+router.get('/encomendas/:orderId/fatura', supermarketController.exibirFatura);
 router.post('/encomendas/:orderId/estado', supermarketController.atualizarEstadoEncomenda);
 
 // Venda em Caixa

@@ -35,6 +35,15 @@ const OrderSchema = new mongoose.Schema({
         lat: { type: Number },
         lng: { type: Number }
     },
+    faturaNumero: { type: String },
+    faturaData: { type: Date },
+    clienteSnapshot: {
+        nome: { type: String },
+        nif: { type: String },
+        morada: { type: String },
+        email: { type: String },
+        telefone: { type: String }
+    },
     criadoEm: { type: Date, default: Date.now }
 });
 

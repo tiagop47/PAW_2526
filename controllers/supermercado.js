@@ -233,6 +233,32 @@ supermarketController.atualizarEstadoEncomenda = async function (req, res) {
 };
 
 /**
+ * Exibe a fatura de uma encomenda.
+ */
+supermarketController.exibirFatura = async function (req, res) {
+    try {
+        const encomenda = await req.encomenda.populate('produtos.produtoId');
+
+        if (!encomenda.faturaNumero) {
+            return res.status(404).render('error', {
+                tituloErro: 'Fatura Indisponível',
+                detalheErro: 'Esta encomenda ainda não tem uma fatura gerada. A fatura é criada automaticamente quando a encomenda é confirmada ou entregue.'
+            });
+        }
+
+        res.render('supermercado/fatura', {
+            title: 'Fatura ' + encomenda.faturaNumero,
+            encomenda,
+            supermercado: req.supermercado,
+            layout: false 
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Erro ao carregar fatura.');
+    }
+};
+
+/**
  * Exibe o formulário de venda em caixa.
  */
 supermarketController.exibirVendaCaixa = async function (req, res) {

@@ -8,10 +8,22 @@ const config = require('../config/config');
 
 const supermarketService = {};
 
+
 /**
- * Carrega o supermercado associado a um userId.
- * Usado pelo middleware global das rotas para injetar req.supermercado.
+ * Gera um número de fatura sequencial para um supermercado.
+ * Formato: FT <ANO>/<SEQUENCIAL> (ex: FT 2024/0001)
  */
+async function gerarNumeroFatura(supermercadoId) {
+    const anoAtual = new Date().getFullYear();
+    const count = await Order.countDocuments({
+        supermercadoId,
+        faturaNumero: { $regex: `^FT ${anoAtual}/` }
+    });
+    
+    const sequencial = (count + 1).toString().padStart(4, '0');
+    return `FT ${anoAtual}/${sequencial}`;
+}
+
 supermarketService.getSupermercado = async function (userId) {
     const supermercado = await Supermarket.findOne({ userId });
     if (!supermercado) {
@@ -179,6 +191,25 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
 
     // Se passar de 'pendente' para um estado ativo (confirmada, em entrega, entregue), reduzimos o stock
     if (estadoAnterior === 'pendente' && (estado === 'confirmada' || estado === 'em entrega' || estado === 'entregue')) {
+        
+        // Se ainda não tem fatura, geramos uma ao confirmar/entregar
+        if (!order.faturaNumero) {
+            order.faturaNumero = await gerarNumeroFatura(supermercadoId);
+            order.faturaData = new Date();
+            
+            // Snapshot dos dados do cliente no momento da faturação
+            const cliente = await User.findById(order.clienteId);
+            if (cliente) {
+                order.clienteSnapshot = {
+                    nome: cliente.nome,
+                    nif: cliente.nif,
+                    morada: cliente.morada,
+                    email: cliente.email,
+                    telefone: cliente.telefone
+                };
+            }
+        }
+
         for (const item of order.produtos) {
             const produto = await Product.findOneAndUpdate(
                 {
@@ -268,7 +299,7 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
     const lng = Number(longitudeEntrega);
     const temCoordenadasValidas = Number.isFinite(lat) && Number.isFinite(lng);
 
-    return Order.create({
+    const novaOrdem = new Order({
         supermercadoId,
         clienteId: cliente._id,
         produtos: produtosEncomenda,
@@ -276,8 +307,19 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
         estado: estadoFinal,
         metodoEntrega: metodoEntrega || 'levantamento em loja',
         moradaEntrega: eDomicilio ? moradaCliente : 'Levantamento em Loja',
-        coordenadasEntrega: (eDomicilio && temCoordenadasValidas) ? { lat, lng } : undefined
+        coordenadasEntrega: (eDomicilio && temCoordenadasValidas) ? { lat, lng } : undefined,
+        faturaNumero: await gerarNumeroFatura(supermercadoId),
+        faturaData: new Date(),
+        clienteSnapshot: {
+            nome: cliente.nome,
+            nif: cliente.nif,
+            morada: cliente.morada,
+            email: cliente.email,
+            telefone: cliente.telefone
+        }
     });
+
+    return novaOrdem.save();
 };
 
 module.exports = supermarketService;

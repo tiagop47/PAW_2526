@@ -59,6 +59,8 @@ app.use((req, res, next) => next(createError(404)));
 app.use((err, req, res, next) => {
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
+    res.locals.tituloErro = err.tituloErro; // Passa o título customizado se existir
+    res.locals.detalheErro = err.detalheErro; // Passa o detalhe customizado se existir
     res.status(err.status || 500);
     res.render('error');
 });

@@ -70,7 +70,11 @@ authMiddleware.redirecionarLogged = function (req, res, next) {
 authMiddleware.verificarRole = function (rolesPermitidas) {
     return function (req, res, next) {
         if (!req.user || !rolesPermitidas.includes(req.user.role)) {
-            return res.status(403).send('Acesso Restrito.');
+            const err = new Error('Acesso Restrito');
+            err.status = 403;
+            err.tituloErro = 'Acesso Negado';
+            err.detalheErro = 'Não tens permissões suficientes para aceder a esta página. Se achas que isto é um erro, contacta o administrador.';
+            return next(err);
         }
         next();
     };
