@@ -41,17 +41,12 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Categoria</label>
-                            <select name="categoria" class="form-select" required>
-                                <option value="Frutas" <%=produto.categoria==='Frutas' ? 'selected' : '' %>>Frutas e
-                                    Legumes</option>
-                                <option value="Carne" <%=produto.categoria==='Carne' ? 'selected' : '' %>>Carne e Peixe
-                                </option>
-                                <option value="Laticinios" <%=produto.categoria==='Laticinios' ? 'selected' : '' %>
-                                    >Laticínios</option>
-                                <option value="Bebidas" <%=produto.categoria==='Bebidas' ? 'selected' : '' %>>Bebidas
-                                </option>
-                                <option value="Outros" <%=produto.categoria==='Outros' ? 'selected' : '' %>>Outros
-                                </option>
+                            <select name="categoriaId" class="form-select" required>
+                                <% categorias.forEach(function(cat) { %>
+                                    <option value="<%= cat._id %>" <%= String(produto.categoriaId) === String(cat._id) ? 'selected' : '' %>>
+                                        <%= cat.nome %>
+                                    </option>
+                                <% }) %>
                             </select>
                         </div>
 

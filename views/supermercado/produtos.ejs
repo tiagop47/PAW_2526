@@ -26,11 +26,11 @@
                     <div class="col-md-4">
                         <select id="produtoPesquisaCategoria" data-produto-pesquisa="categoria" class="form-select">
                             <option value="">Todas as categorias</option>
-                            <option value="Frutas">Frutas e Legumes</option>
-                            <option value="Carne">Carne e Peixe</option>
-                            <option value="Laticinios">Laticínios</option>
-                            <option value="Bebidas">Bebidas</option>
-                            <option value="Outros">Outros</option>
+                            <% categorias.forEach(function(cat) { %>
+                                <option value="<%= cat._id %>">
+                                    <%= cat.nome %>
+                                </option>
+                                <% }) %>
                         </select>
                     </div>
                 </div>
@@ -56,7 +56,7 @@
                                         <%= p.nome %>
                                     </td>
                                     <td>
-                                        <%= p.categoria %>
+                                        <%= p.categoriaId %>
                                     </td>
                                     <td>
                                         <%= p.preco %>€
@@ -67,12 +67,12 @@
                                     <td>
                                         <a href="/supermercado/produtos/<%= p._id %>"
                                             class="text-decoration-none text-dark">Detalhes</a>
-                                            <a href="/supermercado/produtos/editar/<%= p._id %>"
-                                                class="btn btn-sm">Editar</a>
-                                            <form action="/supermercado/produtos/eliminar/<%= p._id %>" method="POST"
-                                                class="d-inline">
-                                                <button type="submit" class="btn btn-sm text-danger">Eliminar</button>
-                                            </form>
+                                        <a href="/supermercado/produtos/editar/<%= p._id %>"
+                                            class="btn btn-sm">Editar</a>
+                                        <form action="/supermercado/produtos/eliminar/<%= p._id %>" method="POST"
+                                            class="d-inline">
+                                            <button type="submit" class="btn btn-sm text-danger">Eliminar</button>
+                                        </form>
                                     </td>
                                 </tr>
                                 <% }); %>

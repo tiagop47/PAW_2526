@@ -9,13 +9,10 @@ const ProductSchema = new mongoose.Schema({
         maxlength: [100, "Nome do produto demasiado longo"]
     },
     descricao: String,
-    categoria: {
-        type: String,
-        required: [true, "A categoria é obrigatória"],
-        enum: {
-            values: ['Frutas', 'Carne', 'Laticinios', 'Bebidas', 'Outros'],
-            message: '{VALUE} não é uma categoria válida'
-        }
+    categoriaId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        required: [true, "A categoria é obrigatória"]
     },
     preco: {
         type: Number,

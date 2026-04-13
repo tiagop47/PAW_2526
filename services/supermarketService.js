@@ -6,7 +6,16 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const config = require('../config/config');
 
+const Category = require('../models/CategoryModel');
+
 const supermarketService = {};
+
+/**
+ * Categorias
+ */
+supermarketService.listarCategorias = async function () {
+    return Category.find().sort({ nome: 1 });
+};
 
 
 /**
@@ -19,7 +28,7 @@ async function gerarNumeroFatura(supermercadoId) {
         supermercadoId,
         faturaNumero: { $regex: `^FT ${anoAtual}/` }
     });
-    
+
     const sequencial = (count + 1).toString().padStart(4, '0');
     return `FT ${anoAtual}/${sequencial}`;
 }
@@ -93,21 +102,44 @@ supermarketService.obterDadosDashboard = async function (supermercadoId) {
     };
 };
 supermarketService.obterProdutos = async function (supermercadoId) {
-    return Product.find({ supermercadoId });
+    return Product.find({ supermercadoId }).populate('categoriaId');
 };
 
 supermarketService.obterProdutoPorId = async function (supermercadoId, productId) {
-    return Product.findOne({ _id: productId, supermercadoId });
+    return Product.findOne({ _id: productId, supermercadoId }).populate('categoriaId');
 };
 
 supermarketService.criarProduto = async function (supermercadoId, productData) {
-    return Product.create({ ...productData, supermercadoId });
+    return Product.create({
+        supermercadoId: supermercadoId,
+        nome: productData.nome,
+        descricao: productData.descricao,
+        categoriaId: productData.categoriaId,
+        preco: productData.preco,
+        precoAntigo: productData.precoAntigo || 0,
+        stockDisponivel: productData.stockDisponivel,
+        imagem: productData.imagem
+    });
 };
 
 supermarketService.atualizarProduto = async function (supermercadoId, productId, updateData) {
+    const camposParaAtualizar = {
+        nome: updateData.nome,
+        descricao: updateData.descricao,
+        categoriaId: updateData.categoriaId,
+        preco: updateData.preco,
+        precoAntigo: updateData.precoAntigo || 0,
+        stockDisponivel: updateData.stockDisponivel
+    };
+
+    
+    if (updateData.imagem) {
+        camposParaAtualizar.imagem = updateData.imagem;
+    }
+
     return Product.findOneAndUpdate(
-        { _id: productId, supermercadoId },
-        updateData,
+        { _id: productId, supermercadoId: supermercadoId },
+        camposParaAtualizar,
         {
             new: true,
             runValidators: true,
@@ -120,15 +152,15 @@ supermarketService.eliminarProduto = async function (supermercadoId, productId) 
     return Product.findOneAndDelete({ _id: productId, supermercadoId });
 };
 
-supermarketService.pesquisarProdutos = async function (supermercadoId, { q, categoria }) {
+supermarketService.pesquisarProdutos = async function (supermercadoId, { q, categoriaId }) {
     const filtro = { supermercadoId };
     if (q) {
         filtro.nome = { $regex: q, $options: 'i' };
     }
-    if (categoria) {
-        filtro.categoria = categoria;
+    if (categoriaId) {
+        filtro.categoriaId = categoriaId;
     }
-    return Product.find(filtro).sort({ nome: 1 });
+    return Product.find(filtro).sort({ nome: 1 }).populate('categoriaId');
 };
 
 supermarketService.obterProdutosDisponiveis = async function (supermercadoId) {
@@ -191,12 +223,12 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
 
     // Se passar de 'pendente' para um estado ativo (confirmada, em entrega, entregue), reduzimos o stock
     if (estadoAnterior === 'pendente' && (estado === 'confirmada' || estado === 'em entrega' || estado === 'entregue')) {
-        
+
         // Se ainda não tem fatura, geramos uma ao confirmar/entregar
         if (!order.faturaNumero) {
             order.faturaNumero = await gerarNumeroFatura(supermercadoId);
             order.faturaData = new Date();
-            
+
             // Snapshot dos dados do cliente no momento da faturação
             const cliente = await User.findById(order.clienteId);
             if (cliente) {

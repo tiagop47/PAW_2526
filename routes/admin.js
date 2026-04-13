@@ -16,6 +16,14 @@ router.post('/supermercados/aprovar/:supermarketId', adminController.aprovarSupe
 router.post('/supermercados/rejeitar/:supermarketId', adminController.rejeitarSupermercado);
 router.get('/supermercados/bloquear/:supermarketId', adminController.bloquearSupermercado);
 
+// Monitorização Global
+router.get('/encomendas', adminController.monitorizarEncomendas);
+
+// Gestão de Categorias
+router.get('/categorias', adminController.exibirCategorias);
+router.post('/categorias', adminController.criarCategoria);
+router.post('/categorias/eliminar/:id', adminController.eliminarCategoria);
+
 /**
  * Middleware de Parâmetro: Carrega o utilizador quando :userId está no URL.
  */

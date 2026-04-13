@@ -143,4 +143,56 @@ adminController.listarEstafetas = async function (req, res) {
     }
 };
 
+/**
+ * Gestão de Categorias
+ */
+adminController.exibirCategorias = async function (req, res) {
+    try {
+        const categorias = await adminService.listarCategorias();
+        res.render('admin/categorias', { title: 'Gestão de Categorias', categorias });
+    } catch (err) {
+        res.status(500).send('Erro ao carregar categorias.');
+    }
+};
+
+adminController.criarCategoria = async function (req, res) {
+    try {
+        await adminService.criarCategoria(req.body);
+        res.redirect('/admin/categorias');
+    } catch (err) {
+        res.status(500).send('Erro ao criar categoria: ' + err.message);
+    }
+};
+
+adminController.eliminarCategoria = async function (req, res) {
+    try {
+        await adminService.eliminarCategoria(req.params.id);
+        res.redirect('/admin/categorias');
+    } catch (err) {
+        // Redireciona com erro (ex: categoria ainda tem produtos)
+        res.redirect('/admin/categorias?error=' + encodeURIComponent(err.message));
+    }
+};
+
+/**
+ * Monitorizar todas as encomendas do sistema.
+ */
+adminController.monitorizarEncomendas = async function (req, res) {
+    try {
+        const pagina = parseInt(req.query.pagina) || 1;
+        const limite = 5;
+        const dadosPagina = await adminService.getEncomendasPaginadas(pagina, limite);
+
+        res.render('admin/encomendas', {
+            title: 'Monitorização de Encomendas',
+            encomendas: dadosPagina.encomendas,
+            paginaAtual: pagina,
+            totalPaginas: dadosPagina.totalPaginas
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Erro ao monitorizar encomendas.');
+    }
+};
+
 module.exports = adminController;

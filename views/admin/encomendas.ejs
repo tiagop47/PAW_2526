@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+    <%- include('../partials/navbar') %>
+
+        <main class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h4 fw-bold m-0 text-dark">Monitorização de Encomendas</h1>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID / Data</th>
+                                <th>Supermercado</th>
+                                <th>Cliente</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (encomendas && encomendas.length> 0) { %>
+                                <% encomendas.forEach(function(e) { %>
+                                    <tr>
+                                        <td>
+                                            <div class="small fw-bold text-muted">#<%=
+                                                    e._id.toString().slice(-6).toUpperCase() %>
+                                            </div>
+                                            <div class="small">
+                                                <%= new Date(e.criadoEm).toLocaleString('pt-PT') %>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold">
+                                                <%= e.supermercadoId ? e.supermercadoId.nome : 'N/A' %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <%= e.clienteId ? e.clienteId.nome : 'N/A' %>
+                                            </div>
+                                            <div class="small text-muted">
+                                                <%= e.clienteId ? e.clienteId.email : '' %>
+                                            </div>
+                                        </td>
+                                        <td class="fw-bold">
+                                            <%= e.valorTotal.toFixed(2) %>€
+                                        </td>
+                                        <td>
+                                            <span class="badge border text-dark fw-normal">
+                                                <%= e.estado %>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="5" class="text-center py-4 text-muted">Não foram
+                                                    encontradas encomendas no sistema.</td>
+                                            </tr>
+                                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <% if (totalPaginas> 1) { %>
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <% for(let i=1; i <=totalPaginas; i++) { %>
+                            <li class="page-item <%= paginaAtual === i ? 'active' : '' %>">
+                                <a class="page-link text-dark <%= paginaAtual === i ? 'bg-dark text-white border-dark' : '' %>"
+                                    href="/admin/encomendas?pagina=<%= i %>">
+                                    <%= i %>
+                                </a>
+                            </li>
+                            <% } %>
+                    </ul>
+                </nav>
+                <% } %>
+        </main>
+</body>
+
+</html>

@@ -35,10 +35,15 @@ supermarketController.exibirDashboard = async function (req, res) {
  */
 supermarketController.exibirProdutos = async function (req, res) {
     try {
-        const produtos = await supermarketService.obterProdutos(req.supermercado._id);
+        const [produtos, categorias] = await Promise.all([
+            supermarketService.obterProdutos(req.supermercado._id),
+            supermarketService.listarCategorias()
+        ]);
+        
         res.render('supermercado/produtos', {
             title: 'Gerir Produtos',
-            produtos
+            produtos,
+            categorias
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar produtos.');
@@ -48,8 +53,9 @@ supermarketController.exibirProdutos = async function (req, res) {
 /**
  * Exibe o formulário para criar um novo produto.
  */
-supermarketController.exibirFormularioNovo = function (req, res) {
-    res.render('supermercado/novoProduto', { title: 'Novo Produto' });
+supermarketController.exibirFormularioNovo = async function (req, res) {
+    const categorias = await supermarketService.listarCategorias();
+    res.render('supermercado/novoProduto', { title: 'Novo Produto', categorias });
 };
 
 /**
@@ -67,10 +73,12 @@ supermarketController.exibirDetalhes = function (req, res) {
  * Exibe o formulário para editar um produto.
  * O produto é carregado pelo middleware router.param('productId').
  */
-supermarketController.exibirFormularioEditar = function (req, res) {
+supermarketController.exibirFormularioEditar = async function (req, res) {
+    const categorias = await supermarketService.listarCategorias();
     res.render('supermercado/editarProduto', {
         title: 'Editar Produto',
-        produto: req.produto
+        produto: req.produto,
+        categorias
     });
 };
 
@@ -135,8 +143,8 @@ supermarketController.eliminarProduto = async function (req, res) {
  */
 supermarketController.pesquisarProdutos = async function (req, res) {
     try {
-        const { q, categoria } = req.query;
-        const produtos = await supermarketService.pesquisarProdutos(req.supermercado._id, { q, categoria });
+        const { q, categoriaId } = req.query;
+        const produtos = await supermarketService.pesquisarProdutos(req.supermercado._id, { q, categoriaId });
         res.json(produtos);
     } catch (err) {
         res.status(500).json({ erro: 'Erro ao pesquisar produtos.' });
