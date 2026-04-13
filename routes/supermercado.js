@@ -42,34 +42,6 @@ router.post('/editar', supermarketController.atualizarSupermercado);
 // Perfil
 router.get('/perfil', supermarketController.exibirPerfil);
 
-// API para verificar stock em tempo real
-router.post('/api/verificar-stock', async (req, res) => {
-    try {
-        const { itens } = req.body;
-        const resultados = [];
-        let erro = false;
-
-        for (const item of itens) {
-            const produto = await supermarketService.obterProdutoPorId(req.supermercado._id, item.produtoId);
-            if (!produto || produto.stockDisponivel < item.quantidade) {
-                resultados.push({ 
-                    produtoId: item.produtoId, 
-                    nome: produto ? produto.nome : 'Desconhecido',
-                    disponivel: produto ? produto.stockDisponivel : 0,
-                    erro: true 
-                });
-                erro = true;
-            } else {
-                resultados.push({ produtoId: item.produtoId, erro: false });
-            }
-        }
-
-        res.json({ sucesso: !erro, resultados });
-    } catch (err) {
-        res.status(500).json({ sucesso: false, erro: 'Erro ao verificar stock' });
-    }
-});
-
 // Encomendas
 router.get('/encomendas', supermarketController.listarEncomendas);
 router.get('/encomendas/:orderId/fatura', supermarketController.exibirFatura);
