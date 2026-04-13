@@ -9,12 +9,12 @@ router.use(authMiddleware.verificarAutenticacao, authMiddleware.verificarRole(['
 router.get('/dashboard', adminController.exibirDashboard);
 router.get('/exibirUtilizadores', adminController.listarUtilizadores);
 router.get('/estafetas', adminController.listarEstafetas);
-
 router.get('/supermercados/ativos', adminController.listarSupermercados);
 router.get('/supermercados/pendentes', adminController.listarPendentes);
 router.post('/supermercados/aprovar/:supermarketId', adminController.aprovarSupermercado);
 router.post('/supermercados/rejeitar/:supermarketId', adminController.rejeitarSupermercado);
 router.get('/supermercados/bloquear/:supermarketId', adminController.bloquearSupermercado);
+router.get('/utilizadores/eliminar/:id', adminController.eliminarUser);
 
 // Monitorização Global
 router.get('/encomendas', adminController.monitorizarEncomendas);

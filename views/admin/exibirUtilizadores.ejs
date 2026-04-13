@@ -20,6 +20,7 @@
                             <th>Telefone</th>
                             <th>NIF</th>
                             <th>Cargo/Função</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -45,6 +46,9 @@
                                         <span class="badge bg-secondary">
                                             <%= utilizador.role %>
                                         </span>
+                                    </td>
+                                    <td class="fw-bold">
+                                        <a href="/admin/utilizadores/eliminar/<%= utilizador._id %>" class="btn btn-sm btn-light border text-dark w-100" style="max-width: 110px;">Eliminar Utilizador</a>
                                     </td>
                                 
                                 </tr>

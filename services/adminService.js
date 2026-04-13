@@ -235,4 +235,29 @@ adminService.getFaturaEncomenda = async function (orderId) {
     return encomenda;
 };
 
+/**
+ * Eliminar um user e se for do tipo supermercado apaga também o supermercado e os seus produtos.
+ */
+adminService.eliminarUser = async function (id){
+    const user = await User.findById(id);
+
+    if(!user){
+        throw new Error('Utilizador não encontrado');
+    }
+
+    if(user.role === 'supermercados'){
+        const supermercadoAsApagar = await Supermarket.findOneAndDelete({ userId: id });
+    
+        //Este if é apenas por segurança caso o user seja do tipo supermercado mas haja algum erro a criar o supermercado
+        if (supermercadoAsApagar) {
+            await Product.deleteMany({ supermercadoId: supermercadoAsApagar._id });
+        }
+    }
+    
+    
+    return User.findByIdAndDelete(id);
+
+
+};
+
 module.exports = adminService;

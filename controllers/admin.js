@@ -17,6 +17,21 @@ adminController.exibirDashboard = async function (req, res) {
     }
 };
 
+
+/**
+ * Elimina um User. 
+ */
+adminController.eliminarUser = async function (req, res) {
+    try{
+        await adminService.eliminarUser(req.params.id);
+        res.redirect('/admin/exibirUtilizadores');
+    } catch(err){
+        res.status(500).send('Erro ao eliminar o utilizador');
+    }
+}
+
+
+
 /**
  * Aprova um supermercado.
  */
