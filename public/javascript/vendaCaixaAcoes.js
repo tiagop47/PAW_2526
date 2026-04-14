@@ -1,22 +1,23 @@
 const ENTREGA_DOMICILIO = 'entrega ao domicilio';
 const SEM_COORDS = 'Nenhuma coordenada selecionada.';
 
-const carrinhoDeCompras = {};
-
+const formVendaCaixa = document.getElementById('formVendaCaixa');
 const tabelaCarrinhoBody = document.getElementById('tabelaCarrinhoBody');
-const formVenda = document.getElementById('formVendaCaixa');
-const hiddenItens = document.getElementById('itensVenda');
-const metodoEntregaSelect = document.getElementById('metodoEntregaVenda');
-const moradaInput = document.getElementById('moradaVenda');
-const labelMorada = document.getElementById('labelMorada');
-const hintMorada = document.getElementById('hintMorada');
-const latitudeEntregaInput = document.getElementById('latitudeEntrega');
-const longitudeEntregaInput = document.getElementById('longitudeEntrega');
-const coordsSelecionadas = document.getElementById('coordsSelecionadas');
-const mapaEntregaElemento = document.getElementById('mapaEscolherEntrega');
+const hiddenItensVenda = document.getElementById('itensVenda');
+const selectMetodoEntrega = document.getElementById('metodoEntregaVenda');
+const inputMoradaVenda = document.getElementById('moradaVenda');
+const labelMoradaVenda = document.getElementById('labelMorada');
+const hintMoradaVenda = document.getElementById('hintMorada');
+const inputLatitudeEntrega = document.getElementById('latitudeEntrega');
+const inputLongitudeEntrega = document.getElementById('longitudeEntrega');
+const textoCoordsSelecionadas = document.getElementById('coordsSelecionadas');
+const elMapaEntrega = document.getElementById('mapaEscolherEntrega');
+const tabelaPesquisaModalBody = document.querySelector('[data-produto-pesquisa="tabela"]');
 
-let mapaEntrega;
-let marcadorEntrega = null;
+const carrinhoDeCompras = [];
+
+let mapaInstancia;
+let marcadorEntregaInstancia = null;
 
 
 function renderizarResultadosModal(produtos, tabelaBody) {
@@ -25,7 +26,7 @@ function renderizarResultadosModal(produtos, tabelaBody) {
         return;
     }
 
-    tabelaBody.innerHTML = produtos.map(function(produto) {
+    tabelaBody.innerHTML = produtos.map(function (produto) {
         if (produto.stockDisponivel <= 0) {
             return `
             <tr>
@@ -37,7 +38,7 @@ function renderizarResultadosModal(produtos, tabelaBody) {
         }
 
         const nomeEscaped = produto.nome.replace(/'/g, "\\'");
-        
+
         return `
             <tr>
                 <td><div class="fw-bold">${produto.nome}</div></td>
@@ -46,7 +47,11 @@ function renderizarResultadosModal(produtos, tabelaBody) {
                 <td style="min-width: 160px;">
                     <div class="input-group input-group-sm">
                         <input type="number" id="qtd_modal_${produto._id}" min="1" max="${produto.stockDisponivel}" value="1" class="form-control text-center" style="max-width: 60px;">
-                        <button type="button" class="btn btn-primary" onclick="adicionarAoCarrinho('${produto._id}', '${nomeEscaped}', ${produto.preco}, ${produto.stockDisponivel}, event)">
+                        <button type="button" class="btn btn-primary js-adicionar" 
+                                data-id="${produto._id}" 
+                                data-nome="${nomeEscaped}" 
+                                data-preco="${produto.preco}" 
+                                data-stock="${produto.stockDisponivel}">
                             Inserir
                         </button>
                     </div>
@@ -55,75 +60,101 @@ function renderizarResultadosModal(produtos, tabelaBody) {
     }).join('');
 }
 
-window.adicionarAoCarrinho = function(id, nome, preco, stock, event) {
+function adicionarAoCarrinho(id, nome, preco, stock, btn) {
     const inputQtd = document.getElementById(`qtd_modal_${id}`);
     const qtdPedida = parseInt(inputQtd.value, 10);
-    
+
     if (isNaN(qtdPedida) || qtdPedida <= 0) {
         return;
     }
 
-    if (!carrinhoDeCompras[id]) {
-        carrinhoDeCompras[id] = { 
-            nome: nome, 
-            preco: preco, 
-            stock: stock, 
-            qtd: 0 
-        };
-    }
-    
-    let novaQtd = carrinhoDeCompras[id].qtd + qtdPedida;
-    
-    if (novaQtd > stock) {
-        novaQtd = stock;
-    }
-    carrinhoDeCompras[id].qtd = novaQtd;
+    const itemExistente = carrinhoDeCompras.find(item => item.id === id);
 
-    if (event && event.currentTarget) {
-        const btn = event.currentTarget;
+    if (itemExistente) {
+        let novaQtd = itemExistente.qtd + qtdPedida;
+        if (novaQtd > stock) novaQtd = stock;
+        itemExistente.qtd = novaQtd;
+    } else {
+        carrinhoDeCompras.push({
+            id: id,
+            nome: nome,
+            preco: preco,
+            stock: stock,
+            qtd: qtdPedida > stock ? stock : qtdPedida
+        });
+    }
+
+    if (btn) {
         const textoOriginal = btn.innerHTML;
         btn.innerHTML = 'Adicionado';
 
-        setTimeout(function() {
-            btn.innerHTML = textoOriginal; 
+        setTimeout(function () {
+            btn.innerHTML = textoOriginal;
         }, 600);
     }
 
     atualizarCarrinhoDOM();
-    };
+}
 
+function removerDoCarrinho(id) {
+    const index = carrinhoDeCompras.findIndex(item => item.id === id);
 
-window.removerDoCarrinho = function(id) {
-    delete carrinhoDeCompras[id];
-    atualizarCarrinhoDOM();
-};
-
-window.mudarQuantidadeCarrinho = function(id, inputElement) {
-    const newVal = parseInt(inputElement.value, 10);
-    
-    if (!carrinhoDeCompras[id]) {
-        return;
+    if (index !== -1) {
+        carrinhoDeCompras.splice(index, 1);
     }
-    
+
+    atualizarCarrinhoDOM();
+}
+
+function mudarQuantidadeCarrinho(id, novoValor) {
+    const newVal = parseInt(novoValor, 10);
+    const item = carrinhoDeCompras.find(item => item.id === id);
+
+    if (!item) return;
+
     if (isNaN(newVal) || newVal <= 0) {
         removerDoCarrinho(id);
         return;
     }
 
     let qtdFinal = newVal;
-    
-    if (qtdFinal > carrinhoDeCompras[id].stock) {
-        qtdFinal = carrinhoDeCompras[id].stock;
+    if (qtdFinal > item.stock) {
+        qtdFinal = item.stock;
     }
-    
-    carrinhoDeCompras[id].qtd = qtdFinal;
+
+    item.qtd = qtdFinal;
     atualizarCarrinhoDOM();
 }
 
+// Configuração dos Event Listeners via Event Delegation
+if (tabelaPesquisaModalBody) {
+    tabelaPesquisaModalBody.addEventListener('click', function (e) {
+        const btn = e.target.closest('.js-adicionar');
+        if (btn) {
+            const { id, nome, preco, stock } = btn.dataset;
+            adicionarAoCarrinho(id, nome, parseFloat(preco), parseInt(stock, 10), btn);
+        }
+    });
+}
+
+if (tabelaCarrinhoBody) {
+    tabelaCarrinhoBody.addEventListener('click', function (e) {
+        const btnRemover = e.target.closest('.js-remover');
+        if (btnRemover) {
+            removerDoCarrinho(btnRemover.dataset.id);
+        }
+    });
+
+    tabelaCarrinhoBody.addEventListener('input', function (e) {
+        const inputQtd = e.target.closest('.js-qtd-carrinho');
+        if (inputQtd) {
+            mudarQuantidadeCarrinho(inputQtd.dataset.id, inputQtd.value);
+        }
+    });
+}
+
 function atualizarCarrinhoDOM() {
-    const chavesId = Object.keys(carrinhoDeCompras);
-    
-    if (chavesId.length === 0) {
+    if (carrinhoDeCompras.length === 0) {
         tabelaCarrinhoBody.innerHTML = `
             <tr>
                 <td colspan="5" class="text-center text-muted py-5">
@@ -136,36 +167,35 @@ function atualizarCarrinhoDOM() {
 
     let totalGlobal = 0;
     let htmlCarrinho = "";
-    
-    chavesId.forEach(function(id) {
-        const produtoNoCarrinho = carrinhoDeCompras[id];
-        const totalLinha = produtoNoCarrinho.preco * produtoNoCarrinho.qtd;
-        totalGlobal = totalGlobal + totalLinha;
-        
+
+    carrinhoDeCompras.forEach(function (produto) {
+        const totalLinha = produto.preco * produto.qtd;
+        totalGlobal += totalLinha;
+
         htmlCarrinho += `
             <tr>
-                <td><div class="fw-bold">${produtoNoCarrinho.nome}</div></td>
-                <td>${Number(produtoNoCarrinho.preco || 0).toFixed(2)}€</td>
+                <td><div class="fw-bold">${produto.nome}</div></td>
+                <td>${Number(produto.preco || 0).toFixed(2)}€</td>
                 <td>
-                    <input type="number" min="1" max="${produtoNoCarrinho.stock}" value="${produtoNoCarrinho.qtd}"
-                           class="form-control form-control-sm text-center" style="max-width: 80px;"
-                           onchange="mudarQuantidadeCarrinho('${id}', this)"
-                           onkeyup="mudarQuantidadeCarrinho('${id}', this)">
+                    <input type="number" min="1" max="${produto.stock}" value="${produto.qtd}"
+                           class="form-control form-control-sm text-center js-qtd-carrinho" 
+                           data-id="${produto.id}"
+                           style="max-width: 80px;">
                 </td>
                 <td class="text-end fw-bold">${totalLinha.toFixed(2)}€</td>
                 <td class="text-end">
-                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerDoCarrinho('${id}')" title="Remover">&times;</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger js-remover" data-id="${produto.id}" title="Remover">&times;</button>
                 </td>
             </tr>`;
     });
-    
+
     htmlCarrinho += `
         <tr class="table-light">
             <td colspan="3" class="text-end fw-bold">Total a Pagar:</td>
             <td colspan="2" class="text-end fw-bold fs-5 text-dark">${totalGlobal.toFixed(2)}€</td>
         </tr>
     `;
-    
+
     tabelaCarrinhoBody.innerHTML = htmlCarrinho;
 }
 
@@ -174,106 +204,98 @@ function inicializarPesquisa() {
         debounceMs: 250,
         renderTabela: renderizarResultadosModal
     });
-    
+
     if (filtroPesquisa && typeof filtroPesquisa.executarPesquisa === 'function') {
         filtroPesquisa.executarPesquisa();
     }
 }
 
 function limparCoordenadasEntrega() {
-    latitudeEntregaInput.value = '';
-    longitudeEntregaInput.value = '';
-    coordsSelecionadas.textContent = SEM_COORDS;
-    
-    if (marcadorEntrega) {
-        mapaEntrega.removeLayer(marcadorEntrega);
-        marcadorEntrega = null;
+    inputLatitudeEntrega.value = '';
+    inputLongitudeEntrega.value = '';
+    textoCoordsSelecionadas.textContent = SEM_COORDS;
+
+    if (marcadorEntregaInstancia) {
+        mapaInstancia.removeLayer(marcadorEntregaInstancia);
+        marcadorEntregaInstancia = null;
     }
 }
 
 function atualizarUIEntrega() {
-    const entregaDomicilio = metodoEntregaSelect.value === ENTREGA_DOMICILIO;
+    const entregaDomicilio = selectMetodoEntrega.value === ENTREGA_DOMICILIO;
 
     if (entregaDomicilio) {
-        labelMorada.innerHTML = 'Morada de Destino <span class="text-danger">*</span>';
-        moradaInput.required = true;
-        hintMorada.textContent = 'Obrigatória para entregas por estafeta.';
-        
-        if (mapaEntrega) {
-            requestAnimationFrame(function() {
-                mapaEntrega.invalidateSize();
+        labelMoradaVenda.innerHTML = 'Morada de Destino <span class="text-danger">*</span>';
+        inputMoradaVenda.required = true;
+        hintMoradaVenda.textContent = 'Obrigatória para entregas por estafeta.';
+
+        if (mapaInstancia) {
+            requestAnimationFrame(function () {
+                mapaInstancia.invalidateSize();
             });
         }
     } else {
-        labelMorada.textContent = 'Morada de Destino';
-        moradaInput.required = false;
-        hintMorada.textContent = 'Obrigatória apenas para entregas ao domicílio.';
+        labelMoradaVenda.textContent = 'Morada de Destino';
+        inputMoradaVenda.required = false;
+        hintMoradaVenda.textContent = 'Obrigatória apenas para entregas ao domicílio.';
         limparCoordenadasEntrega();
     }
 }
 
 function inicializarMapaEntrega() {
-    const latSuper = Number(mapaEntregaElemento?.dataset.superLat);
-    const lngSuper = Number(mapaEntregaElemento?.dataset.superLng);
-    const raioSuperKm = Number(mapaEntregaElemento?.dataset.superRaio || 5);
+    const latSuper = Number(elMapaEntrega?.dataset.superLat);
+    const lngSuper = Number(elMapaEntrega?.dataset.superLng);
+    const raioSuperKm = Number(elMapaEntrega?.dataset.superRaio || 5);
     const temCoordenadasSuper = Number.isFinite(latSuper) && Number.isFinite(lngSuper);
 
     let latInicial = 41.1579;
     let lngInicial = -8.6291;
-    
+
     if (temCoordenadasSuper) {
         latInicial = latSuper;
         lngInicial = lngSuper;
     }
 
-    mapaEntrega = inicializarMapa('mapaEscolherEntrega', latInicial, lngInicial);
+    mapaInstancia = inicializarMapa('mapaEscolherEntrega', latInicial, lngInicial);
 
     if (temCoordenadasSuper) {
-        L.marker([latSuper, lngSuper]).addTo(mapaEntrega).bindPopup("<b>Supermercado</b>");
-        
+        L.marker([latSuper, lngSuper]).addTo(mapaInstancia).bindPopup("<b>Supermercado</b>");
+
         const circuloAtuacao = L.circle([latSuper, lngSuper], {
-            color: '#007bff', 
-            fillColor: '#007bff', 
-            fillOpacity: 0.1, 
+            color: '#007bff',
+            fillColor: '#007bff',
+            fillOpacity: 0.1,
             radius: (raioSuperKm * 1000) / 5
-        }).addTo(mapaEntrega);
-        
-        mapaEntrega.fitBounds(circuloAtuacao.getBounds(), { padding: [30, 30] });
+        }).addTo(mapaInstancia);
+
+        mapaInstancia.fitBounds(circuloAtuacao.getBounds(), { padding: [30, 30] });
     }
 
-    mapaEntrega.on('click', function (event) {
-        if (metodoEntregaSelect.value !== ENTREGA_DOMICILIO) {
+    mapaInstancia.on('click', function (event) {
+        if (selectMetodoEntrega.value !== ENTREGA_DOMICILIO) {
             return;
         }
-        
+
         const lat = event.latlng.lat;
         const lng = event.latlng.lng;
-        
-        latitudeEntregaInput.value = lat.toFixed(6);
-        longitudeEntregaInput.value = lng.toFixed(6);
-        coordsSelecionadas.textContent = `Coordenadas selecionadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 
-        if (!marcadorEntrega) {
-            marcadorEntrega = L.marker([lat, lng]).addTo(mapaEntrega);
+        inputLatitudeEntrega.value = lat.toFixed(6);
+        inputLongitudeEntrega.value = lng.toFixed(6);
+        textoCoordsSelecionadas.textContent = `Coordenadas selecionadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+
+        if (!marcadorEntregaInstancia) {
+            marcadorEntregaInstancia = L.marker([lat, lng]).addTo(mapaInstancia);
         } else {
-            marcadorEntrega.setLatLng([lat, lng]);
+            marcadorEntregaInstancia.setLatLng([lat, lng]);
         }
     });
 }
 
 function obterItensSelecionados() {
-    const itensArray = [];
-    const chavesId = Object.keys(carrinhoDeCompras);
-    
-    chavesId.forEach(function(id) {
-        const p = carrinhoDeCompras[id];
-        itensArray.push({
-            produtoId: id,
-            quantidade: p.qtd
-        });
-    });
-    
-    return itensArray;
+    return carrinhoDeCompras.map(item => ({
+        produtoId: item.id,
+        quantidade: item.qtd
+    }));
 }
 
 async function validarStock(itens) {
@@ -287,15 +309,15 @@ async function validarStock(itens) {
 }
 
 function validarFormulario() {
-    const entregaDomicilio = metodoEntregaSelect.value === ENTREGA_DOMICILIO;
+    const entregaDomicilio = selectMetodoEntrega.value === ENTREGA_DOMICILIO;
 
-    if (entregaDomicilio && !moradaInput.value.trim()) {
+    if (entregaDomicilio && !inputMoradaVenda.value.trim()) {
         alert('A morada de destino é obrigatória para encomendas a serem entregues por estafeta.');
-        moradaInput.focus();
+        inputMoradaVenda.focus();
         return false;
     }
 
-    if (entregaDomicilio && (!latitudeEntregaInput.value || !longitudeEntregaInput.value)) {
+    if (entregaDomicilio && (!inputLatitudeEntrega.value || !inputLongitudeEntrega.value)) {
         alert('Selecione no mapa as coordenadas da entrega.');
         return false;
     }
@@ -311,7 +333,7 @@ async function submeterVendaComValidacoes(event) {
     }
 
     const itensParaEnviar = obterItensSelecionados();
-    
+
     if (itensParaEnviar.length === 0) {
         alert('Por favor, adicione pelo menos um produto ao carrinho.');
         return;
@@ -322,31 +344,37 @@ async function submeterVendaComValidacoes(event) {
 
         if (!data.sucesso) {
             let mensagem = 'Erro de Stock:\n';
-            
-            data.resultados.forEach(function(r) {
+
+            data.resultados.forEach(function (r) {
                 if (r.erro) {
                     mensagem += `- ${r.nome}: apenas ${r.disponivel} disponíveis.\n`;
                 }
             });
-            
+
             alert(`${mensagem}\nA página será recarregada para atualizar o stock.`);
             location.reload();
             return;
         }
 
-        hiddenItens.value = JSON.stringify(itensParaEnviar);
-        formVenda.submit();
-        
+        hiddenItensVenda.value = JSON.stringify(itensParaEnviar);
+        formVendaCaixa.submit();
+
     } catch (err) {
         console.error('Erro na verificação de stock:', err);
         alert('Não foi possível verificar o stock. Tente novamente.');
     }
 }
 
-inicializarPesquisa();
-inicializarMapaEntrega();
+document.addEventListener('DOMContentLoaded', function () {
+    inicializarPesquisa();
+    inicializarMapaEntrega();
 
-metodoEntregaSelect.addEventListener('change', atualizarUIEntrega);
-metodoEntregaSelect.dispatchEvent(new Event('change'));
+    if (selectMetodoEntrega) {
+        selectMetodoEntrega.addEventListener('change', atualizarUIEntrega);
+        atualizarUIEntrega();
+    }
 
-formVenda.addEventListener('submit', submeterVendaComValidacoes);
+    if (formVendaCaixa) {
+        formVendaCaixa.addEventListener('submit', submeterVendaComValidacoes);
+    }
+});
