@@ -163,6 +163,32 @@ supermarketService.pesquisarProdutos = async function (supermercadoId, { q, cate
     return Product.find(filtro).sort({ nome: 1 }).populate('categoriaId');
 };
 
+supermarketService.verificarStock = async function (supermercadoId, itens) {
+    const resultados = [];
+    let todosDisponiveis = true;
+
+    for (const item of itens) {
+        const produto = await Product.findOne({ _id: item.produtoId, supermercadoId }) ;
+
+        const disponivel = produto ? produto.stockDisponivel : 0;
+        const erro = !produto || disponivel < item. quantidade;
+
+        if (erro) todosDisponiveis = false;
+
+        resultados.push({
+            produtoId: item.produtoId,
+            nome: produto ? produto.nome : 'Produto desconhecido',
+            disponivel: disponivel,
+            solicitado: item.quantidade,
+            erro: erro
+
+        });
+    }
+
+    return { sucesso: todosDisponiveis, resultados };
+
+};
+
 supermarketService.obterProdutosDisponiveis = async function (supermercadoId) {
     return Product.find({ supermercadoId, stockDisponivel: { $gt: 0 } });
 };

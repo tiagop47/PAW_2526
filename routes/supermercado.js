@@ -30,6 +30,7 @@ router.get('/produtos/editar/:productId', supermarketController.exibirFormulario
 
 
 router.get('/api/produtos', supermarketController.pesquisarProdutos);
+router.post('/api/verificar-stock', supermarketController.verificarStock);
 
 router.post('/produtos', upload.single('imagem'), supermarketController.criarProduto);
 router.post('/produtos/editar/:productId', upload.single('imagem'), supermarketController.atualizarProduto);

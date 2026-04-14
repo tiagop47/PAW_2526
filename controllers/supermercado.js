@@ -266,12 +266,23 @@ supermarketController.exibirFatura = async function (req, res) {
     }
 };
 
+supermarketController.verificarStock = async function (req, res) {
+    try {
+        const { itens } = req.body;
+        const resultado = await supermarketService.verificarStock(req.supermercado._id, itens);
+        res.json(resultado);
+    } catch (err) {
+        console.error('Erro ao verificar stock:', err);
+        res.status(500).json({ sucesso: false, erro: 'Erro interno ao verificar stock.' });
+    }
+};
+
 /**
  * Exibe o formulário de venda em caixa.
  */
 supermarketController.exibirVendaCaixa = async function (req, res) {
     try {
-        const produtos = await supermarketService.obterProdutosDisponiveis(req.supermercado._id);
+        const produtos = [];
 
         res.render('supermercado/vendaCaixa', {
             title: 'Registar Venda',
