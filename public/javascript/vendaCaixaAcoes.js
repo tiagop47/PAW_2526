@@ -158,7 +158,19 @@ function atualizarCarrinhoDOM() {
             </tr>`;
     });
 
+    const taxaIva = 0.23;
+    const baseTribu = totalGlobal / (1 + taxaIva);
+    const valorIva = totalGlobal - baseTribu;
+
     htmlCarrinho += `
+        <tr class="table-light">
+            <td colspan="3" class="text-end text-muted">Subtotal (s/ IVA):</td>
+            <td colspan="2" class="text-end text-muted">${baseTribu.toFixed(2)}€</td>
+        </tr>
+        <tr class="table-light">
+            <td colspan="3" class="text-end text-muted">IVA (${(taxaIva * 100).toFixed(0)}%):</td>
+            <td colspan="2" class="text-end text-muted">${valorIva.toFixed(2)}€</td>
+        </tr>
         <tr class="table-light">
             <td colspan="3" class="text-end fw-bold">Total a Pagar:</td>
             <td colspan="2" class="text-end fw-bold fs-5 text-dark">${totalGlobal.toFixed(2)}€</td>

@@ -40,9 +40,6 @@
                     <p><strong>Data:</strong>
                         <%= encomenda.faturaData.toLocaleDateString('pt-PT') %>
                     </p>
-                    <p><strong>Estado:</strong>
-                        <%= encomenda.estado.toUpperCase() %>
-                    </p>
                 </div>
             </div>
 
@@ -104,9 +101,12 @@
                 </tbody>
             </table>
 
+            <% const taxaIva = 0.23; %>
+            <% const baseTribu = encomenda.valorTotal / (1 + taxaIva); %>
+            <% const valorIva = encomenda.valorTotal - baseTribu; %>
             <div class="total-section">
-                <p>Subtotal: <%= encomenda.valorTotal.toFixed(2) %> €</p>
-                <p>IVA (incluído): 0.00 €</p>
+                <p>Base tributável: <%= baseTribu.toFixed(2) %> €</p>
+                <p>IVA (<%= (taxaIva * 100).toFixed(0) %>% incluído): <%= valorIva.toFixed(2) %> €</p>
                 <p class="total-value">TOTAL: <%= encomenda.valorTotal.toFixed(2) %> €</p>
             </div>
 
