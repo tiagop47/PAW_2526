@@ -125,11 +125,11 @@
                             <div class="col-md-5">
                                 <select id="produtoPesquisaCategoria" data-produto-pesquisa="categoria" class="form-select">
                                     <option value="">Todas as categorias</option>
-                                    <option value="Frutas">Frutas e Legumes</option>
-                                    <option value="Carne">Carne e Peixe</option>
-                                    <option value="Laticinios">Laticínios</option>
-                                    <option value="Bebidas">Bebidas</option>
-                                    <option value="Outros">Outros</option>
+                                    <% if (categorias && categorias.length > 0) { %>
+                                        <% categorias.forEach(function(cat) { %>
+                                            <option value="<%= cat._id %>"><%= cat.nome %></option>
+                                        <% }); %>
+                                    <% } %>
                                 </select>
                             </div>
                         </div>

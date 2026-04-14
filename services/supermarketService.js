@@ -310,6 +310,11 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
     if (!cliente) {
         const passwordTemp = config.DEFAULT_ADMIN_PASSWORD;
         const saltRounds = config.SALT_ROUNDS || 10;
+
+        if(!passwordTemp){
+            throw new Error("Esta conta não existe, insira um utilizador válido.");
+        }
+        
         const hash = await bcrypt.hash(passwordTemp, saltRounds);
 
         cliente = await User.create({

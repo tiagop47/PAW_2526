@@ -284,9 +284,13 @@ supermarketController.exibirVendaCaixa = async function (req, res) {
     try {
         const produtos = [];
 
+        const categorias = await supermarketService.listarCategorias();
+
+
         res.render('supermercado/vendaCaixa', {
             title: 'Registar Venda',
             produtos,
+            categorias,
             supermercado: req.supermercado
         });
     } catch (err) {
