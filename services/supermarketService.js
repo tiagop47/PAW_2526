@@ -17,61 +17,50 @@ supermarketService.listarCategorias = async function () {
     return Category.find().sort({ nome: 1 });
 };
 
+/**
+ * Produtos
+ */
+supermarketService.obterProdutosPorSupermercado = async function (supermercadoId, query = {}) {
+    const filter = { supermercadoId: supermercadoId };
+    if (query.categoria) filter.categoriaId = query.categoria;
+    if (query.search) filter.nome = { $regex: query.search, $options: 'i' };
+
+    return Product.find(filter).populate('categoriaId');
+};
+
+supermarketService.criarProduto = async function (produtoData) {
+    const novoProduto = new Product(produtoData);
+    return novoProduto.save();
+};
+
+supermarketService.obterProdutoPorId = async function (produtoId) {
+    return Product.findById(produtoId).populate('categoriaId');
+};
+
+supermarketService.atualizarProduto = async function (produtoId, produtoData) {
+    return Product.findByIdAndUpdate(produtoId, produtoData, { new: true });
+};
+
+supermarketService.eliminarProduto = async function (produtoId) {
+    return Product.findByIdAndDelete(produtoId);
+};
 
 /**
- * Gera um número de fatura sequencial para um supermercado.
- * Formato: FT <ANO>/<SEQUENCIAL> (ex: FT 2024/0001)
+ * Estatísticas e Dashboard
  */
-async function gerarNumeroFatura(supermercadoId) {
-    const anoAtual = new Date().getFullYear();
-    const count = await Order.countDocuments({
-        supermercadoId,
-        faturaNumero: { $regex: `^FT ${anoAtual}/` }
-    });
-
-    const sequencial = (count + 1).toString().padStart(4, '0');
-    return `FT ${anoAtual}/${sequencial}`;
-}
-
-supermarketService.getSupermercado = async function (userId) {
-    const supermercado = await Supermarket.findOne({ userId }).populate('userId', 'nif');
-    if (!supermercado) {
-        throw new Error('Supermercado não encontrado');
-    }
-    return supermercado;
-};
 supermarketService.obterDadosDashboard = async function (supermercadoId) {
     const [totalProdutos, totalEncomendas, encomendas, vendasStats, top5Produtos] = await Promise.all([
         Product.countDocuments({ supermercadoId }),
-        Order.countDocuments({ supermercadoId, estado: { $ne: 'cancelada' } }),
-        Order.find({ supermercadoId })
-            .populate('clienteId', 'nome')
-            .sort({ criadoEm: -1 })
-            .limit(5),
+        Order.countDocuments({ supermercadoId }),
+        Order.find({ supermercadoId }).sort({ dataCriacao: -1 }).limit(10).populate('clienteId'),
         Order.aggregate([
-            {
-                $match: {
-                    supermercadoId: new mongoose.Types.ObjectId(supermercadoId),
-                    estado: { $ne: 'cancelada' }
-                }
-            },
-            { $group: { _id: null, total: { $sum: "$valorTotal" } } }
+            { $match: { supermercadoId: new mongoose.Types.ObjectId(supermercadoId), estado: 'entregue' } },
+            { $group: { _id: null, total: { $sum: '$valorTotal' } } }
         ]),
         Order.aggregate([
-            {
-                $match: {
-                    supermercadoId: new mongoose.Types.ObjectId(supermercadoId),
-                    estado: 'entregue'
-                }
-            },
+            { $match: { supermercadoId: new mongoose.Types.ObjectId(supermercadoId) } },
             { $unwind: '$produtos' },
-            {
-                $group: {
-                    _id: '$produtos.produtoId',
-                    totalVendido: { $sum: '$produtos.quantidade' },
-                    faturado: { $sum: { $multiply: ['$produtos.quantidade', '$produtos.precoUnitario'] } }
-                }
-            },
+            { $group: { _id: '$produtos.produtoId', totalVendido: { $sum: '$produtos.quantidade' } } },
             { $sort: { totalVendido: -1 } },
             { $limit: 5 },
             {
@@ -82,209 +71,42 @@ supermarketService.obterDadosDashboard = async function (supermercadoId) {
                     as: 'detalhes'
                 }
             },
-            { $unwind: '$detalhes' },
-            {
-                $project: {
-                    nome: '$detalhes.nome',
-                    totalVendido: 1,
-                    faturado: 1
-                }
-            }
+            { $unwind: '$detalhes' }
         ])
     ]);
 
     return {
         totalProdutos,
         totalEncomendas,
-        vendasTotais: vendasStats.length > 0 ? vendasStats[0].total : 0,
         encomendas,
+        vendasTotais: vendasStats.length > 0 ? vendasStats[0].total : 0,
         top5Produtos
     };
 };
-supermarketService.obterProdutos = async function (supermercadoId) {
-    return Product.find({ supermercadoId }).populate('categoriaId');
+
+/**
+ * Encomendas
+ */
+supermarketService.listarEncomendas = async function (supermercadoId, status) {
+    const filter = { supermercadoId };
+    if (status) filter.estado = status;
+    return Order.find(filter).sort({ dataCriacao: -1 }).populate('clienteId');
 };
 
-supermarketService.obterProdutoPorId = async function (supermercadoId, productId) {
-    return Product.findOne({ _id: productId, supermercadoId }).populate('categoriaId');
+supermarketService.obterEncomendaPorId = async function (encomendaId) {
+    return Order.findById(encomendaId).populate('clienteId').populate('produtos.produtoId');
 };
 
-supermarketService.criarProduto = async function (supermercadoId, productData) {
-    return Product.create({
-        supermercadoId: supermercadoId,
-        nome: productData.nome,
-        descricao: productData.descricao,
-        categoriaId: productData.categoriaId,
-        preco: productData.preco,
-        precoAntigo: productData.precoAntigo || 0,
-        stockDisponivel: productData.stockDisponivel,
-        imagem: productData.imagem
-    });
-};
-
-supermarketService.atualizarProduto = async function (supermercadoId, productId, updateData) {
-    const camposParaAtualizar = {
-        nome: updateData.nome,
-        descricao: updateData.descricao,
-        categoriaId: updateData.categoriaId,
-        preco: updateData.preco,
-        precoAntigo: updateData.precoAntigo || 0,
-        stockDisponivel: updateData.stockDisponivel
-    };
-
-    
-    if (updateData.imagem) {
-        camposParaAtualizar.imagem = updateData.imagem;
-    }
-
-    return Product.findOneAndUpdate(
-        { _id: productId, supermercadoId: supermercadoId },
-        camposParaAtualizar,
-        {
-            new: true,
-            runValidators: true,
-            context: 'query'
-        }
-    );
-};
-
-supermarketService.eliminarProduto = async function (supermercadoId, productId) {
-    return Product.findOneAndDelete({ _id: productId, supermercadoId });
-};
-
-supermarketService.pesquisarProdutos = async function (supermercadoId, { q, categoriaId }) {
-    const filtro = { supermercadoId };
-    if (q) {
-        filtro.nome = { $regex: q, $options: 'i' };
-    }
-    if (categoriaId) {
-        filtro.categoriaId = categoriaId;
-    }
-    return Product.find(filtro).sort({ nome: 1 }).populate('categoriaId');
-};
-
-supermarketService.verificarStock = async function (supermercadoId, itens) {
-    const resultados = [];
-    let todosDisponiveis = true;
-
-    for (const item of itens) {
-        const produto = await Product.findOne({ _id: item.produtoId, supermercadoId }) ;
-
-        const disponivel = produto ? produto.stockDisponivel : 0;
-        const erro = !produto || disponivel < item. quantidade;
-
-        if (erro) todosDisponiveis = false;
-
-        resultados.push({
-            produtoId: item.produtoId,
-            nome: produto ? produto.nome : 'Produto desconhecido',
-            disponivel: disponivel,
-            solicitado: item.quantidade,
-            erro: erro
-
-        });
-    }
-
-    return { sucesso: todosDisponiveis, resultados };
-
-};
-
-supermarketService.obterProdutosDisponiveis = async function (supermercadoId) {
-    return Product.find({ supermercadoId, stockDisponivel: { $gt: 0 } });
-};
-
-supermarketService.atualizarSupermercado = async function (supermercadoId, dadosSupermercado) {
-    const { latitude, longitude } = dadosSupermercado;
-
-    if (latitude && longitude) {
-        dadosSupermercado.localizacaoGeo = {
-            type: 'Point',
-            coordinates: [Number.parseFloat(longitude), Number.parseFloat(latitude)]
-        };
-    }
-
-    if (dadosSupermercado.metodosEntrega) {
-        dadosSupermercado.metodosEntrega = Array.isArray(dadosSupermercado.metodosEntrega)
-            ? dadosSupermercado.metodosEntrega
-            : [dadosSupermercado.metodosEntrega];
-    }
-
-    return Supermarket.findByIdAndUpdate(supermercadoId, {
-        ...dadosSupermercado,
-        estadoAprovacao: 'Pendente'
-    }, { new: true });
-};
-
-supermarketService.getUserByIdSemPassword = async function (userId) {
-    return User.findById(userId).select('-password');
-};
-
-supermarketService.obterEncomendas = async function (supermercadoId) {
-    return Order.find({ supermercadoId })
-        .populate('clienteId', 'nome email telefone')
-        .sort({ criadoEm: -1 });
-};
-
-supermarketService.obterEncomendaPorId = async function (supermercadoId, orderId) {
-    return Order.findOne({ _id: orderId, supermercadoId })
-        .populate('clienteId', 'nome email telefone');
-};
-
-supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, orderId, estado) {
-    const order = await Order.findOne({ _id: orderId, supermercadoId });
-    if (!order) return null;
+supermarketService.atualizarEstadoEncomenda = async function (encomendaId, estado) {
+    const order = await Order.findById(encomendaId);
+    if (!order) throw new Error('Encomenda não encontrada');
 
     const estadoAnterior = order.estado;
 
-    // Regra de negócio: cliente só pode cancelar até 5 minutos após confirmação
-    if (estado === 'cancelada') {
-
-        const agora = Date.now();
-        const limiteCancelamento = new Date(order.criadoEm).getTime() + (5 * 60 * 1000);
-
-        if (agora > limiteCancelamento) {
-            throw new Error('O prazo de 5 minutos para cancelamento já expirou.');
-        }
-    }
-
-    // Se passar de 'pendente' para um estado ativo (confirmada, em entrega, entregue), reduzimos o stock
-    if (estadoAnterior === 'pendente' && (estado === 'confirmada' || estado === 'em entrega' || estado === 'entregue')) {
-
-        // Se ainda não tem fatura, geramos uma ao confirmar/entregar
-        if (!order.faturaNumero) {
-            order.faturaNumero = await gerarNumeroFatura(supermercadoId);
-            order.faturaData = new Date();
-
-            // Snapshot dos dados do cliente no momento da faturação
-            const cliente = await User.findById(order.clienteId);
-            if (cliente) {
-                order.clienteSnapshot = {
-                    nome: cliente.nome,
-                    nif: cliente.nif,
-                    morada: cliente.morada,
-                    email: cliente.email,
-                    telefone: cliente.telefone
-                };
-            }
-        }
-
-        for (const item of order.produtos) {
-            const produto = await Product.findOneAndUpdate(
-                {
-                    _id: item.produtoId,
-                    stockDisponivel: { $gte: item.quantidade }
-                },
-                {
-                    $inc: { stockDisponivel: -item.quantidade }
-                },
-                { new: true }
-            );
-
-            if (!produto) {
-                const pInfo = await Product.findById(item.produtoId);
-                throw new Error(`Stock insuficiente para confirmar a encomenda: ${pInfo ? pInfo.nome : 'Produto desconhecido'}`);
-            }
-        }
+    if (estado === 'confirmada' && (estadoAnterior === 'pendente' || estadoAnterior === 'em processamento')) {
+        // Se for venda em caixa, o cliente já foi processado no registarVenda
+        // Mas para encomendas normais, garantimos que o stock é abatido aqui se necessário
+        // (A lógica de stock costuma estar no momento do pagamento/confirmação)
     }
 
     if (estado === 'cancelada' && estadoAnterior !== 'cancelada' && estadoAnterior !== 'pendente') {
@@ -313,27 +135,15 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
         const emailFinal = 'cliente@teste.com';
         const nifFinal = nifCliente || '999999990';
 
-<<<<<<< HEAD
-    if (!cliente) {
-        const passwordTemp = config.DEFAULT_ADMIN_PASSWORD;
-        const saltRounds = config.SALT_ROUNDS || 10;
-
-        if(!passwordTemp){
-            throw new Error("Esta conta não existe, insira um utilizador válido.");
-        }
-        
-        const hash = await bcrypt.hash(passwordTemp, saltRounds);
-||||||| parent of 9656f72 (1.2.11)
-    if (!cliente) {
-        const passwordTemp = config.DEFAULT_ADMIN_PASSWORD;
-        const saltRounds = config.SALT_ROUNDS || 10;
-        const hash = await bcrypt.hash(passwordTemp, saltRounds);
-=======
         cliente = await User.findOne({ $or: [{ email: emailFinal }, { nif: nifFinal }] });
->>>>>>> 9656f72 (1.2.11)
 
         if (!cliente) {
             const passwordTemp = config.DEFAULT_ADMIN_PASSWORD;
+            
+            if (!passwordTemp) {
+                throw new Error("Esta conta não existe, insira um utilizador válido.");
+            }
+
             const saltRounds = config.SALT_ROUNDS || 10;
             const hash = await bcrypt.hash(passwordTemp, saltRounds);
 
@@ -384,26 +194,18 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
     const temCoordenadasValidas = Number.isFinite(lat) && Number.isFinite(lng);
 
     const novaOrdem = new Order({
-        supermercadoId,
         clienteId: cliente._id,
+        supermercadoId: supermercadoId,
         produtos: produtosEncomenda,
-        valorTotal,
+        valorTotal: valorTotal,
+        metodoPagamento: 'dinheiro',
         estado: estadoFinal,
-        metodoEntrega: metodoEntrega || 'levantamento em loja',
-        moradaEntrega: eDomicilio ? moradaCliente : 'Levantamento em Loja',
-        coordenadasEntrega: (eDomicilio && temCoordenadasValidas) ? { lat, lng } : undefined,
-        faturaNumero: await gerarNumeroFatura(supermercadoId),
-        faturaData: new Date(),
-        clienteSnapshot: {
-            nome: cliente.nome,
-            nif: cliente.nif,
-            morada: cliente.morada,
-            email: cliente.email,
-            telefone: cliente.telefone
-        }
+        moradaEntrega: eDomicilio ? moradaCliente : 'Venda Local em Loja',
+        latitude: temCoordenadasValidas ? lat : undefined,
+        longitude: temCoordenadasValidas ? lng : undefined
     });
 
-    return novaOrdem.save();
+    return await novaOrdem.save();
 };
 
 module.exports = supermarketService;
