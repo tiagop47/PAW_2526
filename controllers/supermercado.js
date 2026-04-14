@@ -304,7 +304,7 @@ supermarketController.exibirVendaCaixa = async function (req, res) {
 supermarketController.registarVenda = async function (req, res) {
     try {
         const { emailCliente, nomeCliente, nifCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, itens, metodoEntrega } = req.body;
-        const listaItens = JSON.parse(itens);
+        const listaItens = JSON.parse(itens || '[]');
 
         await supermarketService.registarVenda(req.supermercado._id, {
             emailCliente, nomeCliente, nifCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, listaItens, metodoEntrega
@@ -312,16 +312,14 @@ supermarketController.registarVenda = async function (req, res) {
 
         res.redirect('/supermercado/encomendas?success=Venda registada com sucesso');
     } catch (err) {
-        console.error(err);
-        if (err.message === 'O email inserido não está associado a nenhuma conta.') {
-            return res.render('error', {
-                tituloErro: 'Erro no Registo de Venda',
-                detalheErro: err.message,
-                error: { status: 400 }
-            });
-        }
-        // Em vez de enviar 400 direto, redirecionamos para o formulário ou dashboard com o erro
-        res.redirect(`/supermercado/vendas/nova?error=${encodeURIComponent(err.message || 'Erro ao registar venda')}`);
+        console.error('ERRO NO REGISTAR VENDA:', err);
+        res.status(400);
+        return res.render('error', {
+            message: err.message,
+            tituloErro: 'Erro no Registo de Venda',
+            detalheErro: err.message,
+            error: { status: 400, stack: '' }
+        });
     }
 };
 

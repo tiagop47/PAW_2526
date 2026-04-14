@@ -12,14 +12,14 @@
         <% const statusCode = (locals.error && locals.error.status) ? locals.error.status : 500; %>
         <% const tituloErroDefault = statusCode === 404
             ? 'Página não encontrada'
-            : statusCode === 500
+            : (statusCode === 500 && !locals.detalheErro && !locals.message)
                 ? 'Página em construção'
                 : 'Algo correu mal'; %>
         <% const detalheErroDefault = statusCode === 404
             ? 'A página que procuras não existe ou foi movida.'
-            : statusCode === 500
+            : (statusCode === 500 && !locals.detalheErro && !locals.message)
                 ? 'Estamos a construir esta área.'
-                : (message || 'Ocorreu um erro inesperado.'); %>
+                : (locals.detalheErro || locals.message || 'Ocorreu um erro inesperado.'); %>
 
         <% const tituloFinal = locals.tituloErro || tituloErroDefault; %>
         <% const detalheFinal = locals.detalheErro || detalheErroDefault; %>
