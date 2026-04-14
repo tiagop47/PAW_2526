@@ -313,6 +313,13 @@ supermarketController.registarVenda = async function (req, res) {
         res.redirect('/supermercado/encomendas?success=Venda registada com sucesso');
     } catch (err) {
         console.error(err);
+        if (err.message === 'O email inserido não está associado a nenhuma conta.') {
+            return res.render('error', {
+                tituloErro: 'Erro no Registo de Venda',
+                detalheErro: err.message,
+                error: { status: 400 }
+            });
+        }
         // Em vez de enviar 400 direto, redirecionamos para o formulário ou dashboard com o erro
         res.redirect(`/supermercado/vendas/nova?error=${encodeURIComponent(err.message || 'Erro ao registar venda')}`);
     }

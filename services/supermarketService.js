@@ -302,11 +302,18 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
 supermarketService.registarVenda = async function (supermercadoId, saleData) {
     const { emailCliente, nomeCliente, nifCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, listaItens, metodoEntrega } = saleData;
 
-    const emailFinal = emailCliente || 'consumidor.final@loja.com';
-    const nifFinal = nifCliente || '999999990';
+    let cliente;
 
-    let cliente = await User.findOne({ $or: [{ email: emailFinal }, { nif: nifFinal }] });
+    if (emailCliente) {
+        cliente = await User.findOne({ email: emailCliente });
+        if (!cliente) {
+            throw new Error('O email inserido não está associado a nenhuma conta.');
+        }
+    } else {
+        const emailFinal = 'cliente@teste.com';
+        const nifFinal = nifCliente || '999999990';
 
+<<<<<<< HEAD
     if (!cliente) {
         const passwordTemp = config.DEFAULT_ADMIN_PASSWORD;
         const saltRounds = config.SALT_ROUNDS || 10;
@@ -316,16 +323,30 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
         }
         
         const hash = await bcrypt.hash(passwordTemp, saltRounds);
+||||||| parent of 9656f72 (1.2.11)
+    if (!cliente) {
+        const passwordTemp = config.DEFAULT_ADMIN_PASSWORD;
+        const saltRounds = config.SALT_ROUNDS || 10;
+        const hash = await bcrypt.hash(passwordTemp, saltRounds);
+=======
+        cliente = await User.findOne({ $or: [{ email: emailFinal }, { nif: nifFinal }] });
+>>>>>>> 9656f72 (1.2.11)
 
-        cliente = await User.create({
-            nome: nomeCliente || 'Consumidor Final',
-            email: emailFinal,
-            password: hash,
-            telefone: telefoneCliente || '900000000',
-            nif: nifFinal,
-            morada: moradaCliente || 'Venda Local em Loja',
-            role: 'clientes'
-        });
+        if (!cliente) {
+            const passwordTemp = config.DEFAULT_ADMIN_PASSWORD;
+            const saltRounds = config.SALT_ROUNDS || 10;
+            const hash = await bcrypt.hash(passwordTemp, saltRounds);
+
+            cliente = await User.create({
+                nome: nomeCliente || 'Consumidor Final',
+                email: emailFinal,
+                password: hash,
+                telefone: telefoneCliente || '900000000',
+                nif: nifFinal,
+                morada: moradaCliente || 'Venda Local em Loja',
+                role: 'clientes'
+            });
+        }
     }
 
     const produtosEncomenda = [];
