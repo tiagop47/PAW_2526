@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "nodemon ./bin/www"
+    "dev": "fuser -k 3000/tcp || true && nodemon ./bin/www",
+    "kill-port": "fuser -k 3000/tcp || true"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

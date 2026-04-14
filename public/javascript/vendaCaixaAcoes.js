@@ -46,7 +46,7 @@ function renderizarResultadosModal(produtos, tabelaBody) {
                 <td style="min-width: 160px;">
                     <div class="input-group input-group-sm">
                         <input type="number" id="qtd_modal_${produto._id}" min="1" max="${produto.stockDisponivel}" value="1" class="form-control text-center" style="max-width: 60px;">
-                        <button type="button" class="btn btn-dark" onclick="adicionarAoCarrinho('${produto._id}', '${nomeEscaped}', ${produto.preco}, ${produto.stockDisponivel}, event)">
+                        <button type="button" class="btn btn-primary" onclick="adicionarAoCarrinho('${produto._id}', '${nomeEscaped}', ${produto.preco}, ${produto.stockDisponivel}, event)">
                             Inserir
                         </button>
                     </div>
@@ -77,22 +77,21 @@ window.adicionarAoCarrinho = function(id, nome, preco, stock, event) {
     if (novaQtd > stock) {
         novaQtd = stock;
     }
-    
     carrinhoDeCompras[id].qtd = novaQtd;
-    
-      if (event && event.currentTarget) {
+
+    if (event && event.currentTarget) {
         const btn = event.currentTarget;
+        const textoOriginal = btn.innerHTML;
         btn.innerHTML = 'Adicionado';
-        btn.classList.replace('btn-dark', 'btn-success');
-        
+
         setTimeout(function() {
-            btn.innerHTML = 'Inserir'; 
-            btn.classList.replace('btn-success', 'btn-dark');
+            btn.innerHTML = textoOriginal; 
         }, 600);
     }
 
     atualizarCarrinhoDOM();
-};
+    };
+
 
 window.removerDoCarrinho = function(id) {
     delete carrinhoDeCompras[id];
@@ -163,7 +162,7 @@ function atualizarCarrinhoDOM() {
     htmlCarrinho += `
         <tr class="table-light">
             <td colspan="3" class="text-end fw-bold">Total a Pagar:</td>
-            <td colspan="2" class="text-end fw-bold fs-5 text-primary">${totalGlobal.toFixed(2)}€</td>
+            <td colspan="2" class="text-end fw-bold fs-5 text-dark">${totalGlobal.toFixed(2)}€</td>
         </tr>
     `;
     
