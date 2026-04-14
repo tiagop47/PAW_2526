@@ -106,27 +106,6 @@ function removerDoCarrinho(id) {
     atualizarCarrinhoDOM();
 }
 
-function mudarQuantidadeCarrinho(id, novoValor) {
-    const newVal = parseInt(novoValor, 10);
-    const item = carrinhoDeCompras.find(item => item.id === id);
-
-    if (!item) return;
-
-    if (isNaN(newVal) || newVal <= 0) {
-        removerDoCarrinho(id);
-        return;
-    }
-
-    let qtdFinal = newVal;
-    if (qtdFinal > item.stock) {
-        qtdFinal = item.stock;
-    }
-
-    item.qtd = qtdFinal;
-    atualizarCarrinhoDOM();
-}
-
-// Configuração dos Event Listeners via Event Delegation
 if (tabelaPesquisaModalBody) {
     tabelaPesquisaModalBody.addEventListener('click', function (e) {
         const btn = e.target.closest('.js-adicionar');
@@ -142,13 +121,6 @@ if (tabelaCarrinhoBody) {
         const btnRemover = e.target.closest('.js-remover');
         if (btnRemover) {
             removerDoCarrinho(btnRemover.dataset.id);
-        }
-    });
-
-    tabelaCarrinhoBody.addEventListener('input', function (e) {
-        const inputQtd = e.target.closest('.js-qtd-carrinho');
-        if (inputQtd) {
-            mudarQuantidadeCarrinho(inputQtd.dataset.id, inputQtd.value);
         }
     });
 }
@@ -176,11 +148,8 @@ function atualizarCarrinhoDOM() {
             <tr>
                 <td><div class="fw-bold">${produto.nome}</div></td>
                 <td>${Number(produto.preco || 0).toFixed(2)}€</td>
-                <td>
-                    <input type="number" min="1" max="${produto.stock}" value="${produto.qtd}"
-                           class="form-control form-control-sm text-center js-qtd-carrinho" 
-                           data-id="${produto.id}"
-                           style="max-width: 80px;">
+                <td class="text-center">
+                    <span class="badge bg-light text-dark border px-3 py-2">${produto.qtd}</span>
                 </td>
                 <td class="text-end fw-bold">${totalLinha.toFixed(2)}€</td>
                 <td class="text-end">
