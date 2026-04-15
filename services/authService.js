@@ -124,7 +124,6 @@ authService.gerarTokenRecuperacao = async function (email) {
         throw new Error("Não existe nenhuma conta com esse email.")
     }
 
-    //Isto gera um código seguro de 20 letras/números
     const token = crypto.randomBytes(20).toString('hex');
 
     user.resetPasswordToken = token;
