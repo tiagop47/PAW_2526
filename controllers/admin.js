@@ -123,11 +123,13 @@ adminController.listarSupermercados = async function (req, res) {
         const dados = await adminService.getMercadosAtivos(contador, limite);
 
         const supermercadosMapa = await adminService.getTodosMercadosAtivos();
+        const topSupermarkets = await adminService.getTopSupermercados();
 
         res.render('admin/supermercadosAtivos', {
             title: 'Gestão de Supermercados',
             supermercados: dados.supermercados,
             supermercadosMapa,
+            topSupermarkets,
             paginaAtual: dados.paginaAtual,
             totalPaginas: dados.totalPaginas
         });

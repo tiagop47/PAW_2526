@@ -15,7 +15,7 @@
             </div>
 
             <div class="row g-4">
-                <!-- Coluna da Tabela -->
+                <!-- Tabela -->
                 <div class="col-lg-8">
                     <div class="card border-0 shadow-sm">
                         <table class="tabela-limpa mb-0" style="table-layout: fixed; width: 100%;">
@@ -65,9 +65,20 @@
                     </div>
 
                     <%- include('../partials/paginacao', { paginaUrl: '/admin/supermercados/ativos' }) %>
+
+                    <!-- Gráfico-->
+                    <div class="card border bg-white mt-3">
+                        <div class="card-header bg-white py-2">
+                            <span class="small fw-bold text-muted">Top Supermercados (Encomendas)</span>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-data1" data-top-supermarkets='<%= JSON.stringify(topSupermarkets || []) %>' style="display: none;"></div>
+                            <canvas id="myChart"></canvas>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Coluna do Mapa -->
+                <!--Mapa -->
                 <div class="col-lg-4">
                     <%- include('../partials/mapaComponent', { 
                         mapaId: 'mapa-supermercados-ativos', 
@@ -86,6 +97,7 @@
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <script src="/javascript/mapa.js"></script>
         <script src="/javascript/adminMapaAtivos.js"></script>
+        <script src="/javascript/grafico.js"></script>
 </body>
 
 </html>

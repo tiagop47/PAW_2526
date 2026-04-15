@@ -260,4 +260,33 @@ adminService.eliminarUser = async function (id){
 
 };
 
+/**
+ * Obtém o top 5 de supermercados com mais encomendas.
+ */
+adminService.getTopSupermercados = async function () {
+    const resultado = await Order.aggregate([
+        { $group: { _id: '$supermercadoId', counter: { $sum: 1 } } },
+        { $sort: { counter: -1 } },
+        { $limit: 5 },
+        {
+            $lookup: {
+                from: 'supermarkets',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'supermercado'
+            }
+        },
+        { $unwind: '$supermercado' },
+        {
+            $project: {
+                _id: 0,
+                nome: '$supermercado.nome',
+                counter: 1
+            }
+        }
+    ]);
+
+    return resultado;
+};
+
 module.exports = adminService;

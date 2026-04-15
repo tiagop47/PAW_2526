@@ -10,6 +10,12 @@ body {
   color: #333;
 }
 
+/* Esconder o ícone nativo de ver password do Edge/Chrome */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
 /* Modal manual sem JavaScript do Bootstrap */
 .modal.show {
   display: block;
