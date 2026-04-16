@@ -3,6 +3,7 @@ const User = require('../models/UserModel');
 const Product = require('../models/ProductModel');
 const Order = require('../models/OrderModel');
 const Category = require('../models/CategoryModel');
+const Coupon = require('../models/cupomModel');
 
 const adminService = {};
 
@@ -315,4 +316,33 @@ adminService.getRegistosMensais = async function () {
         total: r.total
     }));
 };
+
+/**
+ * Gestão de cupons de desconto
+ */
+
+adminService.listarCupoes = async function (){
+    return Coupon.find()
+        .populate('clienteId', 'nome email')
+        .sort({ criadoEm: -1 });
+};
+
+adminService.getClientes = async function () {
+    return User.find({role: 'clientes'}).select('nome email');
+
+};
+
+adminService.criarCupao = async function (dados) {
+    if (!dados.clienteId || dados.clienteId.trim() === '') {
+        delete dados.clienteId;
+    }
+    
+    if (dados.codigo) {
+        dados.codigo = dados.codigo.toUpperCase().trim();
+    }
+
+    return Coupon.create(dados);
+};
+
+
 module.exports = adminService;

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+    <%- include('../partials/navbar') %>
+
+        <main class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h4 fw-bold m-0 text-dark">Gestão de Cupões</h1>
+            </div>
+
+            
+            <% if (locals.query && locals.query.error) { %>
+                <div class="alert alert-danger">
+                    <%= query.error %>
+                </div>
+            <% } %>
+
+            <div class="row g-4">
+                
+                <!-- Formulário de Criação -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title h6 mb-3">Novo Cupão</h5>
+                            <form action="/admin/cupoes" method="POST">
+                                <div class="mb-3">
+                                    <label class="form-label small">Código do Cupão</label>
+                                    <input type="text" name="codigo" class="form-control text-uppercase" required placeholder="Ex: PROMO26">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small">Cliente (Opcional)</label>
+                                    <select name="clienteId" class="form-select">
+                                        <option value="">Geral (Todos os Clientes)</option>
+                                        <% clientes.forEach(function(cli) { %>
+                                            <option value="<%= cli._id %>"><%= cli.nome %> (<%= cli.email %>)</option>
+                                        <% }) %>
+                                    </select>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 mb-3">
+                                        <label class="form-label small">% Desconto</label>
+                                        <input type="number" class="form-control" name="percentagemDesconto" min="1" max="100" required>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <label class="form-label small">Lim. Uso</label>
+                                        <input type="number" class="form-control" name="limiteUtilizacoes" min="1" value="1" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small">Data de Validade</label>
+                                    <input type="date" class="form-control" name="prazo" required>
+                                </div>
+                                <button type="submit" class="btn btn-dark btn-sm">Criar Cupão</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela de Listagem -->
+                <div class="col-md-8">
+                    <div class="card border-0 shadow-sm">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Cliente Associado</th>
+                                        <th class="text-center">Desconto</th>
+                                        <th class="text-center">Validade</th>
+                                        <th class="text-center">Nº Usos</th>
+                                        <th class="text-end">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (cupoes && cupoes.length > 0) { %>
+                                        <% cupoes.forEach(function(cupao) { 
+                                            const expirado = new Date(cupao.prazo) < new Date();
+                                            const esgotado = cupao.utilizacoesAtuais >= cupao.limiteUtilizacoes;
+                                            const ativo = (!expirado && !esgotado);
+                                        %>
+                                        <tr>
+                                            <td class="fw-bold"><%= cupao.codigo %></td>
+                                            <td class="small text-muted">
+                                                <%= cupao.clienteId ? cupao.clienteId.nome : 'Global' %>
+                                            </td>
+                                            <td class="text-center fw-bold text-success">
+                                                <%= cupao.percentagemDesconto %>%
+                                            </td>
+                                            <td class="text-center small">
+                                                <%= new Date(cupao.prazo).toLocaleDateString() %>
+                                            </td>
+                                            <td class="text-center small">
+                                                <%= cupao.utilizacoesAtuais %> / <%= cupao.limiteUtilizacoes %>
+                                            </td>
+                                            <td class="text-end">
+                                                <!-- Usar Badges em vez de pintar a cor da Tabela -->
+                                               <% if (ativo) { %>
+                                                  <span class="badge bg-success">Ativo</span>
+                                               <% } else { %>
+                                                  <span class="badge bg-secondary">Inativo</span>
+                                               <% } %>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4 text-muted">Nenhum cupão criado.</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>  
+            </div>
+        </main>
+    </body>
+</html>

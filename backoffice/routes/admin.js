@@ -25,6 +25,11 @@ router.get('/categorias', adminController.exibirCategorias);
 router.post('/categorias', adminController.criarCategoria);
 router.post('/categorias/eliminar/:id', adminController.eliminarCategoria);
 
+//Gestão de Cupões
+// Gestão de Cupões
+router.get('/cupoes', adminController.exibirCupoes);
+router.post('/cupoes', adminController.criarCupao);
+
 /**
  * Middleware de Parâmetro: Carrega o utilizador quando :userId está no URL.
  */

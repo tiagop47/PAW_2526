@@ -44,16 +44,6 @@
                     <button onclick="window.history.back()" class="btn btn-outline-secondary px-4">Página Anterior</button>
                 </div>
 
-                <% if (locals.error && locals.error.stack) { %>
-                    <div class="mt-5 text-start">
-                        <button class="btn btn-sm btn-link text-muted p-0" type="button" data-bs-toggle="collapse" data-bs-target="#errorDetails">
-                            Mostrar detalhes técnicos (apenas desenvolvimento)
-                        </button>
-                        <div class="collapse mt-3" id="errorDetails">
-                            <pre class="bg-dark text-light p-3 rounded small overflow-auto" style="max-height: 300px;"><code><%= error.stack %></code></pre>
-                        </div>
-                    <% } %>
-                </div>
             </div>
         </div>
 

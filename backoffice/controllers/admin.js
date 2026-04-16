@@ -244,4 +244,34 @@ adminController.exibirFatura = async function (req, res) {
     }
 };
 
+
+/**
+ * Gestão de cupões de desconto
+ */
+
+adminController.exibirCupoes = async function (req, res) {
+    try {
+        const [cupoes, clientes] = await Promise.all([
+            adminService.listarCupoes(),
+            adminService.getClientes()
+        ]);
+        res.render('admin/cupom', { 
+            title: 'Gestão de Cupões', 
+            cupoes, 
+            clientes 
+        });
+    } catch (err) {
+        res.status(500).send('Erro ao carregar sistema de cupões: ' + err.message);
+    }
+};
+
+adminController.criarCupao = async function (req, res) {
+    try {
+        await adminService.criarCupao(req.body);
+        res.redirect('/admin/cupoes');
+    } catch (err) {
+        res.redirect('/admin/cupoes?error=' + encodeURIComponent('Erro ao criar: Podem faltar campos ou código estar duplicado.'));
+    }
+};
+
 module.exports = adminController;
