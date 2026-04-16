@@ -20,20 +20,34 @@ let mapaInstancia;
 let marcadorEntregaInstancia = null;
 
 
+// Guardar referência aos produtos do último resultado de pesquisa
+let ultimosProdutosPesquisa = [];
+
+function obterQtdNoCarrinho(produtoId) {
+    const item = carrinhoDeCompras.find(i => i.id === produtoId);
+    return item ? item.qtd : 0;
+}
+
 function renderizarResultadosModal(produtos, tabelaBody) {
     if (!Array.isArray(produtos) || produtos.length === 0) {
-        tabelaBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Nenhum produto encontrado.</td></tr>';
+        tabelaBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nenhum produto encontrado.</td></tr>';
         return;
     }
 
+    // Guardar para re-render após +/-
+    ultimosProdutosPesquisa = produtos;
+
     tabelaBody.innerHTML = produtos.map(function (produto) {
+        const qtdAtual = obterQtdNoCarrinho(produto._id);
+
         if (produto.stockDisponivel <= 0) {
             return `
             <tr>
                 <td><div class="fw-bold">${produto.nome}</div></td>
+                <td><svg class="barcode-modal" data-barcode-id="${produto._id}"></svg></td>
                 <td>${Number(produto.preco || 0).toFixed(2)}€</td>
                 <td class="text-danger">Sem Stock</td>
-                <td><button type="button" class="btn btn-sm btn-outline-secondary w-100" disabled>Indisponível</button></td>
+                <td class="text-center text-muted">Indisponível</td>
             </tr>`;
         }
 
@@ -42,58 +56,81 @@ function renderizarResultadosModal(produtos, tabelaBody) {
         return `
             <tr>
                 <td><div class="fw-bold">${produto.nome}</div></td>
+                <td><svg class="barcode-modal" data-barcode-id="${produto._id}"></svg></td>
                 <td>${Number(produto.preco || 0).toFixed(2)}€</td>
                 <td>${produto.stockDisponivel}</td>
-                <td style="min-width: 160px;">
-                    <div class="input-group input-group-sm">
-                        <input type="number" id="qtd_modal_${produto._id}" min="1" max="${produto.stockDisponivel}" value="1" class="form-control text-center" style="max-width: 60px;">
-                        <button type="button" class="btn btn-primary js-adicionar" 
+                <td style="min-width: 140px;">
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary js-modal-menos" 
+                                data-id="${produto._id}"
+                                ${qtdAtual <= 0 ? 'disabled' : ''}>−</button>
+                        <span class="fw-bold" style="min-width: 24px; text-align: center;">${qtdAtual}</span>
+                        <button type="button" class="btn btn-sm btn-primary js-modal-mais" 
                                 data-id="${produto._id}" 
                                 data-nome="${nomeEscaped}" 
                                 data-preco="${produto.preco}" 
-                                data-stock="${produto.stockDisponivel}">
-                            Inserir
-                        </button>
+                                data-stock="${produto.stockDisponivel}"
+                                ${qtdAtual >= produto.stockDisponivel ? 'disabled' : ''}>+</button>
                     </div>
                 </td>
             </tr>`;
     }).join('');
+
+    // Gerar barcodes para cada produto no modal
+    document.querySelectorAll('.barcode-modal').forEach(function (svg) {
+        const produtoId = svg.getAttribute('data-barcode-id');
+        if (produtoId && typeof JsBarcode !== 'undefined') {
+            JsBarcode(svg, produtoId, {
+                format: 'CODE128',
+                width: 1,
+                height: 30,
+                displayValue: false,
+                margin: 2
+            });
+        }
+    });
 }
 
-function adicionarAoCarrinho(id, nome, preco, stock, btn) {
-    const inputQtd = document.getElementById(`qtd_modal_${id}`);
-    const qtdPedida = parseInt(inputQtd.value, 10);
-
-    if (isNaN(qtdPedida) || qtdPedida <= 0) {
-        return;
-    }
-
+function adicionarUmAoCarrinho(id, nome, preco, stock) {
     const itemExistente = carrinhoDeCompras.find(item => item.id === id);
 
     if (itemExistente) {
-        let novaQtd = itemExistente.qtd + qtdPedida;
-        if (novaQtd > stock) novaQtd = stock;
-        itemExistente.qtd = novaQtd;
+        if (itemExistente.qtd < stock) {
+            itemExistente.qtd += 1;
+        }
     } else {
         carrinhoDeCompras.push({
             id: id,
             nome: nome,
             preco: preco,
             stock: stock,
-            qtd: qtdPedida > stock ? stock : qtdPedida
+            qtd: 1
         });
     }
 
-    if (btn) {
-        const textoOriginal = btn.innerHTML;
-        btn.innerHTML = 'Adicionado';
+    atualizarCarrinhoDOM();
+    // Re-render modal para atualizar quantidades e estados dos botões
+    if (ultimosProdutosPesquisa.length > 0) {
+        renderizarResultadosModal(ultimosProdutosPesquisa, tabelaPesquisaModalBody);
+    }
+}
 
-        setTimeout(function () {
-            btn.innerHTML = textoOriginal;
-        }, 600);
+function removerUmDoCarrinho(id) {
+    const itemExistente = carrinhoDeCompras.find(item => item.id === id);
+
+    if (itemExistente) {
+        itemExistente.qtd -= 1;
+        if (itemExistente.qtd <= 0) {
+            const index = carrinhoDeCompras.indexOf(itemExistente);
+            carrinhoDeCompras.splice(index, 1);
+        }
     }
 
     atualizarCarrinhoDOM();
+    // Re-render modal para atualizar quantidades e estados dos botões
+    if (ultimosProdutosPesquisa.length > 0) {
+        renderizarResultadosModal(ultimosProdutosPesquisa, tabelaPesquisaModalBody);
+    }
 }
 
 function removerDoCarrinho(id) {
@@ -108,10 +145,15 @@ function removerDoCarrinho(id) {
 
 if (tabelaPesquisaModalBody) {
     tabelaPesquisaModalBody.addEventListener('click', function (e) {
-        const btn = e.target.closest('.js-adicionar');
-        if (btn) {
-            const { id, nome, preco, stock } = btn.dataset;
-            adicionarAoCarrinho(id, nome, parseFloat(preco), parseInt(stock, 10), btn);
+        const btnMais = e.target.closest('.js-modal-mais');
+        if (btnMais) {
+            const { id, nome, preco, stock } = btnMais.dataset;
+            adicionarUmAoCarrinho(id, nome, parseFloat(preco), parseInt(stock, 10));
+        }
+
+        const btnMenos = e.target.closest('.js-modal-menos');
+        if (btnMenos) {
+            removerUmDoCarrinho(btnMenos.dataset.id);
         }
     });
 }

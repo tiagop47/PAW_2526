@@ -14,6 +14,12 @@ const ProductSchema = new mongoose.Schema({
         ref: 'Category',
         required: [true, "A categoria é obrigatória"]
     },
+    codigoBarras: {
+        type: String,
+        unique: true,
+        sparse: true,
+        trim: true
+    },
     preco: {
         type: Number,
         required: [true, "O preço é obrigatório"],
@@ -25,7 +31,11 @@ const ProductSchema = new mongoose.Schema({
         min: [0, "O preço antigo deve ser positivo"],
         validate: {
             validator: function (v) {
-                return v === 0 || v > this.preco;
+                let precoAtual = this.preco;
+                if (precoAtual === undefined && typeof this.get === 'function') {
+                    precoAtual = this.get('preco');
+                }
+                return v === 0 || v > precoAtual;
             },
             message: "O preço antigo deve ser superior ao preço atual para ser uma promoção válida."
         }

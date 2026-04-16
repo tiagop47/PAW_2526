@@ -27,6 +27,12 @@
                     <% } %>
                 </div>
 
+                <!-- Código de Barras -->
+                <div class="text-center mb-4">
+                    <label class="form-label fw-bold small text-muted d-block mb-2">Código de Barras</label>
+                    <svg id="barcodeProduto"></svg>
+                </div>
+
                 <!-- Nome e Categoria lado a lado -->
                 <div class="row g-3 mb-4">
                     <div class="col-8">
@@ -80,6 +86,17 @@
     </main>
 
     <script src="/javascript/produtoCriarEditar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <script>
+        JsBarcode("#barcodeProduto", "<%= produto._id %>", {
+            format: "CODE128",
+            width: 1.5,
+            height: 50,
+            displayValue: true,
+            fontSize: 12,
+            margin: 5
+        });
+    </script>
 
 </body>
 

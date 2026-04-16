@@ -112,7 +112,7 @@ supermarketService.obterProdutoPorId = async function (supermercadoId, productId
 };
 
 supermarketService.criarProduto = async function (supermercadoId, productData) {
-    return Product.create({
+    const novoProduto = new Product({
         supermercadoId: supermercadoId,
         nome: productData.nome,
         descricao: productData.descricao,
@@ -122,6 +122,12 @@ supermarketService.criarProduto = async function (supermercadoId, productData) {
         stockDisponivel: productData.stockDisponivel,
         imagem: productData.imagem
     });
+
+    novoProduto.codigoBarras = productData.codigoBarras && productData.codigoBarras.trim() !== '' 
+        ? productData.codigoBarras 
+        : novoProduto._id.toString();
+
+    return novoProduto.save();
 };
 
 supermarketService.atualizarProduto = async function (supermercadoId, productId, updateData) {
@@ -131,7 +137,8 @@ supermarketService.atualizarProduto = async function (supermercadoId, productId,
         categoriaId: updateData.categoriaId,
         preco: updateData.preco,
         precoAntigo: updateData.precoAntigo || 0,
-        stockDisponivel: updateData.stockDisponivel
+        stockDisponivel: updateData.stockDisponivel,
+        codigoBarras: updateData.codigoBarras && updateData.codigoBarras.trim() !== '' ? updateData.codigoBarras : productId.toString()
     };
 
     
