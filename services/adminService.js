@@ -289,4 +289,30 @@ adminService.getTopSupermercados = async function () {
     return resultado;
 };
 
+/**
+ * Evolução de registos de utilizadores
+ */
+
+adminService.getRegistosMensais = async function () {
+    const ha12Meses = new Date();
+    ha12Meses.setMonth(ha12Meses.getMonth() - 12);
+    const resultado = await User.aggregate([
+        { $match: { criadoEm: { $gte: ha12Meses } } },
+        {
+            $group: {
+                _id: {
+                    ano: { $year: '$criadoEm' },
+                    mes: { $month: '$criadoEm' }
+                },
+                total: { $sum: 1 }
+            }
+        },
+        { $sort: { '_id.ano': 1, '_id.mes': 1 } }
+    ]);
+    const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    return resultado.map(r => ({
+        label: meses[r._id.mes - 1] + ' ' + r._id.ano,
+        total: r.total
+    }));
+};
 module.exports = adminService;

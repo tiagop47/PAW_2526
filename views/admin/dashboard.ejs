@@ -100,7 +100,52 @@
                     </div>
                 </div>
             </div>
+        
+        <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Evolução de Registos de Utilizadores</h5>
+                            <canvas id="graficoRegistos" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
+    <script>
+        const dadosRegistos = <%- JSON.stringify(registosMensais) %>;
+        const ctx = document.getElementById('graficoRegistos').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dadosRegistos.map(d => d.label),
+                datasets: [{
+                    label: 'Novos Utilizadores',
+                    data: dadosRegistos.map(d => d.total),
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#0d6efd',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+    </script>
 
 
 </body>

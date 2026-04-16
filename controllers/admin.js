@@ -7,12 +7,16 @@ var adminController = {};
  */
 adminController.exibirDashboard = async function (req, res) {
     try {
-        const stats = await adminService.getDashboardStats();
-        res.render('admin/dashboard', { title: 'Painel Admin', stats });
+        const [stats, registosMensais] = await Promise.all([
+            adminService.getDashboardStats(),
+            adminService.getRegistosMensais()
+        ]);
+        res.render('admin/dashboard', { title: 'Painel Admin', stats, registosMensais });
     } catch (err) {
         res.render('admin/dashboard', {
             title: 'Painel Admin',
-            stats: { totalUsers: 0, totalEstafetas: 0, pendentes: 0, ativos: 0, bloqueados: 0, totalProdutos: 0, totalEncomendas: 0, valorTotal: 0 }
+            stats: { totalUsers: 0, totalEstafetas: 0, pendentes: 0, ativos: 0, bloqueados: 0, totalProdutos: 0, totalEncomendas: 0, valorTotal: 0 },
+            registosMensais: []
         });
     }
 };
