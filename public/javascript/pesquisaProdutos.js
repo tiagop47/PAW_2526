@@ -20,8 +20,13 @@ function tabelaDefault(produtos) {
             <td>${Number(p.preco).toFixed(2)}€</td>
             <td>${p.stockDisponivel}</td>
             <td class="text-end">
-                <a href="/supermercado/produtos/${p._id}" class="btn btn-sm btn-light border">Detalhes</a>
-                <a href="/supermercado/produtos/editar/${p._id}" class="btn btn-sm btn-light border">Editar</a>
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="/supermercado/produtos/${p._id}" class="btn btn-sm btn-light border">Detalhes</a>
+                    <a href="/supermercado/produtos/editar/${p._id}" class="btn btn-sm btn-light border">Editar</a>
+                    <form action="/supermercado/produtos/eliminar/${p._id}" method="POST" class="d-inline" onsubmit="return confirm('Tem a certeza?')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                    </form>
+                </div>
             </td>
         </tr>
     `).join('');

@@ -150,7 +150,7 @@ supermarketService.atualizarProduto = async function (supermercadoId, productId,
         { _id: productId, supermercadoId: supermercadoId },
         camposParaAtualizar,
         {
-            new: true,
+            returnDocument: 'after',
             runValidators: true,
             context: 'query'
         }
