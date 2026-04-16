@@ -18,7 +18,8 @@ const ProductSchema = new mongoose.Schema({
         type: String,
         unique: true,
         sparse: true,
-        trim: true
+        trim: true,
+        minlength: [9, "O código de barras deve ter pelo menos 9 caracteres"]
     },
     preco: {
         type: Number,

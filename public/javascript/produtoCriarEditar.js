@@ -7,6 +7,7 @@ const precoInput = document.getElementsByName('preco')[0];
 const stockInput = document.getElementsByName('stockDisponivel')[0];
 const precoAntigoInput = document.getElementsByName('precoAntigo')[0];
 const imagemInput = document.getElementsByName('imagem')[0];
+const codigoBarrasInput = document.getElementsByName('codigoBarras')[0];
 
 /**
  * Calcula a percentagem de desconto.
@@ -59,6 +60,11 @@ function validarFormularioProduto(form) {
 
     if (nomeInput && nomeInput.value.trim().length < 2) {
         alert('O nome do produto deve ter pelo menos 2 caracteres.');
+        erro = true;
+    }
+
+    if (codigoBarrasInput && codigoBarrasInput.value.trim().length > 0 && codigoBarrasInput.value.trim().length < 9) {
+        alert('O código de barras deve ter pelo menos 9 caracteres.');
         erro = true;
     }
 
