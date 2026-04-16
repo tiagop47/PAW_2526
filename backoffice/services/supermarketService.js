@@ -161,6 +161,16 @@ supermarketService.eliminarProduto = async function (supermercadoId, productId) 
     return Product.findOneAndDelete({ _id: productId, supermercadoId });
 };
 
+/**
+ * Listagem geral de produtos para o Frontoffice
+ */
+supermarketService.listarProdutosGeral = async function (filtro = {}) {
+    return Product.find(filtro)
+        .sort({ criadoEm: -1 })
+        .populate('categoriaId', 'nome')
+        .populate('supermercadoId', 'nomeFantasia');
+};
+
 supermarketService.pesquisarProdutos = async function (supermercadoId, { q, categoriaId }) {
     const filtro = { supermercadoId };
     if (q) {

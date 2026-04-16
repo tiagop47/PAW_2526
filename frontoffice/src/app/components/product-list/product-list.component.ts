@@ -1,32 +1,36 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css'
 })
 export class ProductListComponent implements OnInit {
-  products: Product[] = [];
-  loading: boolean = true;
-  error: string | null = null;
+  // Usar Signals garante que o Angular detete a mudança imediatamente
+  products = signal<Product[]>([]);
+  loading = signal<boolean>(true);
+  error = signal<string | null>(null);
 
   constructor(private productService: ProductService) {}
 
   ngOnInit(): void {
+    console.log('A tentar carregar produtos (Signal Mode)...');
     this.productService.getProducts().subscribe({
       next: (data) => {
-        this.products = data;
-        this.loading = false;
+        console.log('Produtos recebidos com sucesso:', data);
+        this.products.set(data);
+        this.loading.set(false);
       },
       error: (err) => {
-        this.error = 'Erro ao carregar produtos. Certifica-te que o Backend está ligado.';
-        this.loading = false;
-        console.error(err);
+        console.error('Erro na subscrição:', err);
+        this.error.set('Erro ao carregar produtos. Backend desligado?');
+        this.loading.set(false);
       }
     });
   }

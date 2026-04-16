@@ -1,18 +1,18 @@
-<div class="product-container">
-  <h2>Lista de Produtos</h2>
+<div class="product-container" style="border: 2px solid green; min-height: 200px;">
+  <h2 style="color: blue;">Lista de Produtos ({{ products().length }})</h2>
 
-  <div *ngIf="loading" class="info">Carregando produtos...</div>
-  <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="loading()" class="info">Carregando produtos...</div>
+  <div *ngIf="error()" class="error">{{ error() }}</div>
 
-  <ul *ngIf="!loading && !error">
-    <li *ngFor="let product of products" class="product-item">
-      <h3>{{ product.name }}</h3>
-      <p>{{ product.description }}</p>
-      <span class="price">{{ product.price | currency:'EUR' }}</span>
-    </li>
-  </ul>
+  <div *ngIf="!loading() && !error()">
+    <div *ngFor="let product of products()" class="product-item" style="border: 1px solid red; margin: 10px; padding: 10px;">
+      <h3>{{ product.nome }}</h3>
+      <p>{{ product.preco | currency:'EUR' }}</p>
+      <button [routerLink]="['/product', product._id]">Ver Detalhes</button>
+    </div>
+  </div>
 
-  <div *ngIf="!loading && products.length === 0 && !error" class="info">
+  <div *ngIf="!loading() && products().length === 0 && !error()" class="info">
     Nenhum produto encontrado.
   </div>
 </div>

@@ -4,12 +4,18 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
+const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const config = require('./config/config');
 const { injetarUserNasViews } = require('./middlewares/authMiddleware');
 
 const app = express();
+
+app.use(cors({
+    origin: 'http://localhost:4200',
+    credentials: true
+}));
 
 app.use(morgan('dev'));
 
@@ -23,7 +29,7 @@ const swaggerOptions = {
         },
         servers: [{ url: 'http://localhost:3000' }],
     },
-    apis: ['./routes/*.js'],
+    apis: ['./routes/*.js', './routes/api/*.js'],
 };
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
@@ -34,39 +40,41 @@ mongoose.connect(config.MONGODB_URI)
     })
     .catch(err => console.error('Erro MongoDB:', err));
 
-// Configurações do Express e EJS
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'images', 'produtos')));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Middleware de autenticação global para as Views
 app.use(injetarUserNasViews);
 
-// Rota da Documentação
+// 1. Rota da Documentação
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Rotas principais
-app.get('/', (req, res) => res.redirect('/auth/login'));
+// 2. Rotas do Backoffice (EJS / Gestão)
+app.use('/', require('./routes/backofficeIndex'));
 
-app.use('/auth', require('./routes/auth'));
-app.use('/admin', require('./routes/admin'));
-app.use('/supermercado', require('./routes/supermercado'));
-app.use('/cliente', require('./routes/cliente'));
-app.use('/estafeta', require('./routes/estafeta'));
+// 3. Rotas da API (Angular / Frontoffice)
+app.use('/api', require('./routes/api/index'));
 
-// Tratamento de erros
 app.use((req, res, next) => next(createError(404)));
 
 app.use((err, req, res, next) => {
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
-    res.locals.tituloErro = err.tituloErro; // Passa o título customizado se existir
-    res.locals.detalheErro = err.detalheErro; // Passa o detalhe customizado se existir
+    res.locals.tituloErro = err.tituloErro;
+    res.locals.detalheErro = err.detalheErro;
     res.status(err.status || 500);
+
+    if (req.originalUrl.startsWith('/api')) {
+        return res.json({ error: err.message });
+    }
     res.render('error');
 });
 
-module.exports = app;
 module.exports = app;

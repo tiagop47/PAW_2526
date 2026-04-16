@@ -7,7 +7,7 @@ import { Supermarket } from '../models/supermarket.model';
   providedIn: 'root'
 })
 export class SupermarketService {
-  private apiUrl = 'http://localhost:3000/api/supermarkets'; // Ajusta para o teu URL do Backend
+  private apiUrl = 'http://localhost:3000/api/supermarkets'; 
 
   constructor(private http: HttpClient) { }
 
