@@ -1,2 +1,23 @@
+# Node / Angular
 node_modules/
+frontoffice/node_modules/
+backoffice/node_modules/
+dist/
+frontoffice/dist/
+.angular/
+
+# Variáveis de Ambiente e Segredos
 .env
+backoffice/.env
+frontoffice/.env
+
+# IDEs e Sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
