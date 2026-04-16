@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 
@@ -12,24 +12,35 @@ import { Product } from '../../models/product.model';
   styleUrl: './product-list.component.css'
 })
 export class ProductListComponent implements OnInit {
-  // Usar Signals garante que o Angular detete a mudança imediatamente
   products = signal<Product[]>([]);
   loading = signal<boolean>(true);
   error = signal<string | null>(null);
 
-  constructor(private productService: ProductService) {}
+  constructor(
+    private route: ActivatedRoute, // Para ler a URL
+    private productService: ProductService
+  ) {}
 
   ngOnInit(): void {
-    console.log('A tentar carregar produtos (Signal Mode)...');
-    this.productService.getProducts().subscribe({
+    // Lemos o 'supermarketId' que definimos nas rotas
+    const id = this.route.snapshot.paramMap.get('supermarketId');
+    
+    if (id) {
+      this.loadProducts(id);
+    } else {
+      this.error.set('Nenhum supermercado selecionado.');
+      this.loading.set(false);
+    }
+  }
+
+  loadProducts(supermarketId: string): void {
+    this.productService.getProducts(supermarketId).subscribe({
       next: (data) => {
-        console.log('Produtos recebidos com sucesso:', data);
         this.products.set(data);
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Erro na subscrição:', err);
-        this.error.set('Erro ao carregar produtos. Backend desligado?');
+        this.error.set('Erro ao carregar produtos deste supermercado.');
         this.loading.set(false);
       }
     });

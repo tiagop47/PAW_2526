@@ -11,14 +11,6 @@ const Category = require('../models/CategoryModel');
 const supermarketService = {};
 
 /**
- * Categorias
- */
-supermarketService.listarCategorias = async function () {
-    return Category.find().sort({ nome: 1 });
-};
-
-
-/**
  * Gera um número de fatura sequencial para um supermercado.
  * Formato: FT <ANO>/<SEQUENCIAL> (ex: FT 2024/0001)
  */
@@ -32,14 +24,6 @@ async function gerarNumeroFatura(supermercadoId) {
     const sequencial = (count + 1).toString().padStart(4, '0');
     return `FT ${anoAtual}/${sequencial}`;
 }
-
-supermarketService.getSupermercado = async function (userId) {
-    const supermercado = await Supermarket.findOne({ userId }).populate('userId', 'nif');
-    if (!supermercado) {
-        throw new Error('Supermercado não encontrado');
-    }
-    return supermercado;
-};
 
 supermarketService.obterDadosDashboard = async function (supermercadoId) {
     const [totalProdutos, totalEncomendas, encomendas, vendasStats, top5Produtos] = await Promise.all([
@@ -103,6 +87,23 @@ supermarketService.obterDadosDashboard = async function (supermercadoId) {
     };
 };
 
+supermarketService.getAllSupermercados = async function () {
+    const supermercado = await Supermarket.find().select('_id nome descricao localizacao metodosEntrega');
+
+    if (!supermercado) {
+        throw new Error('Supermercado não encontrado');
+    }
+    return supermercado;
+}
+
+supermarketService.getSupermercado = async function (userId) {
+    const supermercado = await Supermarket.findOne({ userId }).populate('userId', 'nif');
+    if (!supermercado) {
+        throw new Error('Supermercado não encontrado');
+    }
+    return supermercado;
+};
+
 supermarketService.obterProdutos = async function (supermercadoId) {
     return Product.find({ supermercadoId }).populate('categoriaId');
 };
@@ -123,8 +124,8 @@ supermarketService.criarProduto = async function (supermercadoId, productData) {
         imagem: productData.imagem
     });
 
-    novoProduto.codigoBarras = productData.codigoBarras && productData.codigoBarras.trim() !== '' 
-        ? productData.codigoBarras 
+    novoProduto.codigoBarras = productData.codigoBarras && productData.codigoBarras.trim() !== ''
+        ? productData.codigoBarras
         : novoProduto._id.toString();
 
     return novoProduto.save();
@@ -141,7 +142,7 @@ supermarketService.atualizarProduto = async function (supermercadoId, productId,
         codigoBarras: updateData.codigoBarras && updateData.codigoBarras.trim() !== '' ? updateData.codigoBarras : productId.toString()
     };
 
-    
+
     if (updateData.imagem) {
         camposParaAtualizar.imagem = updateData.imagem;
     }
@@ -164,11 +165,21 @@ supermarketService.eliminarProduto = async function (supermercadoId, productId) 
 /**
  * Listagem geral de produtos para o Frontoffice
  */
-supermarketService.listarProdutosGeral = async function (filtro = {}) {
-    return Product.find(filtro)
+supermarketService.listarProdutosGeral = async function (supermercadoId) {
+    const query = {};
+    if (supermercadoId) {
+        query.supermercadoId = supermercadoId;
+    }
+    return Product.find(query)
         .sort({ criadoEm: -1 })
-        .populate('categoriaId', 'nome')
-        .populate('supermercadoId', 'nomeFantasia');
+        .populate('categoriaId', 'nome');
+};
+
+/**
+ * Obter um único produto pelo ID (para a página de detalhes)
+ */
+supermarketService.obterProdutoPorId = async function (id) {
+    return Product.findById(id).populate('categoriaId', 'nome');
 };
 
 supermarketService.pesquisarProdutos = async function (supermercadoId, { q, categoriaId }) {
@@ -187,10 +198,10 @@ supermarketService.verificarStock = async function (supermercadoId, itens) {
     let todosDisponiveis = true;
 
     for (const item of itens) {
-        const produto = await Product.findOne({ _id: item.produtoId, supermercadoId }) ;
+        const produto = await Product.findOne({ _id: item.produtoId, supermercadoId });
 
         const disponivel = produto ? produto.stockDisponivel : 0;
-        const erro = !produto || disponivel < item. quantidade;
+        const erro = !produto || disponivel < item.quantidade;
 
         if (erro) todosDisponiveis = false;
 
@@ -336,7 +347,7 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
 
         if (!cliente) {
             const passwordTemp = config.DEFAULT_ADMIN_PASSWORD;
-            
+
             if (!passwordTemp) {
                 throw new Error("Esta conta não existe, insira um utilizador válido.");
             }
@@ -414,5 +425,14 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
 
     return novaOrdem.save();
 };
+
+
+/**
+ * Categorias
+ */
+supermarketService.listarCategorias = async function () {
+    return Category.find().sort({ nome: 1 });
+};
+
 
 module.exports = supermarketService;

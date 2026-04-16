@@ -1,17 +1,23 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Supermarket } from '../models/supermarket.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SupermarketService {
-  private apiUrl = 'http://localhost:3000/api/supermarkets'; 
+  private apiUrl = 'http://localhost:3000/api/supermercados';
 
-  constructor(private http: HttpClient) { }
+  selectedSupermarketId = signal<string | null>(null);
+
+  constructor(private http: HttpClient) {}
 
   getSupermarkets(): Observable<Supermarket[]> {
     return this.http.get<Supermarket[]>(this.apiUrl);
+  }
+
+  selectSupermarket(id: string) {
+    this.selectedSupermarketId.set(id);
   }
 }

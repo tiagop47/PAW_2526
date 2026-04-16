@@ -1,7 +1,7 @@
 export interface Supermarket {
-  id?: string;
-  name: string;
-  address?: string;
-  city?: string;
-  imageUrl?: string;
+  _id: string;
+  nome: string;
+  descricao?: string;
+  localizacao: string;
+  metodosEntrega?: string[];
 }
