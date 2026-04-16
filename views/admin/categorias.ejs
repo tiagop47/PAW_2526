@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+    <%- include('../partials/navbar') %>
+
+        <main class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h4 fw-bold m-0 text-dark">Gestão de Categorias</h1>
+            </div>
+
+            <% if (locals.query && locals.query.error) { %>
+                <div class="alert alert-danger">
+                    <%= query.error %>
+                </div>
+                <% } %>
+
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title h6 mb-3">Nova Categoria</h5>
+                                    <form action="/admin/categorias" method="POST">
+                                        <div class="mb-3">
+                                            <label class="form-label small">Nome</label>
+                                            <input type="text" name="nome" class="form-control" required
+                                                placeholder="Ex: Congelados">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small">Descrição (Opcional)</label>
+                                            <textarea name="descricao" class="form-control" rows="2" style="resize: none;"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-dark btn-sm">Criar Categoria</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8">
+                            <div class="card border-0 shadow-sm">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Nome</th>
+                                                <th>Descrição</th>
+                                                <th class="text-center">Nº Produtos</th>
+                                                <th class="text-end">Ação</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% if (categorias && categorias.length > 0) { %>
+                                                <% categorias.forEach(function(cat) { %>
+                                                <tr>
+                                                    <td class="fw-bold"><%= cat.nome %></td>
+                                                    <td class="text-muted small"><%= cat.descricao || '—' %></td>
+                                                    <td class="text-center"><%= cat.totalProdutos %></td>
+                                                    <td class="text-end">
+                                                        <form action="/admin/categorias/eliminar/<%= cat._id %>" method="POST">
+                                                            <button type="submit" class="btn btn-sm btn-light border">Eliminar</button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="4" class="text-center py-4 text-muted">Nenhuma categoria criada.</td>
+                                                </tr>
+                                            <% } %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        </main>
+</body>
+
+</html>

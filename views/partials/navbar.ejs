@@ -1,0 +1,36 @@
+<header class="cabecalho-principal">
+    <div class="container d-flex align-items-center justify-content-between py-2">
+        <!-- Logotipo Dinâmico -->
+        <% 
+            let dashboardLink = "/";
+            if (user) {
+                if (user.role === 'supermercados') dashboardLink = "/supermercado/dashboard";
+                else if (user.role === 'estafetas') dashboardLink = "/estafeta/dashboard";
+                else if (user.role === 'administrador') dashboardLink = "/admin/dashboard";
+                else if (user.role === 'clientes') dashboardLink = "/cliente/dashboard";
+            }
+        %>
+        <a href="<%= dashboardLink %>" class="logotipo text-decoration-none">
+            <span class="nome-marca">Página Principal</span>
+        </a>
+        <% if (user) { %>
+            <p class="text-secondary small mb-0">Utilizador: <%= user.nome %>
+            </p>
+            <% } %>
+
+                <nav class="navegacao-links d-none d-lg-flex align-items-center gap-4">
+                    <% if (user) { %>
+                        <% if (user.role==='supermercados' ) { %>
+                            <% } %>
+                                <% } %>
+                </nav>
+
+                <div class="area-utilizador d-flex align-items-center gap-2">
+                    <% if (user) { %>
+                        <a href="/auth/logout" class="btn btn-outline-danger btn-sm px-3">Fechar Painel</a>
+                        <% } else { %>
+                            <a href="/auth/login" class="btn btn-primary btn-sm px-4">Entrar</a>
+                            <% } %>
+                </div>
+    </div>
+</header>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+    <link rel="stylesheet" href="../../public/stylesheets/login.css">
+</head>
+
+<body class="bg-light">
+
+    <main class="auth-container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+        <div class="card shadow border-0 p-4" style="max-width: 450px; width: 100%; border-radius: 20px;">
+            <header class="text-center mb-4">
+                <h2 class="fw-bold text-primary">Aceder à Conta</h2>
+                <p class="text-muted small">Insira os seus dados para continuar</p>
+            </header>
+
+            <% if (locals.errorMessage) { %>
+                <div class="alert alert-danger small">
+                    <%= errorMessage %>
+                </div>
+            <% } %>
+
+            <% if (locals.successMessage) { %>
+                <div class="alert alert-success small">
+                    <%= successMessage %>
+                </div>
+            <% } %>
+
+                    <form action="/auth/login" method="POST">
+                        <div class="mb-3">
+                            <label for="floatingInput" class="form-label small fw-bold text-muted">Endereço de
+                                Email</label>
+                            <input type="email" class="form-control py-2" id="emailInput" name="email"
+                                placeholder="nome@exemplo.com" required>
+                            <ul id="listaEmails" class="list-group mt-1 shadow-sm" style="display: none; cursor: pointer;"></ul>
+
+                            <div class="dropdown me-1">
+                                <button type="button" class="btn btn-secondary dropdown-toggle"
+                                    data-bs-toggle="dropdown" aria-expanded="false" data-bs-offset="10,20">
+                                    Escolhe um email
+                                </button>
+                                <ul id="dropdownEmails" class="dropdown-menu">
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password"
+                                class="form-label small fw-bold text-muted d-flex justify-content-between">
+                                Palavra-passe
+                                <a href="/auth/recuperarPassword" class="text-decoration-none x-small">Esqueceu-se?</a>
+                            </label>
+                            <div class="position-relative">
+                                <input type="password" class="form-control py-2" id="password" name="password"
+                                    placeholder="Sua Palavra-Passe" required>
+                                <button type="button"
+                                    class="btn btn-sm position-absolute top-50 end-0 translate-middle-y"
+                                    id="togglePassword" style="z-index: 10;">Ver</button>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="rememberMe" name="remember">
+                            <label class="form-check-label small" for="rememberMe">Lembrar-me neste computador</label>
+                        </div>
+
+                        <button onclick="guardarEmail()"
+                            class="btn btn-primary w-100 py-2 fw-bold shadow-sm">Entrar</button>
+
+                    </form>
+
+                    <footer class="mt-4 pt-3 border-top text-center">
+                        <p class="mb-0 small text-muted">Ainda não tem conta?
+                            <a href="/auth/registar" class="fw-bold text-primary text-decoration-none">Registe-se
+                                aqui</a>
+                        </p>
+                    </footer>
+        </div>
+    </main>
+
+    <script src="/javascript/userValidator.js"></script>
+    <script src="/javascript/loginValidacao.js"></script>
+    <script src="/javascript/loginAcessibilidade.js"></script>
+</body>
+
+</html>

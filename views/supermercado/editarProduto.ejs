@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+
+    <%- include('../partials/navbar') %>
+
+        <main class="container py-5">
+            <div class="mx-auto" style="max-width: 600px;">
+                <div class="card p-4 border-0 shadow-sm">
+                    <h2 class="h4 fw-bold mb-4 text-center">Editar Produto</h2>
+
+                    <form id="formEditar" action="/supermercado/produtos/editar/<%= produto._id %>" method="POST"
+                        enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Nome do Produto</label>
+                            <input id="nome" type="text" name="nome" class="form-control"
+                                value="<%= produto.nome %>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Código de Barras (Opcional - Min. 9 caracteres)</label>
+                            <input id="codigoBarras" type="text" name="codigoBarras" class="form-control"
+                                value="<%= produto.codigoBarras ? produto.codigoBarras : '' %>" placeholder="Ex: 560123456">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small d-block">Imagem do Produto (Opcional)</label>
+                            <% if (produto.imagem) { %>
+                                <div class="mb-2">
+                                    <img src="<%= produto.imagem %>" alt="Atual" class="img-thumbnail"
+                                        style="height: 100px;">
+                                </div>
+                                <% } %>
+                                    <input id="imagem" type="file" name="imagem" class="form-control"
+                                        accept="image/*">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Descrição</label>
+                            <textarea id="descricao" name="descricao" class="form-control" rows="2"><%= produto.descricao %></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Categoria</label>
+                            <select id="categoriaId" name="categoriaId" class="form-select" required>
+                                <% categorias.forEach(function(cat) { %>
+                                    <option value="<%= cat._id %>" <%= String(produto.categoriaId._id) === String(cat._id) ? 'selected' : '' %>>
+                                        <%= cat.nome %>
+                                    </option>
+                                <% }) %>
+                            </select>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <label class="form-label fw-bold small">Preço (€)</label>
+                                <input id="preco" type="number" step="0.01" min="0.01" name="preco"
+                                    class="form-control" value="<%= produto.preco %>" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small">Preço Antigo (Aplicar Desconto)</label>
+                                <input id="precoAntigo" type="number" step="0.01" min="0" name="precoAntigo"
+                                    class="form-control" value="<%= produto.precoAntigo %>" >
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small">Stock</label>
+                                <input id="stockDisponivel" type="number" min="0" name="stockDisponivel"
+                                    class="form-control" value="<%= produto.stockDisponivel %>" required>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary w-100 fw-bold">Guardar Alterações</button>
+                            <a href="/supermercado/produtos" class="btn btn-light w-100">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <script src="/javascript/supermercadoAcoes.js"></script>
+        <script src="/javascript/userValidator.js"></script>
+        <script src="/javascript/produtoCriarEditar.js"></script>
+
+</body>
+
+</html>

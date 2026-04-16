@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+
+    <%- include('../partials/navbar') %>
+
+        <main class="container py-5">
+            <div class="mx-auto" style="max-width: 600px;">
+                <div class="card p-4 border-0 shadow-sm">
+                    <h2 class="h4 fw-bold mb-4 text-center">Meu Perfil</h2>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Nome</label>
+                        <p class="form-control-plaintext">
+                            <%= utilizador.nome %>
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Email</label>
+                        <p class="form-control-plaintext">
+                            <%= utilizador.email %>
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Telefone</label>
+                        <p class="form-control-plaintext">
+                            <%= utilizador.telefone %>
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Morada</label>
+                        <p class="form-control-plaintext">
+                            <%= utilizador.morada %>
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Role</label>
+                        <p class="form-control-plaintext">
+                            <%= utilizador.role %>
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Membro desde</label>
+                        <p class="form-control-plaintext">
+                            <%= new Date(utilizador.criadoEm).toLocaleDateString('pt-PT') %>
+                        </p>
+                    </div>
+
+                    <% if (supermercado) { %>
+                        <hr>
+                        <h5 class="fw-bold mb-3">Dados do Supermercado</h5>
+                        <div class="mb-2">
+                            <span class="fw-bold small text-muted">Nome:</span>
+                            <span>
+                                <%= supermercado.nome %>
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="fw-bold small text-muted">Localização:</span>
+                            <span>
+                                <%= supermercado.localizacao %>
+                            </span>
+                        </div>
+
+                        <div class="mt-3">
+                            <a href="/supermercado/editar" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil me-1"></i> Editar Supermercado
+                            </a>
+                        </div>
+                        <% } %>
+                </div>
+            </div>
+        </main>
+
+</body>
+
+</html>
