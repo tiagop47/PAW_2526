@@ -14,11 +14,16 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <div class="list-group mb-4 shadow-sm">
-                        <a href="/admin/supermercados/pendentes" class="list-group-item list-group-item-action">Aprovações Pendentes</a>
-                        <a href="/admin/exibirUtilizadores" class="list-group-item list-group-item-action">Gestão de Utilizadores</a>
-                        <a href="/admin/supermercados/ativos/" class="list-group-item list-group-item-action">Gestão Supermercados</a>
-                        <a href="/admin/encomendas" class="list-group-item list-group-item-action">Monitorização de Encomendas</a>
-                        <a href="/admin/categorias" class="list-group-item list-group-item-action">Gestão de Categorias</a>
+                        <a href="/admin/supermercados/pendentes"
+                            class="list-group-item list-group-item-action">Aprovações Pendentes</a>
+                        <a href="/admin/exibirUtilizadores" class="list-group-item list-group-item-action">Gestão de
+                            Utilizadores</a>
+                        <a href="/admin/supermercados/ativos/" class="list-group-item list-group-item-action">Gestão
+                            Supermercados</a>
+                        <a href="/admin/encomendas" class="list-group-item list-group-item-action">Monitorização de
+                            Encomendas</a>
+                        <a href="/admin/categorias" class="list-group-item list-group-item-action">Gestão de
+                            Categorias</a>
                     </div>
                 </div>
 
@@ -62,7 +67,8 @@
                         </div>
                         <div class="col-md-4">
                             <div class="card card-body bg-white border">
-                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Mercados Bloqueados</small>
+                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Mercados
+                                    Bloqueados</small>
                                 <div class="h4 mb-0">
                                     <%= stats.bloqueados %>
                                 </div>
@@ -100,52 +106,55 @@
                     </div>
                 </div>
             </div>
-        
-        <div class="row">
+
+            <div class="row">
                 <div class="col-12">
                     <div class="card shadow-sm">
                         <div class="card-body">
                             <h5 class="card-title mb-3">Evolução de Registos de Utilizadores</h5>
-                            <canvas id="graficoRegistos" height="100"></canvas>
+                            <canvas id="graficoRegistos" height="100"
+                                data-registos="<%= JSON.stringify(registosMensais) %>">
+                            </canvas>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
-    <script>
-        const dadosRegistos = <%- JSON.stringify(registosMensais) %>;
-        const ctx = document.getElementById('graficoRegistos').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: dadosRegistos.map(d => d.label),
-                datasets: [{
-                    label: 'Novos Utilizadores',
-                    data: dadosRegistos.map(d => d.total),
-                    borderColor: '#0d6efd',
-                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.3,
-                    pointBackgroundColor: '#0d6efd',
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: true, position: 'top' }
+        <script>
+            const canvas = document.getElementById('graficoRegistos');
+            const dadosRegistos = JSON.parse(canvas.getAttribute('data-registos'));
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dadosRegistos.map(d => d.label),
+                    datasets: [{
+                        label: 'Novos Utilizadores',
+                        data: dadosRegistos.map(d => d.total),
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#0d6efd',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { stepSize: 1 }
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true, position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
                     }
                 }
-            }
-        });
-    </script>
+            });
+        </script>
 
 
 </body>
