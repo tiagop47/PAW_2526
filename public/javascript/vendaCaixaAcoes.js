@@ -18,9 +18,6 @@ const carrinhoDeCompras = [];
 
 let mapaInstancia;
 let marcadorEntregaInstancia = null;
-
-
-// Guardar referência aos produtos do último resultado de pesquisa
 let ultimosProdutosPesquisa = [];
 
 function obterQtdNoCarrinho(produtoId) {
@@ -34,7 +31,6 @@ function renderizarResultadosModal(produtos, tabelaBody) {
         return;
     }
 
-    // Guardar para re-render após +/-
     ultimosProdutosPesquisa = produtos;
 
     tabelaBody.innerHTML = produtos.map(function (produto) {
@@ -76,7 +72,6 @@ function renderizarResultadosModal(produtos, tabelaBody) {
             </tr>`;
     }).join('');
 
-    // Gerar barcodes para cada produto no modal
     document.querySelectorAll('.barcode-modal').forEach(function (svg) {
         const produtoId = svg.getAttribute('data-barcode-id');
         if (produtoId && typeof JsBarcode !== 'undefined') {
@@ -109,7 +104,6 @@ function adicionarUmAoCarrinho(id, nome, preco, stock) {
     }
 
     atualizarCarrinhoDOM();
-    // Re-render modal para atualizar quantidades e estados dos botões
     if (ultimosProdutosPesquisa.length > 0) {
         renderizarResultadosModal(ultimosProdutosPesquisa, tabelaPesquisaModalBody);
     }
@@ -127,7 +121,6 @@ function removerUmDoCarrinho(id) {
     }
 
     atualizarCarrinhoDOM();
-    // Re-render modal para atualizar quantidades e estados dos botões
     if (ultimosProdutosPesquisa.length > 0) {
         renderizarResultadosModal(ultimosProdutosPesquisa, tabelaPesquisaModalBody);
     }

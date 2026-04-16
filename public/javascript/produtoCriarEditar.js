@@ -2,12 +2,12 @@
 const formCriar = document.getElementById('formCriar');
 const formEditar = document.getElementById('formEditar');
 
-const nomeInput = document.getElementsByName('nome')[0];
-const precoInput = document.getElementsByName('preco')[0];
-const stockInput = document.getElementsByName('stockDisponivel')[0];
-const precoAntigoInput = document.getElementsByName('precoAntigo')[0];
-const imagemInput = document.getElementsByName('imagem')[0];
-const codigoBarrasInput = document.getElementsByName('codigoBarras')[0];
+const nomeInput = document.getElementById('nome');
+const precoInput = document.getElementById('preco');
+const stockInput = document.getElementById('stockDisponivel');
+const precoAntigoInput = document.getElementById('precoAntigo');
+const imagemInput = document.getElementById('imagem');
+const codigoBarrasInput = document.getElementById('codigoBarras');
 
 /**
  * Calcula a percentagem de desconto.

@@ -21,7 +21,6 @@ userValidator.validarTelefone = function (telefone) {
 };
 
 
-
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = userValidator;
 } else {
