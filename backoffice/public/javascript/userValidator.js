@@ -1,0 +1,28 @@
+
+/**
+ * Validador Core — Apenas Lógica de Validação
+ */
+var userValidator = {};
+
+userValidator.rolesPublicas = ['estafetas','supermercados'];
+userValidator.EMAIL_REGEX = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i;
+userValidator.PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+userValidator.validarEmail = function (email) {
+    return email && userValidator.EMAIL_REGEX.test(email);
+};
+
+userValidator.validarPassword = function (password) {
+    return password && userValidator.PASSWORD_REGEX.test(password);
+};
+
+userValidator.validarTelefone = function (telefone) {
+    return telefone && telefone.toString().trim().length >= 9;
+};
+
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = userValidator;
+} else {
+    window.userValidator = userValidator;
+}

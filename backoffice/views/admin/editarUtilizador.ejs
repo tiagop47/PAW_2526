@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+
+    <%- include('../partials/navbar') %>
+
+        <main class="container py-5">
+            <div class="mx-auto" style="max-width: 600px;">
+                <div class="card p-4 border-0 shadow-sm">
+                    <h2 class="h4 fw-bold mb-4 text-center">Editar Utilizador</h2>
+
+                    <form action="/admin/exibirUtilizadores/<%= user._id %>/editar" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Nome Completo</label>
+                            <input type="text" name="nome" class="form-control" value="<%= user.nome %>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Email</label>
+                            <input type="email" name="email" class="form-control" value="<%= user.email %>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">NIF</label>
+                            <input type="text" name="nif" class="form-control" value="<%= user.nif %>" pattern="\d{9}" maxlength="9" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Telefone</label>
+                            <input type="text" name="telefone" class="form-control" value="<%= user.telefone %>"
+                                required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Morada</label>
+                            <input type="text" name="morada" class="form-control" value="<%= user.morada %>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Cargo / Role</label>
+                            <select name="role" class="form-select" required>
+                                <option value="clientes" <%=user.role==='clientes' ? 'selected' : '' %>>Cliente</option>
+                                <option value="supermercados" <%=user.role==='supermercados' ? 'selected' : '' %>
+                                    >Supermercado</option>
+                                <option value="estafetas" <%=user.role==='estafetas' ? 'selected' : '' %>>Estafeta
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex gap-2 pt-3">
+                            <button type="submit" class="btn btn-primary w-100 fw-bold">Guardar Alterações</button>
+                            <a href="/admin/exibirUtilizadores" class="btn btn-light w-100">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+</body>
+
+</html>

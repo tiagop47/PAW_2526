@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+    <%- include('../partials/navbar') %>
+
+        <main class="container py-4">
+
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Entregas
+                                Realizadas</small>
+                            <div class="h3 mb-0 mt-1">
+                                <%= stats.entregasRealizadas %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Em Curso</small>
+                            <div class="h3 mb-0 mt-1">
+                                <%= stats.entregasEmCurso %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <small class="text-muted fw-bold text-uppercase"
+                                style="font-size: 0.7rem;">Disponíveis</small>
+                            <div class="h3 mb-0 mt-1">
+                                <%= stats.entregasDisponiveis %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Ganhos
+                                Totais</small>
+                            <div class="h3 mb-0 mt-1">
+                                <%= Number(stats.ganhosTotais || 0).toFixed(2) %>&euro;
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% if (stats.zonaMaisEncomendas) { %>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Zona com + Encomendas</small>
+                                <div class="h3 mb-0 mt-1">
+                                    <%= stats.zonaMaisEncomendas %>
+                                </div>
+                                <small class="text-muted" style="font-size: 0.7rem;">
+                                    <%= stats.maxEncomendas %> <%= stats.maxEncomendas === 1 ? 'encomenda' : 'encomendas' %>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h6 text-muted fw-bold text-uppercase mb-3">Ações rápidas</h2>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label for="zonaTrabalhoDashboard" class="form-label small fw-bold mb-1">Zona de Trabalho</label>
+                            <select id="zonaTrabalhoDashboard" class="form-select form-select-sm" data-estafeta-id="<%= estafetaId || '' %>">
+                                <option value="">Selecione a zona</option>
+                                <% (zonasTrabalho || []).forEach((zona) => { %>
+                                    <option value="<%= zona.value %>"><%= zona.label %></option>
+                                <% }); %>
+                            </select>
+                            <small class="text-muted d-block mt-1">Define a zona antes de abrir as encomendas.</small>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="btnIrEntregasComZona" type="button" class="btn btn-secondary w-100 mt-md-4">Encomendas Disponíveis</button>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="/estafeta/minhas-entregas" class="btn btn-secondary w-100 mt-md-4">Minhas Entregas</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <script src="/javascript/estafetaDashboardAcoes.js"></script>
+
+</body>
+
+</html>

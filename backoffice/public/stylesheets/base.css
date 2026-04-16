@@ -1,0 +1,23 @@
+:root {
+  --cor-principal: #0d6efd;
+  --fundo: #f1f3f5;
+  --borda: #dee2e6;
+}
+
+body {
+  background-color: var(--fundo);
+  font-family: system-ui, sans-serif;
+  color: #333;
+}
+
+/* Esconder o ícone nativo de ver password do Edge/Chrome */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+/* Modal manual sem JavaScript do Bootstrap */
+.modal.show {
+  display: block;
+  background: rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+
+    <%- include('../partials/navbar') %>
+
+        <main class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+            </div>
+            <div class="card border-0 shadow-sm">
+                <table class="tabela-limpa mb-0">
+                    <thead>
+                        <tr>
+                            <th>Utilizador</th>
+                            <th>Telefone</th>
+                            <th>NIF</th>
+                            <th>Cargo/Função</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (locals.users && users.length> 0) { %>
+                            <% users.forEach(function(utilizador) { %>
+                                <tr id="user-<%= utilizador._id %>">
+                                    <td class="fw-bold">
+                                        <%= utilizador.nome %><br>
+                                            <small class="text-muted fw-normal">
+                                                <%= utilizador.email %>
+                                            </small>
+                                    </td>
+
+                                    <td class="fw-bold">
+                                        <%= utilizador.telefone %>
+                                    </td>
+
+                                    <td class="fw-bold">
+                                        <%= utilizador.nif%>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            <%= utilizador.role %>
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold">
+                                        <a href="/admin/utilizadores/eliminar/<%= utilizador._id %>"
+                                            class="btn btn-sm btn-light border text-dark w-100"
+                                            style="max-width: 110px;">Eliminar</a>
+                                    </td>
+
+                                </tr>
+                                <% }); %>
+                                    <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <%- include('../partials/paginacao', { paginaUrl: '/admin/exibirUtilizadores' }) %>
+        </main>
+
+
+</body>
+
+</html>

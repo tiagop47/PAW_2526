@@ -1,0 +1,108 @@
+body {
+    background-color: white;
+    color: black;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 40px;
+}
+
+.invoice-box {
+    max-width: 800px;
+    margin: auto;
+    border: 1px solid #eee;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 2px solid #333;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.company-info h1 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+}
+
+.details div {
+    flex: 1;
+}
+
+.details h3 {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    text-align: left;
+    padding: 12px;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.total-section {
+    text-align: right;
+    font-size: 1.2rem;
+}
+
+.total-value {
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 1.5rem;
+}
+
+.footer {
+    margin-top: 50px;
+    text-align: center;
+    color: #777;
+    font-size: 0.9rem;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.no-print {
+    margin-bottom: 20px;
+    text-align: right;
+}
+
+@media print {
+    .no-print, 
+    .cabecalho-principal {
+        display: none !important;
+    }
+
+    body {
+        padding: 0;
+        background: white;
+    }
+
+    .invoice-box {
+        border: none;
+        box-shadow: none;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+}

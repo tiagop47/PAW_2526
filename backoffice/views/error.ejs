@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('./partials/head', { title: 'Erro' }) %>
+</head>
+
+<body class="bg-light">
+
+    <%- include('./partials/navbar') %>
+
+        <% const statusCode = (locals.error && locals.error.status) ? locals.error.status : 500; %>
+        <% const tituloErroDefault = statusCode === 404
+            ? 'Página não encontrada'
+            : (statusCode === 500 && !locals.detalheErro && !locals.message)
+                ? 'Página em construção'
+                : 'Algo correu mal'; %>
+        <% const detalheErroDefault = statusCode === 404
+            ? 'A página que procuras não existe ou foi movida.'
+            : (statusCode === 500 && !locals.detalheErro && !locals.message)
+                ? 'Estamos a construir esta área.'
+                : (locals.detalheErro || locals.message || 'Ocorreu um erro inesperado.'); %>
+
+        <% const tituloFinal = locals.tituloErro || tituloErroDefault; %>
+        <% const detalheFinal = locals.detalheErro || detalheErroDefault; %>
+
+        <div class="container mt-5">
+            <div class="cartao-autenticacao text-center mx-auto shadow-sm p-5 bg-white rounded" style="max-width: 600px;">
+                <div class="mb-4">
+                    <i class="bi bi-exclamation-triangle text-danger" style="font-size: 4rem;"></i>
+                </div>
+                <h1 class="display-1 text-danger fw-bold mb-0">
+                    <%= statusCode %>
+                </h1>
+                <h2 class="h4 mb-4 text-dark">
+                    <%= tituloFinal %>
+                </h2>
+                <p class="text-muted mb-4 lead">
+                    <%= detalheFinal %>
+                </p>
+                
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <a href="/" class="btn btn-primary px-4 gap-3">Voltar ao Início</a>
+                    <button onclick="window.history.back()" class="btn btn-outline-secondary px-4">Página Anterior</button>
+                </div>
+
+                <% if (locals.error && locals.error.stack) { %>
+                    <div class="mt-5 text-start">
+                        <button class="btn btn-sm btn-link text-muted p-0" type="button" data-bs-toggle="collapse" data-bs-target="#errorDetails">
+                            Mostrar detalhes técnicos (apenas desenvolvimento)
+                        </button>
+                        <div class="collapse mt-3" id="errorDetails">
+                            <pre class="bg-dark text-light p-3 rounded small overflow-auto" style="max-height: 300px;"><code><%= error.stack %></code></pre>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+</body>
+
+</html>
