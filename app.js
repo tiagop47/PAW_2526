@@ -3,12 +3,15 @@ const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const config = require('./config/config');
 const { injetarUserNasViews } = require('./middlewares/authMiddleware');
 
 const app = express();
+
+app.use(morgan('dev'));
 
 const swaggerOptions = {
     definition: {
@@ -65,4 +68,5 @@ app.use((err, req, res, next) => {
     res.render('error');
 });
 
+module.exports = app;
 module.exports = app;

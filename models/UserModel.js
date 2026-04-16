@@ -68,8 +68,7 @@ UserSchema.pre('save', async function () {
         return;
     }
 
-    const saltRounds = config.SALT_ROUNDS || 10;
-    this.password = await bcrypt.hash(this.password, saltRounds);
+    this.password = await bcrypt.hash(this.password, config.SALT_ROUNDS);
 });
 
 module.exports = mongoose.model('User', UserSchema);

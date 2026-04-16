@@ -76,15 +76,11 @@ authController.processarRecuperarPassword = async function (req, res) {
     }
 }
 
-authController.exibirResetPassword = async function(req, res){
-    try {
-        res.render("loginRegisto/resetPassword", { 
-            token: req.params.token,
-            errorMessage: null
-        });
-    } catch (err) {
-        res.redirect('/auth/login');
-    }
+authController.exibirResetPassword = function(req, res){
+    res.render("loginRegisto/resetPassword", { 
+        token: req.params.token,
+        errorMessage: null
+    });
 };
 
 authController.processarResetPassword = async function (req, res) {
