@@ -22,10 +22,10 @@ export class ProductListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
+    const supermarketId = this.route.snapshot.paramMap.get('supermarketId');
 
-    if (id) {
-      this.loadProducts(id);
+    if (supermarketId) {
+      this.loadProducts(supermarketId);
     } else {
       this.error.set('Nenhum supermercado selecionado.');
       this.loading.set(false);

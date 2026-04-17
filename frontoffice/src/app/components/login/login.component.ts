@@ -8,10 +8,10 @@ import { CommonModule } from '@angular/common';
   selector: 'app-login',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule, RouterLink],
-  templateUrl: './login.html',
-  styleUrl: './login.css'
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.css'
 })
-export class Login {
+export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);

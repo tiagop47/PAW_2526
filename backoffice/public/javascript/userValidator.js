@@ -1,4 +1,3 @@
-
 /**
  * Validador Core — Apenas Lógica de Validação
  */
@@ -10,7 +9,7 @@ userValidator.EMAIL_REGEX = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)
 userValidator.PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
 userValidator.validarEmail = function (email) {
-    return email && userValidator.EMAIL_REGEX.test(email);
+    return email && userValidator.EMAIL_REGEX.test(email.trim());
 };
 
 userValidator.validarPassword = function (password) {
@@ -18,7 +17,11 @@ userValidator.validarPassword = function (password) {
 };
 
 userValidator.validarTelefone = function (telefone) {
-    return telefone && telefone.toString().trim().length >= 9;
+    return telefone && /^\d{9}$/.test(telefone.toString().trim());
+};
+
+userValidator.validarNif = function (nif) {
+    return !nif || /^\d{9}$/.test(nif.toString().trim());
 };
 
 

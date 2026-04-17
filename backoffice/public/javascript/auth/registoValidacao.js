@@ -29,8 +29,8 @@ function validarRegisto(e) {
         return;
     }
 
-    if (campoNif && campoNif.value.length !== 9) {
-        alert('O NIF deve ter exatamente 9 dígitos.');
+    if (campoNif && !validator.validarNif(campoNif.value)) {
+        alert('O NIF deve ter exatamente 9 dígitos numéricos.');
         e.preventDefault();
         return;
     }

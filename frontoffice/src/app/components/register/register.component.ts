@@ -3,23 +3,24 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { SupermarketService } from '../../services/supermarket.service';
 import { RegisterDTO } from '../../models/register.dto';
+import { SupermarketDTO } from '../../models/supermarket.dto';
 
 @Component({
   selector: 'app-register',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule, RouterLink],
-  templateUrl: './register.html',
-  styleUrl: './register.css'
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.css'
 })
-export class Register implements OnInit {
+export class RegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
-  private http = inject(HttpClient);
+  private supermarketService = inject(SupermarketService);
   private router = inject(Router);
 
-  supermercados: any[] = [];
+  supermercados: SupermarketDTO[] = [];
   errorMessage: string = '';
 
   registerForm = this.fb.group({
@@ -32,7 +33,7 @@ export class Register implements OnInit {
   });
 
   ngOnInit() {
-    this.http.get<any>('http://localhost:3000/api/supermercados')
+    this.supermarketService.getSupermarkets()
       .subscribe({
         next: (markets) => this.supermercados = markets,
         error: (err) => console.error('Erro ao carregar supermercados:', err)

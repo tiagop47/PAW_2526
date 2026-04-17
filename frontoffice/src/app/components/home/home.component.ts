@@ -9,10 +9,10 @@ import { SupermarketDTO } from '../../models/supermarket.dto';
   selector: 'app-home',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './home.html',
-  styleUrl: './home.css'
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.css'
 })
-export class Home implements OnInit {
+export class HomeComponent implements OnInit {
   allSupermarketsByZone = signal<{ zone: string, supermarkets: SupermarketDTO[] }[]>([]);
   availableZones = signal<string[]>([]);
   selectedZone = signal<string>('');

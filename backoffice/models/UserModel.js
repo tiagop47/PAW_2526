@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const { validarEmail, validarPassword, validarTelefone } = require('../public/javascript/userValidator');
+const { validarEmail, validarPassword, validarTelefone, validarNif } = require('../public/javascript/userValidator');
 const config = require('../config/config');
 
 const UserSchema = new mongoose.Schema({
@@ -41,9 +41,7 @@ const UserSchema = new mongoose.Schema({
         sparse: true,
         unique: true,
         validate: {
-            validator: function(v) {
-                return !v || v.length === 9; // Se não tiver valor passa, mas se tiver tem de ter 9 dígitos
-            },
+            validator: validarNif,
             message: "O NIF deve ter exatamente 9 dígitos"
         }
     },

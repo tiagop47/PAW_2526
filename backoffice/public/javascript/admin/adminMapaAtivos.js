@@ -3,7 +3,9 @@ const dadosBrutos = document.getElementById('dados-supermercados-ativos');
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    if (!mapaElement || !dadosBrutos) return;
+    if (!mapaElement || !dadosBrutos) {
+        return;
+    }
 
     inicializarMapa('mapa-supermercados-ativos');
     const mercados = JSON.parse(dadosBrutos.getAttribute('data-supermercados') || '[]');

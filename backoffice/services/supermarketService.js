@@ -330,6 +330,10 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
             throw new Error('O email inserido não está associado a nenhuma conta.');
         }
 
+        if (cliente.role !== 'clientes') {
+            throw new Error('Este email pertence a uma conta de ' + cliente.role + '. Apenas clientes podem realizar compras.');
+        }
+
     } else {
         const emailFinal = 'cliente@teste.com';
         const nifFinal = nifCliente || '999999990';

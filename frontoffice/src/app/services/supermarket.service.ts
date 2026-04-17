@@ -2,12 +2,13 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { SupermarketDTO } from '../models/supermarket.dto';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SupermarketService {
-  private apiUrl = 'http://localhost:3000/api/supermercados';
+  private apiUrl = `${environment.apiUrl}/supermercados`;
 
   selectedSupermarketId = signal<string | null>(null);
 
