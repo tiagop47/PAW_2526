@@ -267,9 +267,12 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
         }
     }
 
-    // Se passar de 'pendente' para um estado ativo (confirmada, em entrega, entregue), reduzimos o stock
-    if (estadoAnterior === 'pendente' && (estado === 'confirmada' || estado === 'em entrega' || estado === 'entregue')) {
+    const estadosAtivos = ['confirmada', 'em preparação', 'em entrega', 'entregue'];
+    const eraAtivo = estadosAtivos.includes(estadoAnterior);
+    const vaiSerAtivo = estadosAtivos.includes(estado);
 
+    // Se passar para um estado ativo, garantimos que tem fatura e reduzimos o stock (se ainda não era ativo)
+    if (vaiSerAtivo) {
         if (!order.faturaNumero) {
             order.faturaNumero = await gerarNumeroFatura(supermercadoId);
             order.faturaData = new Date();
@@ -287,26 +290,30 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
             }
         }
 
-        for (const item of order.produtos) {
-            const produto = await Product.findOneAndUpdate(
-                {
-                    _id: item.produtoId,
-                    stockDisponivel: { $gte: item.quantidade }
-                },
-                {
-                    $inc: { stockDisponivel: -item.quantidade }
-                },
-                { new: true }
-            );
+        // Só reduzimos o stock se o estado anterior não fosse já um estado ativo
+        if (!eraAtivo) {
+            for (const item of order.produtos) {
+                const produto = await Product.findOneAndUpdate(
+                    {
+                        _id: item.produtoId,
+                        stockDisponivel: { $gte: item.quantidade }
+                    },
+                    {
+                        $inc: { stockDisponivel: -item.quantidade }
+                    },
+                    { new: true }
+                );
 
-            if (!produto) {
-                const pInfo = await Product.findById(item.produtoId);
-                throw new Error(`Stock insuficiente para confirmar a encomenda: ${pInfo ? pInfo.nome : 'Produto desconhecido'}`);
+                if (!produto) {
+                    const pInfo = await Product.findById(item.produtoId);
+                    throw new Error(`Stock insuficiente para confirmar a encomenda: ${pInfo ? pInfo.nome : 'Produto desconhecido'}`);
+                }
             }
         }
     }
 
-    if (estado === 'cancelada' && estadoAnterior !== 'cancelada' && estadoAnterior !== 'pendente') {
+    // Se passar de um estado ativo para um estado não-ativo (cancelada ou pendente), devolvemos o stock
+    if (eraAtivo && !vaiSerAtivo) {
         for (const item of order.produtos) {
             await Product.findByIdAndUpdate(item.produtoId, {
                 $inc: { stockDisponivel: item.quantidade }

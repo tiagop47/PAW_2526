@@ -106,8 +106,8 @@ estafetaService.obterMinhasEntregas = async function (estafetaId) {
 
 estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
     const ativas = await Order.countDocuments({ estafetaId, estado: 'em entrega' });
-    if (ativas >= 1) {
-        throw new Error('Atingiu o limite de 1 entrega em curso.');
+    if (ativas >= 3) {
+        throw new Error('Atingiu o limite de 3 entregas em curso.');
     }
 
     // Operação atómica: só atualiza se estafetaId for null E estado for 'confirmada'
