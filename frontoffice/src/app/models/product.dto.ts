@@ -1,11 +1,11 @@
-import { Category } from "./category";
+import { CategoryDTO } from './category.dto';
 
-export interface Product {
+export interface ProductDTO {
   _id: string;
   supermercadoId: string;
   nome: string;
   descricao?: string;
-  categoriaId: Category;
+  categoriaId: CategoryDTO;
   preco: number;
   precoAntigo?: number;
   stockDisponivel: number;

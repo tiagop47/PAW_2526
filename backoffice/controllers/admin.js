@@ -7,11 +7,12 @@ var adminController = {};
  */
 adminController.exibirDashboard = async function (req, res) {
     try {
-        const [stats, registosMensais] = await Promise.all([
+        const [stats, registosMensais, faturacaoZona] = await Promise.all([
             adminService.getDashboardStats(),
-            adminService.getRegistosMensais()
+            adminService.getRegistosMensais(),
+            adminService.getFaturacaoPorZona()
         ]);
-        res.render('admin/dashboard', { title: 'Painel Admin', stats, registosMensais });
+        res.render('admin/dashboard', { title: 'Painel Admin', stats, registosMensais, faturacaoZona });
     } catch (err) {
         res.render('admin/dashboard', {
             title: 'Painel Admin',

@@ -102,11 +102,9 @@ emailService.enviarEmailBoasVindas = async (email, nome, codigoCupao) => {
         });
 
         if (!config.EMAIL_USER) {
-            console.log("------------------------------------------------------------");
             console.log("CUPÃO DE BOAS VINDAS ENVIADO PARA: ", email);
             console.log("CÓDIGO:", codigoCupao);
             console.log(nodemailer.getTestMessageUrl(info));
-            console.log("------------------------------------------------------------");
         }
         return info;
     } catch (err) {

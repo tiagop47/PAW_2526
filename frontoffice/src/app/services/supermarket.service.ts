@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Supermarket } from '../models/supermarket.model';
+import { SupermarketDTO } from '../models/supermarket.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -13,8 +13,8 @@ export class SupermarketService {
 
   constructor(private http: HttpClient) {}
 
-  getSupermarkets(): Observable<Supermarket[]> {
-    return this.http.get<Supermarket[]>(this.apiUrl);
+  getSupermarkets(): Observable<SupermarketDTO[]> {
+    return this.http.get<SupermarketDTO[]>(this.apiUrl);
   }
 
   selectSupermarket(id: string) {

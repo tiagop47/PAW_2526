@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
-import { Product } from '../../models/product.model';
+import { ProductDTO } from '../../models/product.dto';
 
 @Component({
   selector: 'app-product-list',
@@ -12,7 +12,7 @@ import { Product } from '../../models/product.model';
   styleUrl: './product-list.component.css'
 })
 export class ProductListComponent implements OnInit {
-  products = signal<Product[]>([]);
+  products = signal<ProductDTO[]>([]);
   loading = signal<boolean>(true);
   error = signal<string | null>(null);
 
@@ -22,8 +22,8 @@ export class ProductListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('supermarketId');
-    
+    const id = this.route.snapshot.paramMap.get('id');
+
     if (id) {
       this.loadProducts(id);
     } else {

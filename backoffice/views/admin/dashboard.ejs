@@ -8,156 +8,99 @@
 <body class="bg-light">
     <%- include('../partials/navbar') %>
 
-        <main class="container py-4">
-            <h1 class="h4 mb-4 pb-2 border-bottom text-dark">Administração do Sistema</h1>
+    <main class="container py-4">
+        <h1 class="h4 mb-4 pb-2 border-bottom text-dark">Administração do Sistema</h1>
 
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <div class="list-group mb-4 shadow-sm">
-                        <a href="/admin/supermercados/pendentes"
-                            class="list-group-item list-group-item-action">Aprovações Pendentes</a>
-                        <a href="/admin/exibirUtilizadores" class="list-group-item list-group-item-action">Gestão de
-                            Utilizadores</a>
-                        <a href="/admin/supermercados/ativos/" class="list-group-item list-group-item-action">Gestão
-                            Supermercados</a>
-                        <a href="/admin/encomendas" class="list-group-item list-group-item-action">Monitorização de
-                            Encomendas</a>
-                        <a href="/admin/categorias" class="list-group-item list-group-item-action">Gestão de
-                            Categorias</a>
-                        <a href="/admin/cupoes" class="list-group-item list-group-item-action">Gestão de Cupões</a>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="list-group shadow-sm h-100">
+                    <a href="/admin/supermercados/pendentes" class="list-group-item list-group-item-action">Aprovações Pendentes</a>
+                    <a href="/admin/exibirUtilizadores" class="list-group-item list-group-item-action">Gestão de Utilizadores</a>
+                    <a href="/admin/supermercados/ativos/" class="list-group-item list-group-item-action">Gestão Supermercados</a>
+                    <a href="/admin/encomendas" class="list-group-item list-group-item-action">Monitorização de Encomendas</a>
+                    <a href="/admin/categorias" class="list-group-item list-group-item-action">Gestão de Categorias</a>
+                    <a href="/admin/cupoes" class="list-group-item list-group-item-action">Gestão de Cupões</a>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <div class="card card-body bg-white border">
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Utilizadores</small>
+                            <div class="h4 mb-0"><%= stats.totalUsers %></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card card-body bg-white border">
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Estafetas</small>
+                            <div class="h4 mb-0"><%= stats.totalEstafetas %></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card card-body bg-white border">
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Produtos</small>
+                            <div class="h4 mb-0"><%= stats.totalProdutos %></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mt-2">
+                        <div class="card card-body bg-white border">
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Encomendas</small>
+                            <div class="h4 mb-0"><%= stats.totalEncomendas %></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mt-2">
+                        <div class="card card-body bg-white border">
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Total Faturado</small>
+                            <div class="h4 mb-0"><%= stats.valorTotal.toFixed(2) %>€</div>
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="col-md-8">
-                    <div class="row g-2 mb-4">
-                        <div class="col-md-4">
-                            <div class="card card-body bg-white border">
-                                <small class="text-muted fw-bold text-uppercase"
-                                    style="font-size: 0.65rem;">Utilizadores</small>
-                                <div class="h4 mb-0">
-                                    <%= stats.totalUsers %>
-                                </div>
-                            </div>
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-3">Evolução de Registos de Utilizadores</h5>
+                        <div class="flex-grow-1" style="position: relative; min-height: 250px;">
+                            <canvas id="graficoRegistos" data-registos="<%= JSON.stringify(registosMensais) %>"></canvas>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card card-body bg-white border">
-                                <small class="text-muted fw-bold text-uppercase"
-                                    style="font-size: 0.65rem;">Estafetas</small>
-                                <div class="h4 mb-0">
-                                    <%= stats.totalEstafetas %>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card card-body bg-white border">
-                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Mercados
-                                    Pendentes</small>
-                                <div class="h4 mb-0">
-                                    <%= stats.pendentes %>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card card-body bg-white border">
-                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Mercados
-                                    Ativos</small>
-                                <div class="h4 mb-0">
-                                    <%= stats.ativos %>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card card-body bg-white border">
-                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Mercados
-                                    Bloqueados</small>
-                                <div class="h4 mb-0">
-                                    <%= stats.bloqueados %>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card card-body bg-white border">
-                                <small class="text-muted fw-bold text-uppercase"
-                                    style="font-size: 0.65rem;">Produtos</small>
-                                <div class="h4 mb-0">
-                                    <%= stats.totalProdutos %>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card card-body bg-white border">
-                                <small class="text-muted fw-bold text-uppercase"
-                                    style="font-size: 0.65rem;">Encomendas</small>
-                                <div class="h4 mb-0">
-                                    <%= stats.totalEncomendas %>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="card card-body bg-white border">
-                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Total
-                                    Faturado</small>
-                                <div class="h4 mb-0">
-                                    <%= stats.valorTotal.toFixed(2) %>€
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-12">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">Evolução de Registos de Utilizadores</h5>
-                            <canvas id="graficoRegistos" height="100"
-                                data-registos="<%= JSON.stringify(registosMensais) %>">
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-3">Estado dos Supermercados</h5>
+                        <div class="flex-grow-1" style="position: relative; min-height: 250px;">
+                            <canvas id="graficoSupermercados"
+                                data-ativos="<%= stats.ativos %>"
+                                data-pendentes="<%= stats.pendentes %>"
+                                data-bloqueados="<%= stats.bloqueados %>">
                             </canvas>
                         </div>
                     </div>
                 </div>
             </div>
-        </main>
-        <script>
-            const canvas = document.getElementById('graficoRegistos');
-            const dadosRegistos = JSON.parse(canvas.getAttribute('data-registos'));
-            const ctx = canvas.getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: dadosRegistos.map(d => d.label),
-                    datasets: [{
-                        label: 'Novos Utilizadores',
-                        data: dadosRegistos.map(d => d.total),
-                        borderColor: '#0d6efd',
-                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.3,
-                        pointBackgroundColor: '#0d6efd',
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: true, position: 'top' }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 1 }
-                        }
-                    }
-                }
-            });
-        </script>
+        </div>
 
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-3">Evolução Mensal da Faturação por Zona</h5>
+                        <div class="flex-grow-1" style="position: relative; min-height: 350px;">
+                            <canvas id="graficoFaturacaoZona" data-faturacao="<%= JSON.stringify(faturacaoZona) %>"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
+    <script src="/javascript/graficoAdmin.js"></script>
 </body>
-
 </html>

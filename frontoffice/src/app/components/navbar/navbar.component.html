@@ -14,8 +14,11 @@
   <ul class="nav-links" [class.active]="isMenuOpen">
     <li><a routerLink="/" (click)="isMenuOpen = false">Início</a></li>
     <li><a routerLink="/sobre" (click)="isMenuOpen = false">Sobre Nós</a></li>
-    <li class="user-actions">
-      <button class="btn-login">Entrar</button>
+    <li class="user-actions" *ngIf="(authService.isLoggedIn$ | async) === null">
+      <button class="btn-login" routerLink="/login" (click)="isMenuOpen = false">Entrar</button>
+    </li>
+    <li class="user-actions" *ngIf="(authService.isLoggedIn$ | async) !== null">
+      <button class="btn-login" style="background-color: #dc3545;" (click)="logout()">Sair</button>
     </li>
   </ul>
 </nav>

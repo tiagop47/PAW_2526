@@ -111,23 +111,27 @@ adminService.rejeitarSupermercadoById = async function (id) {
     return Supermarket.findByIdAndUpdate(id, { estadoAprovacao: 'Rejeitado' });
 };
 
-adminService.alternarBloqueio = async function (id){
-    const loja = await Supermarket.findById(id)
-  
-    let estadoSeguinte = 'Bloqueado'; 
+adminService.alternarBloqueio = async function (id) {
+    const desbloqueado = await Supermarket.findOneAndUpdate(
+        { _id: id, estadoAprovacao: 'Bloqueado' },
+        { estadoAprovacao: 'Aprovado' },
+        { new: true }
+    );
+    if (desbloqueado) return desbloqueado;
 
-    if(loja.estadoAprovacao === 'Bloqueado') {
-         estadoSeguinte = 'Aprovado';
-    }
-
-    return Supermarket.findByIdAndUpdate(id, { estadoAprovacao: estadoSeguinte });
-}
+    return Supermarket.findOneAndUpdate(
+        { _id: id, estadoAprovacao: { $ne: 'Bloqueado' } },
+        { estadoAprovacao: 'Bloqueado' },
+        { new: true }
+    );
+};
 
 adminService.getUsersDocumentos = async function (pagina, limite) {
     const contador = (pagina - 1) * limite;
 
     const total = await User.countDocuments();
     const users = await User.find()
+        .select('-password')
         .sort({ criadoEm: -1 })
         .skip(Number(contador))
         .limit(Number(limite));
@@ -143,6 +147,7 @@ adminService.getEstafetasDocumentos = async function (pagina, limite) {
 
     const total = await User.countDocuments({ role: 'estafetas' });
     const users = await User.find({ role: 'estafetas' })
+        .select('-password')
         .sort({ criadoEm: -1 })
         .skip(Number(contador))
         .limit(Number(limite));
@@ -239,26 +244,29 @@ adminService.getFaturaEncomenda = async function (orderId) {
 /**
  * Eliminar um user e se for do tipo supermercado apaga também o supermercado e os seus produtos.
  */
-adminService.eliminarUser = async function (id){
-    const user = await User.findById(id);
+adminService.eliminarUser = async function (id) {
+    const session = await User.startSession();
+    session.startTransaction();
 
-    if(!user){
-        throw new Error('Utilizador não encontrado');
-    }
+    try {
+        const user = await User.findById(id).session(session);
+        if (!user) throw new Error('Utilizador não encontrado');
 
-    if(user.role === 'supermercados'){
-        const supermercadoAsApagar = await Supermarket.findOneAndDelete({ userId: id });
-    
-        //Este if é apenas por segurança caso o user seja do tipo supermercado mas haja algum erro a criar o supermercado
-        if (supermercadoAsApagar) {
-            await Product.deleteMany({ supermercadoId: supermercadoAsApagar._id });
+        if (user.role === 'supermercados') {
+            const supermercado = await Supermarket.findOneAndDelete({ userId: id }, { session });
+            if (supermercado) {
+                await Product.deleteMany({ supermercadoId: supermercado._id }, { session });
+            }
         }
+
+        await User.findByIdAndDelete(id, { session });
+        await session.commitTransaction();
+    } catch (err) {
+        await session.abortTransaction();
+        throw err;
+    } finally {
+        session.endSession();
     }
-    
-    
-    return User.findByIdAndDelete(id);
-
-
 };
 
 /**
@@ -315,6 +323,68 @@ adminService.getRegistosMensais = async function () {
         label: meses[r._id.mes - 1] + ' ' + r._id.ano,
         total: r.total
     }));
+};
+
+/**
+ * Evolução da Faturação por Zona ao longo dos meses
+ */
+adminService.getFaturacaoPorZona = async function () {
+    const ha12Meses = new Date();
+    ha12Meses.setMonth(ha12Meses.getMonth() - 12);
+
+    const resultado = await Order.aggregate([
+        { $match: { criadoEm: { $gte: ha12Meses } } },
+        {
+            $lookup: {
+                from: 'supermarkets',
+                localField: 'supermercadoId',
+                foreignField: '_id',
+                as: 'supermercado'
+            }
+        },
+        { $unwind: '$supermercado' },
+        {
+            $group: {
+                _id: {
+                    zona: '$supermercado.localizacao',
+                    ano: { $year: '$criadoEm' },
+                    mes: { $month: '$criadoEm' }
+                },
+                total: { $sum: '$valorTotal' }
+            }
+        },
+        { $sort: { '_id.ano': 1, '_id.mes': 1 } }
+    ]);
+
+    const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const zonasMap = {};
+    const labelsSet = new Set();
+    
+    resultado.forEach(r => {
+        const labelText = meses[r._id.mes - 1] + ' ' + r._id.ano;
+        labelsSet.add(labelText);
+        
+        const zona = r._id.zona || 'Outras Zonas';
+        if (!zonasMap[zona]) zonasMap[zona] = {};
+        zonasMap[zona][labelText] = r.total;
+    });
+
+    const labels = Array.from(labelsSet);
+    const colors = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6f42c1', '#fd7e14', '#20c997', '#e83e8c'];
+    
+    const datasets = Object.keys(zonasMap).map((zona, index) => {
+        return {
+            label: zona,
+            data: labels.map(l => zonasMap[zona][l] || 0),
+            backgroundColor: colors[index % colors.length],
+            borderColor: colors[index % colors.length],
+            borderWidth: 2,
+            tension: 0.3,
+            fill: false
+        };
+    });
+
+    return { labels, datasets };
 };
 
 /**

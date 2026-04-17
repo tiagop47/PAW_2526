@@ -1,0 +1,57 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <h3 class="auth-title">Criar Conta</h3>
+    
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Nome Completo</label>
+          <input type="text" class="form-control" formControlName="nome" required>
+        </div>
+        
+        <div class="form-group full-width">
+          <label>Email</label>
+          <input type="email" class="form-control" formControlName="email" required>
+        </div>
+        
+        <div class="form-group half-width">
+          <label>Password</label>
+          <input type="password" class="form-control" formControlName="password" required>
+        </div>
+        
+        <div class="form-group half-width">
+          <label>Telemóvel</label>
+          <input type="number" class="form-control" formControlName="telefone" required>
+        </div>
+        
+        <div class="form-group full-width">
+          <label>NIF (Opcional)</label>
+          <input type="number" class="form-control" formControlName="nif">
+        </div>
+        
+        <div class="form-group full-width">
+          <label>Supermercado Favorito (A sua zona)</label>
+          <select class="form-control" formControlName="morada" required>
+            <option value="" disabled selected>Escolha o seu supermercado local</option>
+            <option *ngFor="let m of supermercados" [value]="m.localizacao">
+              {{ m.nome }} ({{ m.localizacao }})
+            </option>
+          </select>
+          <small class="help-text">Irá receber promoções exclusivas desta localidade.</small>
+        </div>
+      </div>
+      
+      <button type="submit" class="btn-submit" [disabled]="registerForm.invalid">
+        Registar
+      </button>
+    </form>
+    
+    <p class="auth-footer">
+      Já tem conta? <a routerLink="/login">Iniciar Sessão</a>
+    </p>
+  </div>
+</div>

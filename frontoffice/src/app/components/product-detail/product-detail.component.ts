@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
-import { Product } from '../../models/product.model';
+import { ProductDTO } from '../../models/product.dto';
 import { BarcodeDirective } from '../../directives/barcode.directive';
 
 @Component({
@@ -13,7 +13,7 @@ import { BarcodeDirective } from '../../directives/barcode.directive';
   styleUrls: ['./product-detail.component.css']
 })
 export class ProductDetailComponent implements OnInit {
-  product: Product | null = null;
+  product: ProductDTO | null = null;
   loading: boolean = true;
   error: string | null = null;
 

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SupermarketService } from '../../services/supermarket.service';
-import { Supermarket } from '../../models/supermarket.model';
+import { SupermarketDTO } from '../../models/supermarket.dto';
 
 @Component({
   selector: 'app-home',
@@ -13,7 +13,7 @@ import { Supermarket } from '../../models/supermarket.model';
   styleUrl: './home.css'
 })
 export class Home implements OnInit {
-  allSupermarketsByZone = signal<{ zone: string, supermarkets: Supermarket[] }[]>([]);
+  allSupermarketsByZone = signal<{ zone: string, supermarkets: SupermarketDTO[] }[]>([]);
   availableZones = signal<string[]>([]);
   selectedZone = signal<string>('');
 
@@ -36,12 +36,12 @@ export class Home implements OnInit {
         this.allSupermarketsByZone.set(grouped);
         this.availableZones.set(grouped.map(g => g.zone));
       },
-      error: (err) => console.error('Erro ao carregar supermercados na Home', err)
+      error: (err) => console.error('Erro a carregar supermercados:', err)
     });
   }
 
-  private groupSupermarketsByZone(supermarkets: Supermarket[]) {
-    const map = new Map<string, Supermarket[]>();
+  private groupSupermarketsByZone(supermarkets: SupermarketDTO[]) {
+    const map = new Map<string, SupermarketDTO[]>();
     for (const s of supermarkets) {
       const zone = s.localizacao || 'Outras Zonas';
       if (!map.has(zone)) {

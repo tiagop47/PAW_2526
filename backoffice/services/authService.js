@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const { rolesPublicas } = require('../public/javascript/userValidator');
 const config = require('../config/config');
 const emailService = require('./emailService');
-
+const UserDTO = require('../models/UserDTO');
 
 const authService = {};
 
@@ -32,6 +32,10 @@ authService.registarUtilizador = async function (userData) {
     } = userData;
 
     const roleFinal = rolesPublicas.includes(role) ? role : "clientes";
+
+    if (roleFinal === 'supermercados' && (!latitude || !longitude)) {
+        throw new Error("É obrigatório selecionar a localização da loja no mapa.");
+    }
 
     const novoUser = new User({
         nome, email, password, nif, telefone, morada, role: roleFinal
@@ -81,10 +85,6 @@ authService.registarUtilizador = async function (userData) {
     }
 
     if (roleFinal === 'supermercados') {
-        if (!latitude || !longitude) {
-            throw new Error("É obrigatório selecionar a localização da loja no mapa.");
-        }
-
         const coordenadas = {
             type: 'Point',
             coordinates: [parseFloat(longitude), parseFloat(latitude)]
@@ -127,7 +127,10 @@ authService.autenticarUtilizador = async function (email, password) {
         { expiresIn: 86400 }
     );
 
-    return { token, role: user.role };
+    // Usa o Modelo de Data Transfer Object
+    const userDTO = new UserDTO(user);
+
+    return { token, role: user.role, user: userDTO };
 };
 
 authService.inicializarAdmin = async function () {

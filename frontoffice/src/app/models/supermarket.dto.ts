@@ -1,4 +1,4 @@
-export interface Supermarket {
+export interface SupermarketDTO {
   _id: string;
   nome: string;
   descricao?: string;

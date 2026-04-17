@@ -29,17 +29,23 @@ const UserSchema = new mongoose.Schema({
     telefone: {
         type: String,
         required: [true, "O telefone é obrigatório"],
+        minlength: [9, "O telefone deve ter exatamente 9 dígitos"],
+        maxlength: [9, "O telefone deve ter exatamente 9 dígitos"],
         validate: {
             validator: validarTelefone,
-            message: "Por favor, introduza um número de telefone válido (pelo menos 9 dígitos)"
+            message: "Por favor, introduza um número de telefone válido"
         }
     },
     nif: {
         type: String,
-        required: [true, "O NIF é obrigatório"],
+        sparse: true,
         unique: true,
-        minlength: [9, "O NIF deve ter 9 dígitos"],
-        maxlength: [9, "O NIF deve ter 9 dígitos"]
+        validate: {
+            validator: function(v) {
+                return !v || v.length === 9; // Se não tiver valor passa, mas se tiver tem de ter 9 dígitos
+            },
+            message: "O NIF deve ter exatamente 9 dígitos"
+        }
     },
     morada: {
         type: String,
@@ -67,12 +73,17 @@ const UserSchema = new mongoose.Schema({
 });
 
 //Se alguém tentar "save" via outros caminhos que não o nosso frontend garantimos o hashing à mesma!
-UserSchema.pre('save', async function () {
+UserSchema.pre('save', async function (next) {
+    if (this.nif === "") {
+        this.nif = undefined;
+    }
+
     if (!this.isModified('password')) {
-        return;
+        return next();
     }
 
     this.password = await bcrypt.hash(this.password, config.SALT_ROUNDS);
+    next();
 });
 
 module.exports = mongoose.model('User', UserSchema);

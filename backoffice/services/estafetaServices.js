@@ -18,11 +18,39 @@ estafetaService.obterEstatisticas = async function (estafetaId) {
         { $group: { _id: null, total: { $sum: { $ifNull: ['$supermercado.custoEntrega', 0] } } } }
     ]);
 
+    // Evolução Mensal (Entregas Realizadas por Mês no ano atual)
+    const anoAtual = new Date().getFullYear();
+    const evolucaoMensal = await Order.aggregate([
+        { 
+            $match: { 
+                estafetaId: new mongoose.Types.ObjectId(estafetaId), 
+                estado: 'entregue',
+                criadoEm: { 
+                    $gte: new Date(`${anoAtual}-01-01T00:00:00.000Z`), 
+                    $lte: new Date(`${anoAtual}-12-31T23:59:59.999Z`) 
+                } 
+            } 
+        },
+        { 
+            $group: { 
+                _id: { $month: "$criadoEm" }, 
+                entregas: { $sum: 1 } 
+            } 
+        },
+        { $sort: { "_id": 1 } }
+    ]);
+
+    const mesesFormatados = Array.from({ length: 12 }, (_, i) => {
+        const mesEncontrado = evolucaoMensal.find(e => e._id === (i + 1));
+        return mesEncontrado ? mesEncontrado.entregas : 0;
+    });
+
     return {
         entregasRealizadas,
         entregasEmCurso,
         entregasDisponiveis,
-        ganhosTotais: ganhos.length > 0 ? ganhos[0].total : 0
+        ganhosTotais: ganhos.length > 0 ? ganhos[0].total : 0,
+        evolucaoMensal: mesesFormatados
     };
 };
 
@@ -142,18 +170,18 @@ estafetaService.obterDadosDashboard = async function (estafetaId) {
         .sort(function (a, b) { return zonasObjeto[a].localeCompare(zonasObjeto[b], 'pt'); })
         .map(function (key) { return { value: key, label: zonasObjeto[key] }; });
 
-    // Zona com mais encomendas
+    // Zona Mais Popular (com mais encomendas disponíveis)
     var contagem = {};
-    var zonaMaisEncomendas = null;
-    var maxEncomendas = 0;
+    var zonaMaisPopular = null;
+    var totalZonaPopular = 0;
 
     entregas.forEach(function (e) {
         var zona = e.supermercadoId && e.supermercadoId.localizacao;
         if (zona) {
             contagem[zona] = (contagem[zona] || 0) + 1;
-            if (contagem[zona] > maxEncomendas) {
-                maxEncomendas = contagem[zona];
-                zonaMaisEncomendas = zona;
+            if (contagem[zona] > totalZonaPopular) {
+                totalZonaPopular = contagem[zona];
+                zonaMaisPopular = zona;
             }
         }
     });
@@ -164,8 +192,9 @@ estafetaService.obterDadosDashboard = async function (estafetaId) {
             entregasEmCurso: stats.entregasEmCurso,
             entregasDisponiveis: stats.entregasDisponiveis,
             ganhosTotais: stats.ganhosTotais,
-            zonaMaisEncomendas: zonaMaisEncomendas,
-            maxEncomendas: maxEncomendas
+            evolucaoMensal: stats.evolucaoMensal,
+            zonaMaisPopular: zonaMaisPopular,
+            totalZonaPopular: totalZonaPopular
         },
         zonasTrabalho: zonasTrabalho
     };

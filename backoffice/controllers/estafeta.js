@@ -22,10 +22,9 @@ estafetaController.exibirDashboard = async function (req, res) {
             stats: {
                 entregasRealizadas: 0,
                 entregasEmCurso: 0,
-                entregasDisponiveis: 0,
                 ganhosTotais: 0,
-                zonaMaisEncomendas: null,
-                maxEncomendas: 0
+                zonaMaisPopular: null,
+                totalZonaPopular: 0
             }
         });
     }
