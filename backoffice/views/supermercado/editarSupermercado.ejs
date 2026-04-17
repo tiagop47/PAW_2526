@@ -67,15 +67,15 @@
                             <label class="form-label fw-bold small d-block">Métodos de Entrega</label>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="checkbox" name="metodosEntrega"
-                                    value="levantamento em loja" <%=supermercado.metodosEntrega &&
-                                    supermercado.metodosEntrega.includes('levantamento em loja') ? 'checked' : '' %>>
-                                <label class="form-check-label small">Levantamento em Loja</label>
+                                    value="levantamento_loja" <%=supermercado.metodosEntrega &&
+                                    supermercado.metodosEntrega.includes('levantamento_loja') ? 'checked' : '' %>>
+                                <label class="form-check-label small">levantamento_loja</label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="checkbox" name="metodosEntrega"
-                                    value="entrega por estafeta" <%=supermercado.metodosEntrega &&
-                                    supermercado.metodosEntrega.includes('entrega por estafeta') ? 'checked' : '' %>>
-                                <label class="form-check-label small">Entrega por Estafeta</label>
+                                    value="entrega_domicilio" <%=supermercado.metodosEntrega &&
+                                    supermercado.metodosEntrega.includes('entrega_domicilio') ? 'checked' : '' %>>
+                                <label class="form-check-label small">entrega_domicilio</label>
                             </div>
                         </div>
 

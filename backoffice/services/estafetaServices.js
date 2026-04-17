@@ -7,7 +7,7 @@ const estafetaService = {};
 estafetaService.obterEstatisticas = async function (estafetaId) {
     const [entregasRealizadas, entregasEmCurso, entregasDisponiveis] = await Promise.all([
         Order.countDocuments({ estafetaId, estado: 'entregue' }),
-        Order.countDocuments({ estafetaId, estado: 'em entrega' }),
+        Order.countDocuments({ estafetaId, estado: 'em_entrega' }),
         Order.countDocuments({ estafetaId: null, estado: 'confirmada' })
     ]);
 
@@ -98,14 +98,14 @@ estafetaService.obterEntregasPorLocalizacao = async function (lat, lng) {
 };
 
 estafetaService.obterMinhasEntregas = async function (estafetaId) {
-    return Order.find({ estafetaId, estado: { $in: ['em entrega', 'entregue'] } })
+    return Order.find({ estafetaId, estado: { $in: ['em_entrega', 'entregue'] } })
         .populate('supermercadoId', 'nome localizacao localizacaoGeo')
         .populate('clienteId', 'nome morada')
         .sort({ criadoEm: -1 });
 };
 
 estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
-    const ativas = await Order.countDocuments({ estafetaId, estado: 'em entrega' });
+    const ativas = await Order.countDocuments({ estafetaId, estado: 'em_entrega' });
     if (ativas >= 3) {
         throw new Error('Atingiu o limite de 3 entregas em curso.');
     }
@@ -113,7 +113,7 @@ estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
     // Operação atómica: só atualiza se estafetaId for null E estado for 'confirmada'
     const encomenda = await Order.findOneAndUpdate(
         { _id: encomendaId, estafetaId: null, estado: 'confirmada' },
-        { $set: { estafetaId: estafetaId, estado: 'em entrega' } },
+        { $set: { estafetaId: estafetaId, estado: 'em_entrega' } },
         { new: true }
     );
 
@@ -126,7 +126,7 @@ estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
 
 estafetaService.confirmarEntrega = async function (encomendaId, estafetaId) {
     const encomenda = await Order.findById(encomendaId);
-    if (!encomenda || encomenda.estafetaId?.toString() !== estafetaId.toString() || encomenda.estado !== 'em entrega') {
+    if (!encomenda || encomenda.estafetaId?.toString() !== estafetaId.toString() || encomenda.estado !== 'em_entrega') {
         throw new Error('Operação inválida para esta entrega');
     }
 

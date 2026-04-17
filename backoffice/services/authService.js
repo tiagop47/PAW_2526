@@ -32,7 +32,7 @@ async function criarSupermercado(userId, { nome, morada, latitude, longitude, ho
     };
     const metodos = Array.isArray(metodosEntrega)
         ? metodosEntrega
-        : (metodosEntrega ? [metodosEntrega] : ['levantamento em loja']);
+        : (metodosEntrega ? [metodosEntrega] : ['levantamento_loja']);
 
     return Supermarket.create({
         userId,

@@ -11,10 +11,10 @@
 
         <main class="container py-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h4 fw-bold m-0">Gestão de Produtos</h1>
                 <a href="/supermercado/produtos/novo" class="btn btn-primary fw-bold">
                     + Novo Produto
                 </a>
-                <h1 class="h4 fw-bold m-0">Gestão de Produtos</h1>
             </div>
 
             <div class="card border-0 shadow-sm mb-3 p-3">
@@ -37,55 +37,59 @@
             </div>
 
             <div class="card border-0 shadow-sm">
-                <table class="tabela-limpa mb-0">
-                    <thead>
-                        <tr>
-                            <th>Produto</th>
-                            <th>Categoria</th>
-                            <th>Preço</th>
-                            <th>Stock</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Produto</th>
+                                <th>Categoria</th>
+                                <th>Preço</th>
+                                <th>Stock</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
 
-                    <tbody id="produtoPesquisaTabelaBody" data-produto-pesquisa="tabela">
-                        <% if (locals.produtos && produtos.length> 0) { %>
-                            <% produtos.forEach(function(p) { %>
-                                <tr>
-                                    <td>
-                                        <%= p.nome %>
-                                    </td>
-                                    <td>
-                                        <%= p.categoriaId ? p.categoriaId.nome : 'Sem categoria' %>
-                                    </td>
-                                    <td>
-                                        <%= p.preco %>€
-                                    </td>
-                                    <td>
-                                        <%= p.stockDisponivel %>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex justify-content-end gap-2">
-                                            <a href="/supermercado/produtos/<%= p._id %>"
-                                                class="btn btn-sm btn-light border">Detalhes</a>
-                                            <a href="/supermercado/produtos/editar/<%= p._id %>"
-                                                class="btn btn-sm btn-light border">Editar</a>
-                                            <form action="/supermercado/produtos/eliminar/<%= p._id %>" method="POST"
-                                                class="d-inline" onsubmit="return confirm('Tem a certeza?')">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <% }); %>
-                                    <% } else { %>
-                                        <tr>
-                                            <td colspan="5" class="text-center py-4 text-muted">Nenhum produto
-                                                registado.</td>
-                                        </tr>
-                                        <% } %>
-                    </tbody>
-                </table>
+                        <tbody id="produtoPesquisaTabelaBody" data-produto-pesquisa="tabela">
+                            <% if (locals.produtos && produtos.length> 0) { %>
+                                <% produtos.forEach(function(p) { %>
+                                    <tr>
+                                        <td class="fw-bold">
+                                            <%= p.nome %>
+                                        </td>
+                                        <td>
+                                            <span class="badge border text-dark fw-normal">
+                                                <%= p.categoriaId ? p.categoriaId.nome : '—' %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <%= Number(p.preco || 0).toFixed(2) %>€
+                                        </td>
+                                        <td>
+                                            <%= p.stockDisponivel %>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="d-flex justify-content-end gap-2">
+                                                <a href="/supermercado/produtos/<%= p._id %>"
+                                                    class="btn btn-sm btn-light border">Detalhes</a>
+                                                <a href="/supermercado/produtos/editar/<%= p._id %>"
+                                                    class="btn btn-sm btn-light border">Editar</a>
+                                                <form action="/supermercado/produtos/eliminar/<%= p._id %>" method="POST"
+                                                    class="d-inline" onsubmit="return confirm('Tem a certeza?')">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="5" class="text-center py-4 text-muted">Nenhum produto
+                                                    registado.</td>
+                                            </tr>
+                                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
 
@@ -93,8 +97,13 @@
         <script src="/javascript/supermercado/pesquisaProdutos.js"></script>
         <script>
             inicializarPesquisaProdutos();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('success')) {
+                alert('Ação concluída');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
         </script>
-
 </body>
 
 </html>

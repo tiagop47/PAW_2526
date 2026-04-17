@@ -43,7 +43,7 @@
                                             <%= Number(encomenda.valorTotal || 0).toFixed(2) %>EUR
                                         </td>
                                         <td>
-                                            <span class="badge bg-secondary">
+                                            <span class="badge bg-dark">
                                                 <%= encomenda.estado %>
                                             </span>
                                         </td>
@@ -58,10 +58,10 @@
                                                         ? 'selected' : '' %>>pendente</option>
                                                     <option value="confirmada" <%=encomenda.estado==='confirmada'
                                                         ? 'selected' : '' %>>confirmada</option>
-                                                    <option value="em preparação" <%=encomenda.estado==='em preparação'
-                                                        ? 'selected' : '' %>>em preparação</option>
-                                                    <option value="em entrega" <%=encomenda.estado==='em entrega'
-                                                        ? 'selected' : '' %>>em entrega</option>
+                                                    <option value="preparacao" <%=encomenda.estado==='preparacao'
+                                                        ? 'selected' : '' %>>preparacao</option>
+                                                    <option value="em_entrega" <%=encomenda.estado==='em_entrega'
+                                                        ? 'selected' : '' %>>em_entrega</option>
                                                     <option value="entregue" <%=encomenda.estado==='entregue'
                                                         ? 'selected' : '' %>>entregue</option>
                                                     <option value="cancelada" <%=encomenda.estado==='cancelada'
@@ -86,6 +86,14 @@
             </div>
         </main>
 
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('success')) {
+                alert('Ação concluída');
+                // Limpar o parâmetro da URL para não repetir o alert ao fazer refresh
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        </script>
 </body>
 
 </html>

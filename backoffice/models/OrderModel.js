@@ -17,18 +17,18 @@ const OrderSchema = new mongoose.Schema({
     valorTotal: { type: Number, required: true },
     estado: {
         type: String,
-        enum: ['pendente', 'confirmada', 'em preparação', 'em entrega', 'entregue', 'cancelada'],
+        enum: ['pendente', 'confirmada', 'preparacao', 'em_entrega', 'entregue', 'cancelada'],
         default: 'pendente'
     },
     metodoEntrega: {
         type: String,
-        enum: ['levantamento em loja', 'entrega ao domicilio'],
-        default: 'levantamento em loja'
+        enum: ['levantamento_loja', 'entrega_domicilio'],
+        default: 'levantamento_loja'
     },
     moradaEntrega: {
         type: String,
         required: function () {
-            return this.metodoEntrega === 'entrega ao domicilio';
+            return this.metodoEntrega === 'entrega_domicilio';
         }
     },
     coordenadasEntrega: {

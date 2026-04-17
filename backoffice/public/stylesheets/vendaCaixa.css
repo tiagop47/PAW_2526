@@ -19,7 +19,7 @@
 
 .venda-caixa-mapa {
   height: 320px;
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 @media (min-width: 992px) {
@@ -33,3 +33,23 @@
     overflow-y: auto;
   }
 }
+
+/* Modal de Pesquisa de Produtos - Responsivo */
+#modalPesquisaProduto .modal-dialog {
+  width: 95% !important;
+  max-width: 95% !important;
+  margin: 1.75rem auto;
+}
+
+/* Em ecrãs muito grandes (Desktop XL), limitamos a largura máxima para não esticar demasiado */
+@media (min-width: 1400px) {
+  #modalPesquisaProduto .modal-dialog {
+    max-width: 1200px !important;
+  }
+}
+
+#modalPesquisaProduto .modal-body {
+  padding: 1.5rem;
+}
+
+

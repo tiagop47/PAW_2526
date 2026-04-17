@@ -3,17 +3,21 @@ let meuMapa;
 const ROTA_MERCADOS_ADMIN = '/admin/api/mercados-ativos';
 const ROTA_MERCADOS_ESTAFETA = '/estafeta/api/supermercados';
 const ROTA_ENTREGAS_ESTAFETA = '/estafeta/api/entregas';
-const COR_MERCADO = '#007bff';
-const COR_DESTINO = '#dc3545';
+const COR_MERCADO = '#000000';
+const COR_DESTINO = '#333333';
 
 function inicializarMapa(idElemento, lat = 41.15, lon = -8.61, zoom = 12) {
     const container = document.getElementById(idElemento);
     if (!container) return null;
 
+    // Se o mapa já estiver inicializado, não tentamos criar um novo
+    if (container._leaflet_id) return null;
+
     meuMapa = L.map(idElemento).setView([lat, lon], zoom);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
+        attribution: '&copy; OpenStreetMap',
+        className: 'mapa-bw' // Podemos usar CSS para tornar o mapa mais p&b se necessário
     }).addTo(meuMapa);
 
     return meuMapa;
@@ -71,7 +75,7 @@ function adicionarMercadoNoMapa(id, nome, lat, lon, raioKm, zona = '') {
         color: COR_MERCADO,
         fillColor: COR_MERCADO,
         fillOpacity: 0.1,
-        radius: (raioKm * 1000) / 5
+        radius: (raioKm * 1000)
     }).addTo(meuMapa);
 
     // Guardar marcador para acesso posterior
@@ -210,13 +214,23 @@ function focarNoMapa(id) {
 }
 
 function focarDestinoNoMapa(lat, lng) {
+    if (!meuMapa) return;
+    
     const latNum = Number(lat);
     const lngNum = Number(lng);
 
+    if (!Number.isFinite(latNum) || !Number.isFinite(lngNum)) return;
+
     meuMapa.setView([latNum, lngNum], 16);
 
-    const destino = marcadoresDestinos.find((m) => m.lat === latNum && m.lng === lngNum);
-    if (destino) {
+    // Procurar o marcador com uma pequena tolerância para evitar erros de precisão decimal
+    const EPSILON = 0.0001;
+    const destino = marcadoresDestinos.find((m) => 
+        Math.abs(m.lat - latNum) < EPSILON && 
+        Math.abs(m.lng - lngNum) < EPSILON
+    );
+
+    if (destino && destino.marker) {
         destino.marker.openPopup();
     }
 }

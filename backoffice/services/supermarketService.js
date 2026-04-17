@@ -175,9 +175,14 @@ supermarketService.listarProdutosGeral = async function (supermercadoId) {
 
 supermarketService.pesquisarProdutos = async function (supermercadoId, { q, categoriaId }) {
     const filtro = { supermercadoId };
+
     if (q) {
-        filtro.nome = { $regex: q, $options: 'i' };
+        filtro.$or = [
+            { nome: { $regex: q, $options: 'i' } },
+            { codigoBarras: { $regex: q, $options: 'i' } }
+        ];
     }
+
     if (categoriaId) {
         filtro.categoriaId = categoriaId;
     }
@@ -253,71 +258,57 @@ supermarketService.obterEncomendaPorId = async function (supermercadoId, orderId
 
 supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, orderId, estado) {
     const order = await Order.findOne({ _id: orderId, supermercadoId });
-    if (!order) return null;
+    if (!order) {
+        return null;
+    }
 
     const estadoAnterior = order.estado;
-
-    if (estado === 'cancelada') {
-
-        const agora = Date.now();
-        const limiteCancelamento = new Date(order.criadoEm).getTime() + (5 * 60 * 1000);
-
-        if (agora > limiteCancelamento) {
-            throw new Error('O prazo de 5 minutos para cancelamento já expirou.');
-        }
+    if (estadoAnterior === estado) {
+        return order;
     }
 
-    const estadosAtivos = ['confirmada', 'em preparação', 'em entrega', 'entregue'];
-    const eraAtivo = estadosAtivos.includes(estadoAnterior);
-    const vaiSerAtivo = estadosAtivos.includes(estado);
+    const estadosComStockOcupado = ['pendente', 'confirmada', 'preparacao', 'em_entrega', 'entregue'];
+    const eraOcupado = estadosComStockOcupado.includes(estadoAnterior);
+    const vaiSerOcupado = estadosComStockOcupado.includes(estado);
 
-    // Se passar para um estado ativo, garantimos que tem fatura e reduzimos o stock (se ainda não era ativo)
-    if (vaiSerAtivo) {
-        if (!order.faturaNumero) {
-            order.faturaNumero = await gerarNumeroFatura(supermercadoId);
-            order.faturaData = new Date();
+    if (vaiSerOcupado && !eraOcupado) {
+        for (const item of order.produtos) {
+            const produto = await Product.findOneAndUpdate(
+                { _id: item.produtoId, stockDisponivel: { $gte: item.quantidade } },
+                { $inc: { stockDisponivel: -item.quantidade } },
+                { new: true }
+            );
 
-            // Snapshot
-            const cliente = await User.findById(order.clienteId);
-            if (cliente) {
-                order.clienteSnapshot = {
-                    nome: cliente.nome,
-                    nif: cliente.nif,
-                    morada: cliente.morada,
-                    email: cliente.email,
-                    telefone: cliente.telefone
-                };
-            }
-        }
-
-        // Só reduzimos o stock se o estado anterior não fosse já um estado ativo
-        if (!eraAtivo) {
-            for (const item of order.produtos) {
-                const produto = await Product.findOneAndUpdate(
-                    {
-                        _id: item.produtoId,
-                        stockDisponivel: { $gte: item.quantidade }
-                    },
-                    {
-                        $inc: { stockDisponivel: -item.quantidade }
-                    },
-                    { new: true }
-                );
-
-                if (!produto) {
-                    const pInfo = await Product.findById(item.produtoId);
-                    throw new Error(`Stock insuficiente para confirmar a encomenda: ${pInfo ? pInfo.nome : 'Produto desconhecido'}`);
-                }
+            if (!produto) {
+                const pInfo = await Product.findById(item.produtoId);
+                throw new Error(`Stock insuficiente: ${pInfo ? pInfo.nome : 'Produto desconhecido'}`);
             }
         }
     }
 
-    // Se passar de um estado ativo para um estado não-ativo (cancelada ou pendente), devolvemos o stock
-    if (eraAtivo && !vaiSerAtivo) {
+    if (eraOcupado && !vaiSerOcupado) {
         for (const item of order.produtos) {
             await Product.findByIdAndUpdate(item.produtoId, {
                 $inc: { stockDisponivel: item.quantidade }
             });
+        }
+    }
+
+    //Lógica de fatura: Gerar apenas se entrar num estado "avançado" e ainda não tiver
+    const estadosComFatura = ['confirmada', 'preparacao', 'em_entrega', 'entregue'];
+    if (estadosComFatura.includes(estado) && !order.faturaNumero) {
+        order.faturaNumero = await gerarNumeroFatura(supermercadoId);
+        order.faturaData = new Date();
+
+        const cliente = await User.findById(order.clienteId);
+        if (cliente) {
+            order.clienteSnapshot = {
+                nome: cliente.nome,
+                nif: cliente.nif,
+                morada: cliente.morada,
+                email: cliente.email,
+                telefone: cliente.telefone
+            };
         }
     }
 
@@ -397,7 +388,7 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
         valorTotal += produto.preco * item.quantidade;
     }
 
-    const eDomicilio = metodoEntrega === 'entrega ao domicilio';
+    const eDomicilio = metodoEntrega === 'entrega_domicilio';
     const estadoFinal = eDomicilio ? 'confirmada' : 'entregue';
     const lat = Number(latitudeEntrega);
     const lng = Number(longitudeEntrega);
@@ -410,10 +401,9 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
         valorTotal,
         metodoPagamento: 'dinheiro',
         estado: estadoFinal,
-        metodoEntrega: metodoEntrega || 'levantamento em loja',
+        metodoEntrega: metodoEntrega || 'levantamento_loja',
         moradaEntrega: eDomicilio ? moradaCliente : 'Venda Local em Loja',
-        latitude: temCoordenadasValidas ? lat : undefined,
-        longitude: temCoordenadasValidas ? lng : undefined,
+        coordenadasEntrega: temCoordenadasValidas ? { lat, lng } : undefined,
         faturaNumero: await gerarNumeroFatura(supermercadoId),
         faturaData: new Date(),
         clienteSnapshot: {

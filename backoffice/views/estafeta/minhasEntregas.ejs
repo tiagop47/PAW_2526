@@ -13,7 +13,7 @@
                 <h4>Minhas Entregas</h4>
             </div>
 
-            <% const emCurso=entregas.filter(e=> e.estado === 'em entrega'); %>
+            <% const emCurso=entregas.filter(e=> e.estado === 'em_entrega'); %>
                 <% if (emCurso.length> 0) { %>
                     <h5>Em Curso</h5>
                     <div class="row mb-4">
@@ -31,10 +31,9 @@
                                                 <% if (entrega.coordenadasEntrega && Number.isFinite(entrega.coordenadasEntrega.lat) && Number.isFinite(entrega.coordenadasEntrega.lng)) { %>
                                                     <br>
                                                     <strong>Coords:</strong> <%= entrega.coordenadasEntrega.lat %>, <%= entrega.coordenadasEntrega.lng %>
-                                                    <a class="ms-1" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q=<%= entrega.coordenadasEntrega.lat %>,<%= entrega.coordenadasEntrega.lng %>">Mapa</a>
                                                 <% } %>
                                         </p>
-                                        <button class="btn btn-sm btn-success btn-confirmar-entrega"
+                                        <button class="btn btn-sm btn-dark btn-confirmar-entrega"
                                             data-id="<%= entrega._id %>">
                                             Confirmar Entrega
                                         </button>

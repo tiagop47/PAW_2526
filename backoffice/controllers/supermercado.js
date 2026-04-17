@@ -43,7 +43,8 @@ supermarketController.exibirProdutos = async function (req, res) {
         res.render('supermercado/produtos', {
             title: 'Gerir Produtos',
             produtos,
-            categorias
+            categorias,
+            success: req.query.success
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar produtos.');
@@ -90,7 +91,7 @@ supermarketController.criarProduto = async function (req, res) {
         const imagem = req.file ? `/images/produtos/${req.file.filename}` : '';
         await supermarketService.criarProduto(req.supermercado._id, { ...req.body, imagem });
 
-        res.redirect('/supermercado/produtos');
+        res.redirect('/supermercado/produtos?success=1');
     } catch (err) {
         console.error(err);
         const mensagem = err.name === 'ValidationError'
@@ -113,7 +114,7 @@ supermarketController.atualizarProduto = async function (req, res) {
         }
 
         await supermarketService.atualizarProduto(req.supermercado._id, req.produto._id, dados);
-        res.redirect('/supermercado/produtos');
+        res.redirect('/supermercado/produtos?success=1');
     } catch (err) {
         console.error(err);
         const mensagem = err.name === 'ValidationError'
@@ -131,7 +132,7 @@ supermarketController.atualizarProduto = async function (req, res) {
 supermarketController.eliminarProduto = async function (req, res) {
     try {
         await supermarketService.eliminarProduto(req.supermercado._id, req.produto._id);
-        res.redirect('/supermercado/produtos');
+        res.redirect('/supermercado/produtos?success=1');
     } catch (err) {
         console.error(err);
         res.status(500).send('Erro ao eliminar produto.');
@@ -211,10 +212,10 @@ supermarketController.exibirPerfil = async function (req, res) {
 supermarketController.listarEncomendas = async function (req, res) {
     try {
         const encomendas = await supermarketService.obterEncomendas(req.supermercado._id);
-
         res.render('supermercado/encomendas', {
             title: 'Encomendas',
-            encomendas
+            encomendas,
+            success: req.query.success
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar encomendas.');
@@ -225,7 +226,7 @@ supermarketController.listarEncomendas = async function (req, res) {
  * Atualiza o estado de uma encomenda.
  * A encomenda é carregada pelo middleware router.param('orderId').
  */
-supermarketController.atualizarEstadoEncomenda = async function (req, res) {
+supermarketController.atualizarEstadoEncomenda = async function (req, res, next) {
     try {
         const { estado } = req.body;
         await supermarketService.atualizarEstadoEncomenda(
@@ -234,9 +235,11 @@ supermarketController.atualizarEstadoEncomenda = async function (req, res) {
             estado
         );
 
-        res.redirect('/supermercado/encomendas');
+        res.redirect('/supermercado/encomendas?success=1');
     } catch (err) {
-        res.status(500).send('Erro ao atualizar estado.');
+        err.tituloErro = 'Erro ao atualizar encomenda';
+        err.detalheErro = err.message;
+        next(err);
     }
 };
 
@@ -310,7 +313,7 @@ supermarketController.registarVenda = async function (req, res) {
             emailCliente, nomeCliente, nifCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, listaItens, metodoEntrega
         });
 
-        res.redirect('/supermercado/encomendas?success=Venda registada com sucesso');
+        res.redirect('/supermercado/encomendas?success=Venda em caixa registada');
     } catch (err) {
         console.error('ERRO NO REGISTAR VENDA:', err);
         res.status(400);

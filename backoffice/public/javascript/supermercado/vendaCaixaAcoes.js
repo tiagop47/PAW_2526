@@ -1,10 +1,10 @@
-const ENTREGA_DOMICILIO = 'entrega ao domicilio';
+const ENTREGA_DOMICILIO = 'entrega_domicilio';
 const SEM_COORDS = 'Nenhuma coordenada selecionada.';
 
 const formVendaCaixa = document.getElementById('formVendaCaixa');
 const tabelaCarrinhoBody = document.getElementById('tabelaCarrinhoBody');
 const hiddenItensVenda = document.getElementById('itensVenda');
-const selectMetodoEntrega = document.getElementById('metodoEntregaVenda');
+const selectMetodoEntrega = document.getElementById('metodoEntrega');
 const inputMoradaVenda = document.getElementById('moradaVenda');
 const labelMoradaVenda = document.getElementById('labelMorada');
 const hintMoradaVenda = document.getElementById('hintMorada');
@@ -27,7 +27,7 @@ function obterQtdNoCarrinho(produtoId) {
 
 function renderizarResultadosModal(produtos, tabelaBody) {
     if (!Array.isArray(produtos) || produtos.length === 0) {
-        tabelaBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nenhum produto encontrado.</td></tr>';
+        tabelaBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Nenhum produto encontrado.</td></tr>';
         return;
     }
 
@@ -35,12 +35,15 @@ function renderizarResultadosModal(produtos, tabelaBody) {
 
     tabelaBody.innerHTML = produtos.map(function (produto) {
         const qtdAtual = obterQtdNoCarrinho(produto._id);
+        const valorCodigo = produto.codigoBarras || produto._id;
 
         if (produto.stockDisponivel <= 0) {
             return `
             <tr>
-                <td><div class="fw-bold">${produto.nome}</div></td>
-                <td><svg class="barcode-modal" data-barcode-id="${produto._id}"></svg></td>
+                <td>
+                    <div class="fw-bold text-truncate" style="max-width: 250px;">${produto.nome}</div>
+                    <div class="mt-1"><svg class="barcode-modal" data-barcode-id="${valorCodigo}"></svg></div>
+                </td>
                 <td>${Number(produto.preco || 0).toFixed(2)}€</td>
                 <td class="text-danger">Sem Stock</td>
                 <td class="text-center text-muted">Indisponível</td>
@@ -51,8 +54,10 @@ function renderizarResultadosModal(produtos, tabelaBody) {
 
         return `
             <tr>
-                <td><div class="fw-bold">${produto.nome}</div></td>
-                <td><svg class="barcode-modal" data-barcode-id="${produto._id}"></svg></td>
+                <td>
+                    <div class="fw-bold text-truncate" style="max-width: 250px;">${produto.nome}</div>
+                    <div class="mt-1"><svg class="barcode-modal" data-barcode-id="${valorCodigo}"></svg></div>
+                </td>
                 <td>${Number(produto.preco || 0).toFixed(2)}€</td>
                 <td>${produto.stockDisponivel}</td>
                 <td style="min-width: 140px;">
@@ -73,14 +78,15 @@ function renderizarResultadosModal(produtos, tabelaBody) {
     }).join('');
 
     document.querySelectorAll('.barcode-modal').forEach(function (svg) {
-        const produtoId = svg.getAttribute('data-barcode-id');
-        if (produtoId && typeof JsBarcode !== 'undefined') {
-            JsBarcode(svg, produtoId, {
+        const barcodeValue = svg.getAttribute('data-barcode-id');
+        if (barcodeValue && typeof JsBarcode !== 'undefined') {
+            JsBarcode(svg, barcodeValue, {
                 format: 'CODE128',
-                width: 1,
+                width: 1.2,
                 height: 30,
-                displayValue: false,
-                margin: 2
+                displayValue: true, // Mostra o código em texto por baixo
+                fontSize: 10,
+                margin: 0
             });
         }
     });
@@ -259,6 +265,7 @@ function atualizarUIEntrega() {
 }
 
 function inicializarMapaEntrega() {
+    const elMapaEntrega = document.getElementById('mapaEscolherEntrega');
     const latSuper = Number(elMapaEntrega?.dataset.superLat);
     const lngSuper = Number(elMapaEntrega?.dataset.superLng);
     const raioSuperKm = Number(elMapaEntrega?.dataset.superRaio || 5);
@@ -278,26 +285,31 @@ function inicializarMapaEntrega() {
         L.marker([latSuper, lngSuper]).addTo(mapaInstancia).bindPopup("<b>Supermercado</b>");
 
         const circuloAtuacao = L.circle([latSuper, lngSuper], {
-            color: '#007bff',
-            fillColor: '#007bff',
+            color: '#000000',
+            fillColor: '#000000',
             fillOpacity: 0.1,
-            radius: (raioSuperKm * 1000) / 5
+            radius: (raioSuperKm * 1000)
         }).addTo(mapaInstancia);
 
         mapaInstancia.fitBounds(circuloAtuacao.getBounds(), { padding: [30, 30] });
     }
 
     mapaInstancia.on('click', function (event) {
-        if (selectMetodoEntrega.value !== ENTREGA_DOMICILIO) {
+        const metodo = document.getElementById('metodoEntrega')?.value;
+        if (metodo !== ENTREGA_DOMICILIO) {
             return;
         }
 
         const lat = event.latlng.lat;
         const lng = event.latlng.lng;
 
-        inputLatitudeEntrega.value = lat.toFixed(6);
-        inputLongitudeEntrega.value = lng.toFixed(6);
-        textoCoordsSelecionadas.textContent = `Coordenadas selecionadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        const inputLat = document.getElementById('latitudeEntrega');
+        const inputLng = document.getElementById('longitudeEntrega');
+        const txtCoords = document.getElementById('coordsSelecionadas');
+
+        if (inputLat) inputLat.value = lat.toFixed(6);
+        if (inputLng) inputLng.value = lng.toFixed(6);
+        if (txtCoords) txtCoords.textContent = `Coordenadas selecionadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 
         if (!marcadorEntregaInstancia) {
             marcadorEntregaInstancia = L.marker([lat, lng]).addTo(mapaInstancia);

@@ -1,7 +1,7 @@
 /* Header principal */
 .cabecalho-principal {
   background: #fff;
-  border-bottom: 2px solid var(--borda);
+  border-bottom: 2px solid #000;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -17,21 +17,22 @@
 .circulo-logo {
   width: 35px;
   height: 35px;
-  background: #eef4ff;
-  border: 1px solid #ccc;
+  background: #fff;
+  border: 1px solid #000;
   border-radius: 4px;
 }
 
 /* Menu links */
 .navegacao-links .link-menu {
   text-decoration: none;
-  color: #555;
+  color: #000;
   font-weight: 600;
   font-size: 0.9rem;
 }
 
 .navegacao-links .link-menu:hover {
-  color: var(--cor-principal);
+  color: #000;
+  text-decoration: underline;
 }
 
 @media (max-width: 991px) {
@@ -44,7 +45,7 @@
     width: 100%;
     background: #fff;
     padding: 15px;
-    border-bottom: 2px solid var(--cor-principal);
+    border-bottom: 2px solid #000;
   }
 
   .navegacao-links.show {

@@ -28,7 +28,7 @@ const SupermarketSchema = new mongoose.Schema({
         }
     },
     horarioFuncionamento: String,
-    metodosEntrega: { type: [String], default: ['levantamento em loja'] },
+    metodosEntrega: { type: [String], default: ['levantamento_loja'] },
     custoEntrega: {
         type: Number,
         default: 0,
