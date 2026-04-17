@@ -18,24 +18,23 @@ estafetaService.obterEstatisticas = async function (estafetaId) {
         { $group: { _id: null, total: { $sum: { $ifNull: ['$supermercado.custoEntrega', 0] } } } }
     ]);
 
-    // Evolução Mensal (Entregas Realizadas por Mês no ano atual)
     const anoAtual = new Date().getFullYear();
     const evolucaoMensal = await Order.aggregate([
-        { 
-            $match: { 
-                estafetaId: new mongoose.Types.ObjectId(estafetaId), 
+        {
+            $match: {
+                estafetaId: new mongoose.Types.ObjectId(estafetaId),
                 estado: 'entregue',
-                criadoEm: { 
-                    $gte: new Date(`${anoAtual}-01-01T00:00:00.000Z`), 
-                    $lte: new Date(`${anoAtual}-12-31T23:59:59.999Z`) 
-                } 
-            } 
+                criadoEm: {
+                    $gte: new Date(`${anoAtual}-01-01T00:00:00.000Z`),
+                    $lte: new Date(`${anoAtual}-12-31T23:59:59.999Z`)
+                }
+            }
         },
-        { 
-            $group: { 
-                _id: { $month: "$criadoEm" }, 
-                entregas: { $sum: 1 } 
-            } 
+        {
+            $group: {
+                _id: { $month: "$criadoEm" },
+                entregas: { $sum: 1 }
+            }
         },
         { $sort: { "_id": 1 } }
     ]);
@@ -157,7 +156,6 @@ estafetaService.obterDadosDashboard = async function (estafetaId) {
         estafetaService.obterEntregasDisponiveis()
     ]);
 
-    // Zonas de trabalho únicas
     const zonasObjeto = {};
     supermercados.forEach(function (supermercado) {
         var zona = (supermercado.localizacao || '').trim();
@@ -170,7 +168,6 @@ estafetaService.obterDadosDashboard = async function (estafetaId) {
         .sort(function (a, b) { return zonasObjeto[a].localeCompare(zonasObjeto[b], 'pt'); })
         .map(function (key) { return { value: key, label: zonasObjeto[key] }; });
 
-    // Zona Mais Popular (com mais encomendas disponíveis)
     var contagem = {};
     var zonaMaisPopular = null;
     var totalZonaPopular = 0;

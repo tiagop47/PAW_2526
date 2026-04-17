@@ -327,73 +327,12 @@ adminService.getRegistosMensais = async function () {
         },
         { $sort: { '_id.ano': 1, '_id.mes': 1 } }
     ]);
+
     const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    return resultado.map(r => ({
-        label: meses[r._id.mes - 1] + ' ' + r._id.ano,
-        total: r.total
+    return resultado.map(resultado => ({
+        label: meses[resultado._id.mes - 1] + ' ' + resultado._id.ano,
+        total: resultado.total
     }));
-};
-
-/**
- * Evolução da Faturação por Zona ao longo dos meses
- */
-adminService.getFaturacaoPorZona = async function () {
-    const ha12Meses = new Date();
-    ha12Meses.setMonth(ha12Meses.getMonth() - 12);
-
-    const resultado = await Order.aggregate([
-        { $match: { criadoEm: { $gte: ha12Meses } } },
-        {
-            $lookup: {
-                from: 'supermarkets',
-                localField: 'supermercadoId',
-                foreignField: '_id',
-                as: 'supermercado'
-            }
-        },
-        { $unwind: '$supermercado' },
-        {
-            $group: {
-                _id: {
-                    zona: '$supermercado.localizacao',
-                    ano: { $year: '$criadoEm' },
-                    mes: { $month: '$criadoEm' }
-                },
-                total: { $sum: '$valorTotal' }
-            }
-        },
-        { $sort: { '_id.ano': 1, '_id.mes': 1 } }
-    ]);
-
-    const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    const zonasMap = {};
-    const labelsSet = new Set();
-
-    resultado.forEach(r => {
-        const labelText = meses[r._id.mes - 1] + ' ' + r._id.ano;
-        labelsSet.add(labelText);
-
-        const zona = r._id.zona || 'Outras Zonas';
-        if (!zonasMap[zona]) zonasMap[zona] = {};
-        zonasMap[zona][labelText] = r.total;
-    });
-
-    const labels = Array.from(labelsSet);
-    const colors = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6f42c1', '#fd7e14', '#20c997', '#e83e8c'];
-
-    const datasets = Object.keys(zonasMap).map((zona, index) => {
-        return {
-            label: zona,
-            data: labels.map(l => zonasMap[zona][l] || 0),
-            backgroundColor: colors[index % colors.length],
-            borderColor: colors[index % colors.length],
-            borderWidth: 2,
-            tension: 0.3,
-            fill: false
-        };
-    });
-
-    return { labels, datasets };
 };
 
 /**
@@ -436,5 +375,66 @@ adminService.criarCupao = async function (dados) {
     return novoCupao;
 };
 
+/**
+ * Evolução da Faturação por Zona ao longo dos meses
+ */
+adminService.getFaturacaoPorZona = async function () {
+    const anoCurrent = new Date();
+    anoCurrent.setMonth(anoCurrent.getMonth() - 12);
+
+    const resultado = await Order.aggregate([
+        { $match: { criadoEm: { $gte: anoCurrent } } },
+        {
+            $lookup: {
+                from: 'supermarkets',
+                localField: 'supermercadoId',
+                foreignField: '_id',
+                as: 'supermercado'
+            }
+        },
+        { $unwind: '$supermercado' },
+        {
+            $group: {
+                _id: {
+                    zona: '$supermercado.localizacao',
+                    ano: { $year: '$criadoEm' },
+                    mes: { $month: '$criadoEm' }
+                },
+                total: { $sum: '$valorTotal' }
+            }
+        },
+        { $sort: { '_id.ano': 1, '_id.mes': 1 } }
+    ]);
+
+    const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const zonasMap = {};
+    const labelsSet = new Set();
+
+    resultado.forEach(r => {
+        const labelText = meses[r._id.mes - 1] + ' ' + r._id.ano;
+        labelsSet.add(labelText);
+
+        const zona = r._id.zona || 'Outras Zonas';
+        if (!zonasMap[zona]) {
+            zonasMap[zona] = {};
+        }
+
+        zonasMap[zona][labelText] = r.total;
+    });
+
+    const labels = Array.from(labelsSet);
+
+    const datasets = Object.keys(zonasMap).map((zona) => {
+        return {
+            label: zona,
+            data: labels.map(data => zonasMap[zona][data] || 0),
+            borderWidth: 2,
+            tension: 0.3,
+            fill: false
+        };
+    });
+
+    return { labels, datasets };
+};
 
 module.exports = adminService;

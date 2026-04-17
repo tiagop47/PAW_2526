@@ -10,21 +10,6 @@ const Category = require('../models/CategoryModel');
 
 const supermarketService = {};
 
-/**
- * Gera um número de fatura sequencial para um supermercado.
- * Formato: FT <ANO>/<SEQUENCIAL> (ex: FT 2024/0001)
- */
-async function gerarNumeroFatura(supermercadoId) {
-    const anoAtual = new Date().getFullYear();
-    const count = await Order.countDocuments({
-        supermercadoId,
-        faturaNumero: { $regex: `^FT ${anoAtual}/` }
-    });
-
-    const sequencial = (count + 1).toString().padStart(4, '0');
-    return `FT ${anoAtual}/${sequencial}`;
-}
-
 supermarketService.obterDadosDashboard = async function (supermercadoId) {
     const [totalProdutos, totalEncomendas, encomendas, vendasStats, top5Produtos] = await Promise.all([
         Product.countDocuments({ supermercadoId }),
@@ -285,12 +270,11 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
     // Se passar de 'pendente' para um estado ativo (confirmada, em entrega, entregue), reduzimos o stock
     if (estadoAnterior === 'pendente' && (estado === 'confirmada' || estado === 'em entrega' || estado === 'entregue')) {
 
-        // Se ainda não tem fatura, geramos uma ao confirmar/entregar
         if (!order.faturaNumero) {
             order.faturaNumero = await gerarNumeroFatura(supermercadoId);
             order.faturaData = new Date();
 
-            // Snapshot dos dados do cliente no momento da faturação
+            // Snapshot
             const cliente = await User.findById(order.clienteId);
             if (cliente) {
                 order.clienteSnapshot = {
@@ -341,9 +325,11 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
 
     if (emailCliente) {
         cliente = await User.findOne({ email: emailCliente });
+
         if (!cliente) {
             throw new Error('O email inserido não está associado a nenhuma conta.');
         }
+
     } else {
         const emailFinal = 'cliente@teste.com';
         const nifFinal = nifCliente || '999999990';
@@ -431,7 +417,6 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
     return novaOrdem.save();
 };
 
-
 /**
  * Categorias
  */
@@ -444,5 +429,20 @@ supermarketService.verificarEstadoAprovacao = async function (userId) {
     const superMercado = await Supermarket.findOne({ userId });
     return superMercado ? superMercado.estadoAprovacao : 'Pendente';
 };
+
+/**
+ * Gera um número de fatura sequencial para um supermercado.
+ * Formato: FT <ANO>/<SEQUENCIAL> (ex: FT 2024/0001)
+ */
+async function gerarNumeroFatura(supermercadoId) {
+    const anoAtual = new Date().getFullYear();
+    const count = await Order.countDocuments({
+        supermercadoId,
+        faturaNumero: { $regex: `^FT ${anoAtual}/` }
+    });
+
+    const sequencial = (count + 1).toString().padStart(4, '0');
+    return `FT ${anoAtual}/${sequencial}`;
+}
 
 module.exports = supermarketService;

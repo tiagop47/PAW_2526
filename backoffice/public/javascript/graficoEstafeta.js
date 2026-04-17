@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const evolucaoMensal = JSON.parse(evolucaoMensalStr);
-
     renderMonthlyEvolutionChart(evolucaoMensal);
 });
 

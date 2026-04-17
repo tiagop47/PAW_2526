@@ -6,6 +6,8 @@ const crypto = require('crypto');
 const { rolesPublicas } = require('../public/javascript/userValidator');
 const config = require('../config/config');
 const emailService = require('./emailService');
+const Coupon = require('../models/cupomModel');
+
 const authService = {};
 
 authService.verificarCaptcha = async function (recaptchaResponse) {
@@ -167,13 +169,14 @@ authService.redefinirPassword = async function (token, novaPassword) {
 };
 
 async function atribuirCupoesCliente(novoUser, morada) {
-    const Coupon = require('../models/cupomModel');
 
     const condicoes = [
         { localidadeAlvo: { $exists: false } },
         { localidadeAlvo: "" }
     ];
-    if (morada) condicoes.push({ localidadeAlvo: morada });
+    if (morada) {
+        condicoes.push({ localidadeAlvo: morada });
+    }
 
     const cupoesValidos = await Coupon.find({ $or: condicoes });
     if (cupoesValidos.length > 0) {
