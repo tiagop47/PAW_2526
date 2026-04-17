@@ -8,9 +8,8 @@ const CouponSchema = new mongoose.Schema({
         uppercase: true,
         trim: true
     },
-    clienteId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Opcional: Se preenchido, só este cliente poderá resgatar
+    localidadeAlvo: {
+        type: String, // Se preenchido, só clientes desta localidade poderão usar/receber
         required: false
     },
     percentagemDesconto: {

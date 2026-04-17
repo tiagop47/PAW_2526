@@ -251,14 +251,14 @@ adminController.exibirFatura = async function (req, res) {
 
 adminController.exibirCupoes = async function (req, res) {
     try {
-        const [cupoes, clientes] = await Promise.all([
+        const [cupoes, localidades] = await Promise.all([
             adminService.listarCupoes(),
-            adminService.getClientes()
+            adminService.getLocalidadesSupermercados()
         ]);
         res.render('admin/cupom', { 
             title: 'Gestão de Cupões', 
             cupoes, 
-            clientes 
+            localidades 
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar sistema de cupões: ' + err.message);

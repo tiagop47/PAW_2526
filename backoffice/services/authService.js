@@ -27,17 +27,58 @@ authService.verificarCaptcha = async function (recaptchaResponse) {
 
 authService.registarUtilizador = async function (userData) {
     const {
-        nome, email, password, nif, telefone, distrito, concelho, morada, role,
+        nome, email, password, nif, telefone, morada, role,
         latitude, longitude, horario, custoEntrega, raioAtuacao, descricaoLoja, metodosEntrega
     } = userData;
 
     const roleFinal = rolesPublicas.includes(role) ? role : "clientes";
 
     const novoUser = new User({
-        nome, email, password, nif, telefone, distrito, concelho, morada, role: roleFinal
+        nome, email, password, nif, telefone, morada, role: roleFinal
     });
 
+    // Se for cliente, ganha automaticamente cupoes e enviamos um por email!
+    if (roleFinal === 'clientes') {
+        const Coupon = require('../models/cupomModel');
+
+        const condicoes = [
+            { localidadeAlvo: { $exists: false } },
+            { localidadeAlvo: "" }
+        ];
+        if (morada) condicoes.push({ localidadeAlvo: { $regex: new RegExp(morada, 'i') } });
+
+        const cupoesValidos = await Coupon.find({ $or: condicoes });
+
+        if (cupoesValidos.length > 0) {
+            novoUser.cupoes = cupoesValidos.map(c => c._id);
+        }
+
+        const codigoAleatorio = 'WELCOME' + Math.floor(10000 + Math.random() * 90000);
+        const prazo30Dias = new Date();
+        prazo30Dias.setDate(prazo30Dias.getDate() + 30);
+
+        const cupaoBoasVindas = await Coupon.create({
+            codigo: codigoAleatorio,
+            percentagemDesconto: 10,
+            prazo: prazo30Dias,
+            limiteUtilizacoes: 1
+        });
+
+        if (!novoUser.cupoes) novoUser.cupoes = [];
+        novoUser.cupoes.push(cupaoBoasVindas._id);
+
+        novoUser._codigoBoasVindas = codigoAleatorio;
+    }
+
     const userGuardado = await novoUser.save();
+
+    if (roleFinal === 'clientes' && novoUser._codigoBoasVindas) {
+        try {
+            await emailService.enviarEmailBoasVindas(email, nome, novoUser._codigoBoasVindas);
+        } catch (e) {
+            console.error("Erro ao enviar email de boas-vindas", e.message);
+        }
+    }
 
     if (roleFinal === 'supermercados') {
         if (!latitude || !longitude) {
@@ -117,10 +158,10 @@ authService.inicializarAdmin = async function () {
 };
 
 authService.gerarTokenRecuperacao = async function (email) {
-    
-    const user = await User.findOne({email});
 
-    if(!user){
+    const user = await User.findOne({ email });
+
+    if (!user) {
         throw new Error("Não existe nenhuma conta com esse email.")
     }
 
@@ -154,7 +195,7 @@ authService.redefinirPassword = async function (token, novaPassword) {
     }
 
     user.password = novaPassword;
-    
+
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
 

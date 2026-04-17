@@ -41,19 +41,15 @@ const UserSchema = new mongoose.Schema({
         minlength: [9, "O NIF deve ter 9 dígitos"],
         maxlength: [9, "O NIF deve ter 9 dígitos"]
     },
-    distrito: {
-        type: String,
-        required: [true, "O distrito é obrigatório"]
-    },
-    concelho: {
-        type: String,
-        required: [true, "O concelho é obrigatório"]
-    },
     morada: {
         type: String,
         required: [true, "A morada é obrigatória"],
         minlength: [5, "Por favor, introduza uma morada válida"]
     },
+    cupoes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Coupon'
+    }],
     role: {
         type: String,
         enum: ['clientes', 'supermercados', 'estafetas', 'administrador'],

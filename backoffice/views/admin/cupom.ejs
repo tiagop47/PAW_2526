@@ -33,12 +33,14 @@
                                     <input type="text" name="codigo" class="form-control text-uppercase" required placeholder="Ex: PROMO26">
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label small">Cliente (Opcional)</label>
-                                    <select name="clienteId" class="form-select">
-                                        <option value="">Geral (Todos os Clientes)</option>
-                                        <% clientes.forEach(function(cli) { %>
-                                            <option value="<%= cli._id %>"><%= cli.nome %> (<%= cli.email %>)</option>
-                                        <% }) %>
+                                    <label class="form-label small">Localidade Alvo (Opcional)</label>
+                                    <select name="localidadeAlvo" class="form-select">
+                                        <option value="">Geral (Todas as Localidades)</option>
+                                        <% if (locals.localidades && localidades.length > 0) { %>
+                                            <% localidades.forEach(function(loc) { %>
+                                                <option value="<%= loc %>"><%= loc %></option>
+                                            <% }) %>
+                                        <% } %>
                                     </select>
                                 </div>
                                 <div class="row">
@@ -69,7 +71,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>Código</th>
-                                        <th>Cliente Associado</th>
+                                        <th>Localidade Associada</th>
                                         <th class="text-center">Desconto</th>
                                         <th class="text-center">Validade</th>
                                         <th class="text-center">Nº Usos</th>
@@ -87,7 +89,7 @@
                                         <tr>
                                             <td class="fw-bold"><%= cupao.codigo %></td>
                                             <td class="small text-muted">
-                                                <%= cupao.clienteId ? cupao.clienteId.nome : 'Global' %>
+                                                <%= cupao.localidadeAlvo ? cupao.localidadeAlvo : 'Global' %>
                                             </td>
                                             <td class="text-center fw-bold ">
                                                 <%= cupao.percentagemDesconto %>%

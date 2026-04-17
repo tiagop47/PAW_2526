@@ -323,25 +323,38 @@ adminService.getRegistosMensais = async function () {
 
 adminService.listarCupoes = async function (){
     return Coupon.find()
-        .populate('clienteId', 'nome email')
         .sort({ criadoEm: -1 });
 };
 
-adminService.getClientes = async function () {
-    return User.find({role: 'clientes'}).select('nome email');
-
+adminService.getLocalidadesSupermercados = async function () {
+    const localidades = await Supermarket.distinct('localizacao', { localizacao: { $nin: [null, ""] } });
+    return localidades;
 };
 
 adminService.criarCupao = async function (dados) {
-    if (!dados.clienteId || dados.clienteId.trim() === '') {
-        delete dados.clienteId;
+    if (!dados.localidadeAlvo || dados.localidadeAlvo.trim() === '') {
+        delete dados.localidadeAlvo;
     }
     
     if (dados.codigo) {
         dados.codigo = dados.codigo.toUpperCase().trim();
     }
 
-    return Coupon.create(dados);
+    const novoCupao = await Coupon.create(dados);
+
+    if (novoCupao.localidadeAlvo) {
+        await User.updateMany(
+            { role: 'clientes', morada: { $regex: new RegExp(novoCupao.localidadeAlvo, 'i') } },
+            { $push: { cupoes: novoCupao._id } }
+        );
+    } else {
+        await User.updateMany(
+            { role: 'clientes' },
+            { $push: { cupoes: novoCupao._id } }
+        );
+    }
+
+    return novoCupao;
 };
 
 

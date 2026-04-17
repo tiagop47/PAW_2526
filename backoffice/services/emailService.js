@@ -80,4 +80,39 @@ emailService.enviarEmailRecuperacao = async (email, token, host) => {
     }
 };
 
+emailService.enviarEmailBoasVindas = async (email, nome, codigoCupao) => {
+    try {
+        const transporter = await criarTransporter();
+        const info = await transporter.sendMail({
+            from: `"Supermercados PAW" <${config.EMAIL_USER || 'geral@paw.com'}>`,
+            to: email,
+            subject: "Bem-vindo! Aqui tens o teu presente 🎁",
+            text: `Olá ${nome}! Obrigado pelo teu registo. Tens 10% de desconto com o código: ${codigoCupao}`,
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                    <h2 style="color: #007bff; text-align: center;">Bem-vindo, ${nome}!</h2>
+                    <p>Ficamos muito felizes por te juntares a nós.</p>
+                    <p>Como oferta especial de boas-vindas, oferecemos um cupão de 10% de desconto para usares na tua primeira compra:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <span style="display: inline-block; background-color: #28a745; color: #ffffff; padding: 15px 30px; font-size: 1.5rem; font-weight: bold; border-radius: 5px; letter-spacing: 2px;">${codigoCupao}</span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #666;">Basta inserir este código no checkout. Válido para 1 utilização.</p>
+                </div>
+            `
+        });
+
+        if (!config.EMAIL_USER) {
+            console.log("------------------------------------------------------------");
+            console.log("CUPÃO DE BOAS VINDAS ENVIADO PARA: ", email);
+            console.log("CÓDIGO:", codigoCupao);
+            console.log(nodemailer.getTestMessageUrl(info));
+            console.log("------------------------------------------------------------");
+        }
+        return info;
+    } catch (err) {
+        console.error("ERRO NO ENVIO DO EMAIL DE BOAS VINDAS:", err.message);
+        return { messageId: 'fallback-console-id' };
+    }
+};
+
 module.exports = emailService;
