@@ -73,7 +73,8 @@
                                         <th class="text-center">Desconto</th>
                                         <th class="text-center">Validade</th>
                                         <th class="text-center">Nº Usos</th>
-                                        <th class="text-end">Estado</th>
+                                        <th class="text-center">Estado</th>
+                                        <th class="text-center">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -88,7 +89,7 @@
                                             <td class="small text-muted">
                                                 <%= cupao.clienteId ? cupao.clienteId.nome : 'Global' %>
                                             </td>
-                                            <td class="text-center fw-bold text-success">
+                                            <td class="text-center fw-bold ">
                                                 <%= cupao.percentagemDesconto %>%
                                             </td>
                                             <td class="text-center small">
@@ -97,10 +98,9 @@
                                             <td class="text-center small">
                                                 <%= cupao.utilizacoesAtuais %> / <%= cupao.limiteUtilizacoes %>
                                             </td>
-                                            <td class="text-end">
-                                                <!-- Usar Badges em vez de pintar a cor da Tabela -->
+                                            <td class="text-center">
                                                <% if (ativo) { %>
-                                                  <span class="badge bg-success">Ativo</span>
+                                                  <span class="badge bg-secondary">Ativo</span>
                                                <% } else { %>
                                                   <span class="badge bg-secondary">Inativo</span>
                                                <% } %>

@@ -42,6 +42,18 @@
                         <label class="form-label small fw-bold">Telemóvel</label>
                         <input type="number" id="telefone" name="telefone" class="form-control" value="<%= locals.dados?.telefone || '' %>" required>
                     </div>
+                    <div>
+                        <label class="form-label small fw-bold">Distrito</label>
+                        <select id="distrito" name="distrito" class="form-select" required>
+                            <option value="">Selecione o Distrito</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label small fw-bold">Concelho</label>
+                        <select id="concelho" name="concelho" class="form-select" required disabled>
+                             <option value="">Selecione primeiro o Distrito</option>
+                        </select>
+                    </div>
                     <div class="col-12">
                         <label class="form-label small fw-bold">Morada</label>
                         <input type="text" name="morada" class="form-control" value="<%= locals.dados?.morada || '' %>" required>

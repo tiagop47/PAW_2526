@@ -41,6 +41,14 @@ const UserSchema = new mongoose.Schema({
         minlength: [9, "O NIF deve ter 9 dígitos"],
         maxlength: [9, "O NIF deve ter 9 dígitos"]
     },
+    distrito: {
+        type: String,
+        required: [true, "O distrito é obrigatório"]
+    },
+    concelho: {
+        type: String,
+        required: [true, "O concelho é obrigatório"]
+    },
     morada: {
         type: String,
         required: [true, "A morada é obrigatória"],

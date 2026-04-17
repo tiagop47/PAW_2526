@@ -27,14 +27,14 @@ authService.verificarCaptcha = async function (recaptchaResponse) {
 
 authService.registarUtilizador = async function (userData) {
     const {
-        nome, email, password, nif, telefone, morada, role,
+        nome, email, password, nif, telefone, distrito, concelho, morada, role,
         latitude, longitude, horario, custoEntrega, raioAtuacao, descricaoLoja, metodosEntrega
     } = userData;
 
     const roleFinal = rolesPublicas.includes(role) ? role : "clientes";
 
     const novoUser = new User({
-        nome, email, password, nif, telefone, morada, role: roleFinal
+        nome, email, password, nif, telefone, distrito, concelho, morada, role: roleFinal
     });
 
     const userGuardado = await novoUser.save();
