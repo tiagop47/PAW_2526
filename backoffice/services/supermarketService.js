@@ -440,4 +440,9 @@ supermarketService.listarCategorias = async function () {
 };
 
 
+supermarketService.verificarEstadoAprovacao = async function (userId) {
+    const superMercado = await Supermarket.findOne({ userId });
+    return superMercado ? superMercado.estadoAprovacao : 'Pendente';
+};
+
 module.exports = supermarketService;

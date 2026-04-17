@@ -35,10 +35,9 @@
                         <input type="password" name="password" id="password" class="form-control" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold">NIF</label>
-                        <input type="number" name="nif" id="nif" class="form-control" value="<%= locals.dados?.nif || '' %>" required minlength="9" maxlength="9"  required>
-                    </div>
-                    <div class="col-md-6">
+                       <label class="form-label small fw-bold">NIF (Opcional)</label>
+                       <input type="number" name="nif" id="nif" class="form-control" value="<%= locals.dados?.nif || '' %>" minlength="9" maxlength="9">
+                    </div>                    <div class="col-md-6">
                         <label class="form-label small fw-bold">Telemóvel</label>
                         <input type="number" id="telefone" name="telefone" class="form-control" value="<%= locals.dados?.telefone || '' %>" required>
                     </div>

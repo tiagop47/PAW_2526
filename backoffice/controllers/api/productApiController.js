@@ -7,7 +7,6 @@ const productApiController = {};
  */
 productApiController.getAllProducts = async function (req, res) {
     try {
-        // O Angular envia ?supermercado=ID
         const { supermercado } = req.query;
 
         const produtos = await supermarketService.listarProdutosGeral(supermercado);

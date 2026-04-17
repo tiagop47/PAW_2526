@@ -34,10 +34,7 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 mongoose.connect(config.MONGODB_URI)
-    .then(() => {
-        console.log('Ligado ao MongoDB!');
-        require('./services/authService').inicializarAdmin();
-    })
+    .then(() => console.log('Ligado ao MongoDB!'))
     .catch(err => console.error('Erro MongoDB:', err));
 
 app.set('views', path.join(__dirname, 'views'));

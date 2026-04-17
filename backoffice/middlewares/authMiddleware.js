@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
-const Supermarket = require('../models/SupermarketModel'); 
 const config = require('../config/config');
+const supermarketService = require('../services/supermarketService');
 
 const JWT_SECRET = config.JWT_SECRET;
 
@@ -8,7 +8,6 @@ const DASHBOARDS = {
     administrador: "/admin/dashboard",
     supermercados: "/supermercado/dashboard",
     estafetas: "/estafeta/dashboard",
-    clientes: "/cliente/dashboard",
 };
 
 var authMiddleware = {};
@@ -84,21 +83,28 @@ authMiddleware.verificarRole = function (rolesPermitidas) {
  * Middleware — garante que o supermercado já foi aprovado.
  */
 authMiddleware.verificarAprovacaoSupermercado = async function (req, res, next) {
-    if (req.user && req.user.role === 'supermercados') {
-        try {
-            const superMercado = await Supermarket.findOne({ userId: req.user.id });
-            if (!superMercado || superMercado.estadoAprovacao !== 'Aprovado') {
-                return res.status(403).render('supermercado/aguardaAprovacao',
-                    {
-                        title: 'Aguarda Aprovação',
-                        estado: superMercado ? superMercado.estadoAprovacao : 'Pendente'
-                    });
-            }
-        } catch (err) {
-            return res.status(500).send('Erro ao verificar aprovação.');
-        }
+    if (!req.user || req.user.role !== 'supermercados') {
+        return next();
     }
-    next();
+
+    if (['/perfil', '/editar'].includes(req.path)) {
+        return next();
+    }
+
+    try {
+        const supermercado = await supermarketService.getSupermercado(req.user.id);
+        const estado = supermercado ? supermercado.estadoAprovacao : 'Pendente';
+
+        if (estado === 'Aprovado') return next();
+
+        return res.render('supermercado/aguardaAprovacao', {
+            title: 'Aguarda Aprovação',
+            estado,
+            user: req.user
+        });
+    } catch (e) {
+        next(e);
+    }
 };
 
 module.exports = authMiddleware;

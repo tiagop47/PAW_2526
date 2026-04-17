@@ -1,6 +1,9 @@
 const authService = require('../services/authService');
 const config = require('../config/config');
 const { getDashboardUrl } = require('../middlewares/authMiddleware');
+const { rolesBackoffice } = require('../public/javascript/userValidator');
+
+authService.inicializarAdmin();
 
 var authController = {};
 
@@ -20,7 +23,7 @@ authController.registar = async function (req, res) {
     try {
         await authService.verificarCaptcha(req.body["g-recaptcha-response"]);
         await authService.registarUtilizador(req.body);
-        
+
         res.redirect("/auth/login");
     } catch (err) {
         res.render("loginRegisto/registar", {
@@ -31,10 +34,18 @@ authController.registar = async function (req, res) {
     }
 };
 
-authController.login = async function (req, res) {
+authController.login = async function (req, res, next) {
     try {
         const { email, password } = req.body;
         const { token, role } = await authService.autenticarUtilizador(email, password);
+
+        if (!rolesBackoffice.includes(role)) {
+            const err = new Error('Acesso Negado');
+            err.status = 403;
+            err.tituloErro = 'Acesso Negado';
+            err.detalheErro = 'Esta plataforma é reservada a administradores, supermercados e estafetas.';
+            return next(err);
+        }
 
         res.cookie('token', token, {
             httpOnly: true,
@@ -60,24 +71,24 @@ authController.logout = function (req, res) {
 authController.processarRecuperarPassword = async function (req, res) {
     try {
         const { email } = req.body;
-        
-        const { user, token } = await authService.gerarTokenRecuperacao(email);
-        await authService.enviarEmailRecuperacao(email, token, req);
 
-        res.render("loginRegisto/recuperarPassword", { 
+        const token = await authService.gerarTokenRecuperacao(email);
+        await authService.enviarEmailRecuperacao(email, token, req.headers.host);
+
+        res.render("loginRegisto/recuperarPassword", {
             successMessage: `Foi enviado um email para ${email} com as instruções.`,
-            errorMessage: null 
+            errorMessage: null
         });
     } catch (err) {
-        res.render("loginRegisto/recuperarPassword", { 
+        res.render("loginRegisto/recuperarPassword", {
             errorMessage: err.message,
-            successMessage: null 
+            successMessage: null
         });
     }
 }
 
-authController.exibirResetPassword = function(req, res){
-    res.render("loginRegisto/resetPassword", { 
+authController.exibirResetPassword = function (req, res) {
+    res.render("loginRegisto/resetPassword", {
         token: req.params.token,
         errorMessage: null
     });
@@ -91,15 +102,15 @@ authController.processarResetPassword = async function (req, res) {
         if (password !== confirmPassword) {
             throw new Error("As palavras-passe não coincidem.");
         }
-        
+
         await authService.redefinirPassword(token, password);
-        
-        res.render("loginRegisto/login", { 
+
+        res.render("loginRegisto/login", {
             errorMessage: null,
             successMessage: "Palavra-passe alterada com sucesso! Já podes iniciar sessão."
         });
     } catch (err) {
-        res.render("loginRegisto/resetPassword", { 
+        res.render("loginRegisto/resetPassword", {
             token: req.params.token,
             errorMessage: err.message
         });

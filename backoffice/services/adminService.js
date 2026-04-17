@@ -32,7 +32,8 @@ adminService.listarCategorias = async function () {
 };
 
 adminService.criarCategoria = async function (dados) {
-    return Category.create(dados);
+    const { nome, descricao } = dados;
+    return Category.create({ nome, descricao });
 };
 
 adminService.eliminarCategoria = async function (id) {
@@ -60,7 +61,7 @@ adminService.getDashboardStats = async function () {
         User.countDocuments({ role: 'estafetas' }),
         Supermarket.countDocuments({ estadoAprovacao: 'Pendente' }),
         Supermarket.countDocuments({ estadoAprovacao: 'Aprovado' }),
-        Supermarket.countDocuments({ estadoAprovacao: 'Bloqueado'}),
+        Supermarket.countDocuments({ estadoAprovacao: 'Bloqueado' }),
         Product.countDocuments(),
         Order.countDocuments(),
         Order.aggregate([
@@ -117,7 +118,10 @@ adminService.alternarBloqueio = async function (id) {
         { estadoAprovacao: 'Aprovado' },
         { new: true }
     );
-    if (desbloqueado) return desbloqueado;
+
+    if (desbloqueado) {
+        return desbloqueado;
+    }
 
     return Supermarket.findOneAndUpdate(
         { _id: id, estadoAprovacao: { $ne: 'Bloqueado' } },
@@ -163,14 +167,19 @@ adminService.getUserByIdSemPassword = async function (id) {
 };
 
 adminService.atualizarUserById = async function (id, dados) {
-    return User.findByIdAndUpdate(id, dados, {
-        new: true,
-        runValidators: true
-    });
+    return User.findByIdAndUpdate(id, dados, { new: true, runValidators: true });
+};
+
+adminService.getSupermercadoById = async function (id) {
+    return Supermarket.findById(id);
+};
+
+adminService.getCategoriaById = async function (id) {
+    return Category.findById(id);
 };
 
 adminService.getMercadosAtivos = async function (contador, limite) {
-    const total = await Supermarket.countDocuments({ estadoAprovacao: { $in: ['Aprovado', 'Bloqueado'] }});
+    const total = await Supermarket.countDocuments({ estadoAprovacao: { $in: ['Aprovado', 'Bloqueado'] } });
     const supermercados = await Supermarket.find({ estadoAprovacao: { $in: ['Aprovado', 'Bloqueado'] } })
         .populate('userId')
         .skip(Number(contador))
@@ -193,7 +202,7 @@ adminService.getTodosMercadosAtivos = async function () {
 adminService.getEncomendasPaginadas = async function (pagina, limite) {
     const contador = (pagina - 1) * limite;
     const total = await Order.countDocuments();
-    
+
     const encomendas = await Order.find()
         .populate('clienteId', 'nome email')
         .populate('supermercadoId', 'nome')
@@ -359,11 +368,11 @@ adminService.getFaturacaoPorZona = async function () {
     const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     const zonasMap = {};
     const labelsSet = new Set();
-    
+
     resultado.forEach(r => {
         const labelText = meses[r._id.mes - 1] + ' ' + r._id.ano;
         labelsSet.add(labelText);
-        
+
         const zona = r._id.zona || 'Outras Zonas';
         if (!zonasMap[zona]) zonasMap[zona] = {};
         zonasMap[zona][labelText] = r.total;
@@ -371,7 +380,7 @@ adminService.getFaturacaoPorZona = async function () {
 
     const labels = Array.from(labelsSet);
     const colors = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6f42c1', '#fd7e14', '#20c997', '#e83e8c'];
-    
+
     const datasets = Object.keys(zonasMap).map((zona, index) => {
         return {
             label: zona,
@@ -391,7 +400,7 @@ adminService.getFaturacaoPorZona = async function () {
  * Gestão de cupons de desconto
  */
 
-adminService.listarCupoes = async function (){
+adminService.listarCupoes = async function () {
     return Coupon.find()
         .sort({ criadoEm: -1 });
 };
@@ -405,7 +414,7 @@ adminService.criarCupao = async function (dados) {
     if (!dados.localidadeAlvo || dados.localidadeAlvo.trim() === '') {
         delete dados.localidadeAlvo;
     }
-    
+
     if (dados.codigo) {
         dados.codigo = dados.codigo.toUpperCase().trim();
     }
@@ -414,7 +423,7 @@ adminService.criarCupao = async function (dados) {
 
     if (novoCupao.localidadeAlvo) {
         await User.updateMany(
-            { role: 'clientes', morada: { $regex: new RegExp(novoCupao.localidadeAlvo, 'i') } },
+            { role: 'clientes', morada: novoCupao.localidadeAlvo },
             { $push: { cupoes: novoCupao._id } }
         );
     } else {

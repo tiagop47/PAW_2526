@@ -14,7 +14,9 @@ router.get('/supermercados/pendentes', adminController.listarPendentes);
 router.post('/supermercados/aprovar/:supermarketId', adminController.aprovarSupermercado);
 router.post('/supermercados/rejeitar/:supermarketId', adminController.rejeitarSupermercado);
 router.post('/supermercados/bloquear/:supermarketId', adminController.bloquearSupermercado);
-router.post('/utilizadores/eliminar/:id', adminController.eliminarUser);
+router.post('/utilizadores/:userId/eliminar', adminController.eliminarUser);
+router.get('/utilizadores/:userId/editar', adminController.exibirEditarUser);
+router.post('/utilizadores/:userId/editar', adminController.editarUser);
 
 // Monitorização Global
 router.get('/encomendas', adminController.monitorizarEncomendas);
@@ -23,23 +25,65 @@ router.get('/encomendas/:orderId/fatura', adminController.exibirFatura);
 // Gestão de Categorias
 router.get('/categorias', adminController.exibirCategorias);
 router.post('/categorias', adminController.criarCategoria);
-router.post('/categorias/eliminar/:id', adminController.eliminarCategoria);
+router.post('/categorias/eliminar/:categoriaId', adminController.eliminarCategoria);
 
 //Gestão de Cupões
 // Gestão de Cupões
 router.get('/cupoes', adminController.exibirCupoes);
 router.post('/cupoes', adminController.criarCupao);
 
-/**
- * Middleware de Parâmetro: Carrega o utilizador quando :userId está no URL.
- */
 router.param('userId', async (req, res, next, id) => {
     try {
         const user = await adminService.getUserByIdSemPassword(id);
         if (!user) {
             return res.status(404).send('Utilizador não encontrado.');
         }
+
         req.targetUser = user;
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.param('supermarketId', async (req, res, next, id) => {
+    try {
+        const supermercado = await adminService.getSupermercadoById(id);
+        if (!supermercado) {
+            return res.status(404).send('Supermercado não encontrado.');
+        }
+
+        req.targetSupermercado = supermercado;
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.param('orderId', async (req, res, next, id) => {
+    try {
+        const encomenda = await adminService.getEncomendaPorId(id);
+        if (!encomenda) {
+            return res.status(404).send('Encomenda não encontrada.');
+        }
+
+        req.targetEncomenda = encomenda;
+
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.param('categoriaId', async (req, res, next, id) => {
+    try {
+        const categoria = await adminService.getCategoriaById(id);
+        if (!categoria) {
+            return res.status(404).send('Categoria não encontrada.');
+        }
+
+        req.targetCategoria = categoria;
+
         next();
     } catch (err) {
         next(err);

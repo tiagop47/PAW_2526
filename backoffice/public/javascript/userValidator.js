@@ -4,7 +4,8 @@
  */
 var userValidator = {};
 
-userValidator.rolesPublicas = ['estafetas','supermercados'];
+userValidator.rolesPublicas = ['clientes', 'estafetas', 'supermercados'];
+userValidator.rolesBackoffice = ['administrador', 'supermercados', 'estafetas'];
 userValidator.EMAIL_REGEX = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i;
 userValidator.PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 

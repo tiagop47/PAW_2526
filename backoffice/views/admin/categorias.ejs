@@ -60,7 +60,7 @@
                                                     <td class="text-muted small"><%= cat.descricao || '—' %></td>
                                                     <td class="text-center"><%= cat.totalProdutos %></td>
                                                     <td class="text-end">
-                                                        <form action="/admin/categorias/eliminar/<%= cat._id %>" method="POST">
+                                                        <form action="/admin/categorias/eliminar/<%= cat._id %>" method="POST" style="display:inline;">
                                                             <button type="submit" class="btn btn-sm btn-light border">Eliminar</button>
                                                         </form>
                                                     </td>

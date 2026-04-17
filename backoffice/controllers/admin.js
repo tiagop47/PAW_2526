@@ -16,7 +16,16 @@ adminController.exibirDashboard = async function (req, res) {
     } catch (err) {
         res.render('admin/dashboard', {
             title: 'Painel Admin',
-            stats: { totalUsers: 0, totalEstafetas: 0, pendentes: 0, ativos: 0, bloqueados: 0, totalProdutos: 0, totalEncomendas: 0, valorTotal: 0 },
+            stats: {
+                totalUsers: 0,
+                totalEstafetas: 0,
+                pendentes: 0,
+                ativos: 0,
+                bloqueados: 0,
+                totalProdutos: 0,
+                totalEncomendas: 0,
+                valorTotal: 0
+            },
             registosMensais: []
         });
     }
@@ -24,25 +33,58 @@ adminController.exibirDashboard = async function (req, res) {
 
 
 /**
- * Elimina um User. 
+ * Exibe formulário de edição de utilizador.
+ */
+adminController.exibirEditarUser = function (req, res) {
+    if (req.targetUser.role === 'administrador') {
+        return res.status(403).send('Não é permitido editar o administrador.');
+    }
+    res.render('admin/editarUtilizador', {
+        title: 'Editar Utilizador',
+        user: req.targetUser,
+        errorMessage: null
+    });
+};
+
+/**
+ * Processa edição de utilizador.
+ */
+adminController.editarUser = async function (req, res) {
+    try {
+        const { nome, email, telefone, nif, morada, role } = req.body;
+        const roleFinal = role === 'administrador' ? req.targetUser.role : role;
+        await adminService.atualizarUserById(req.targetUser._id, { nome, email, telefone, nif, morada, role: roleFinal });
+        res.redirect('/admin/exibirUtilizadores');
+    } catch (err) {
+        res.render('admin/editarUtilizador', {
+            title: 'Editar Utilizador',
+            user: req.targetUser,
+            errorMessage: err.message
+        });
+    }
+};
+
+/**
+ * Elimina um User.
  */
 adminController.eliminarUser = async function (req, res) {
-    try{
-        await adminService.eliminarUser(req.params.id);
+    try {
+        if (req.targetUser.role === 'administrador') {
+            return res.status(403).send('Não é permitido eliminar o administrador.');
+        }
+        await adminService.eliminarUser(req.targetUser._id);
         res.redirect('/admin/exibirUtilizadores');
-    } catch(err){
+    } catch (err) {
         res.status(500).send('Erro ao eliminar o utilizador');
     }
 }
-
-
 
 /**
  * Aprova um supermercado.
  */
 adminController.aprovarSupermercado = async function (req, res) {
     try {
-        await adminService.aprovarSupermercadoById(req.params.supermarketId);
+        await adminService.aprovarSupermercadoById(req.targetSupermercado._id);
         res.redirect('/admin/supermercados/pendentes');
     } catch (err) {
         res.status(500).send('Erro ao aprovar supermercado.');
@@ -54,7 +96,7 @@ adminController.aprovarSupermercado = async function (req, res) {
  */
 adminController.rejeitarSupermercado = async function (req, res) {
     try {
-        await adminService.rejeitarSupermercadoById(req.params.supermarketId);
+        await adminService.rejeitarSupermercadoById(req.targetSupermercado._id);
         res.redirect('/admin/supermercados/pendentes');
     } catch (err) {
         res.status(500).send('Erro ao rejeitar supermercado.');
@@ -65,11 +107,9 @@ adminController.rejeitarSupermercado = async function (req, res) {
  * Bloquear Supermercado
  */
 
-adminController.bloquearSupermercado = async function (req, res){
+adminController.bloquearSupermercado = async function (req, res) {
     try {
-        const supermarketId = req.params.supermarketId
-        
-        await adminService.alternarBloqueio(supermarketId);
+        await adminService.alternarBloqueio(req.targetSupermercado._id);
         res.redirect('/admin/supermercados/ativos');
 
     } catch (err) {
@@ -188,7 +228,7 @@ adminController.criarCategoria = async function (req, res) {
 
 adminController.eliminarCategoria = async function (req, res) {
     try {
-        await adminService.eliminarCategoria(req.params.id);
+        await adminService.eliminarCategoria(req.targetCategoria._id);
         res.redirect('/admin/categorias');
     } catch (err) {
         // Redireciona com erro (ex: categoria ainda tem produtos)
@@ -221,28 +261,21 @@ adminController.monitorizarEncomendas = async function (req, res) {
  * Exibe a fatura de uma encomenda para o administrador.
  */
 adminController.exibirFatura = async function (req, res) {
-    try {
-        const encomenda = await adminService.getFaturaEncomenda(req.params.orderId);
+    const encomenda = req.targetEncomenda;
 
-        res.render('supermercado/fatura', {
-            title: 'Fatura ' + encomenda.faturaNumero,
-            encomenda,
-            supermercado: encomenda.supermercadoId,
-            layout: false
+    if (!encomenda.faturaNumero) {
+        return res.status(404).render('error', {
+            tituloErro: 'Fatura Indisponível',
+            detalheErro: 'Esta encomenda ainda não tem uma fatura gerada.'
         });
-    } catch (err) {
-        if (err.codigo === 'NAO_ENCONTRADA') {
-            return res.status(404).send(err.message);
-        }
-        if (err.codigo === 'SEM_FATURA') {
-            return res.status(404).render('error', {
-                tituloErro: 'Fatura Indisponível',
-                detalheErro: err.message
-            });
-        }
-        console.error(err);
-        res.status(500).send('Erro ao carregar fatura.');
     }
+
+    res.render('supermercado/fatura', {
+        title: 'Fatura ' + encomenda.faturaNumero,
+        encomenda,
+        supermercado: encomenda.supermercadoId,
+        layout: false
+    });
 };
 
 
@@ -256,10 +289,10 @@ adminController.exibirCupoes = async function (req, res) {
             adminService.listarCupoes(),
             adminService.getLocalidadesSupermercados()
         ]);
-        res.render('admin/cupom', { 
-            title: 'Gestão de Cupões', 
-            cupoes, 
-            localidades 
+        res.render('admin/cupom', {
+            title: 'Gestão de Cupões',
+            cupoes,
+            localidades
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar sistema de cupões: ' + err.message);

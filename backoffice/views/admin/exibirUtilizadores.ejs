@@ -53,9 +53,16 @@
                                         </span>
                                     </td>
                                     <td class="fw-bold">
-                                        <form action="/admin/utilizadores/eliminar/<%= utilizador._id %>" method="POST" style="display:inline;">
-                                            <button type="submit" class="btn btn-sm btn-light border text-dark w-100" style="max-width: 110px;">Eliminar</button>
-                                        </form>
+                                        <% if (utilizador.role !== 'administrador') { %>
+                                        <div class="d-flex gap-1">
+                                            <a href="/admin/utilizadores/<%= utilizador._id %>/editar" class="btn btn-sm btn-light border text-dark">Editar</a>
+                                            <form action="/admin/utilizadores/<%= utilizador._id %>/eliminar" method="POST" style="display:inline;">
+                                                <button type="submit" class="btn btn-sm btn-light border text-dark">Eliminar</button>
+                                            </form>
+                                        </div>
+                                        <% } else { %>
+                                            <span class="text-muted small">—</span>
+                                        <% } %>
                                     </td>
 
                                 </tr>
