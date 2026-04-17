@@ -1,38 +1,63 @@
-<div class="product-detail-container">
-  <a routerLink="/" class="back-link">← Voltar à Lista</a>
+<div class="detail-page-wrapper">
+  <div class="header-actions">
+    <a routerLink="/" class="btn-back">← Voltar ao Início</a>
+  </div>
 
-  <div *ngIf="product" class="product-info">
-    <img
-      [src]="'http://localhost:3000' + product.imagem"
-      [alt]="product.nome"
-      class="product-image"
-    />
-
-    <h1>{{ product.nome }}</h1>
-
-    <div class="description" *ngIf="product.descricao">
-      {{ product.descricao }}
+  <div *ngIf="product" class="product-card-detail">
+    <div class="product-image-container">
+      <img
+        [src]="'http://localhost:3000' + product.imagem"
+        [alt]="product.nome"
+        class="product-image"
+      />
     </div>
 
-    <span class="price">{{ product.preco | currency: 'EUR' }}</span>
+    <div class="product-info-container">
+      <div class="product-header">
+        <span class="category-badge">{{ product.categoriaId.nome }}</span>
+        <h1>{{ product.nome }}</h1>
+      </div>
 
-    <div class="meta">
-      <p><strong>Categoria:</strong> {{ product.categoriaId.nome }}</p>
-      <p *ngIf="product.categoriaId.descricao">
-        <strong>Sobre a Categoria:</strong><br />
-        {{ product.categoriaId.descricao }}
-      </p>
-      <p *ngIf="product.codigoBarras">
-        <strong>Código de Barras:</strong> {{ product.codigoBarras }}
-      </p>
+      <div class="price-section">
+        <span class="price">{{ product.preco | currency: 'EUR' }}</span>
+        <span class="old-price" *ngIf="product.precoAntigo">{{ product.precoAntigo | currency: 'EUR' }}</span>
+      </div>
+
+      <div class="description-section" *ngIf="product.descricao">
+        <h3>Descrição</h3>
+        <p>{{ product.descricao }}</p>
+      </div>
+
+      <div class="meta-section">
+        <div class="meta-item" *ngIf="product.categoriaId.descricao">
+          <strong>Sobre a Categoria</strong>
+          <p>{{ product.categoriaId.descricao }}</p>
+        </div>
+
+        <div class="meta-item" *ngIf="product.stockDisponivel !== undefined">
+          <strong>Stock Disponível</strong>
+          <p>{{ product.stockDisponivel }} unidades</p>
+        </div>
+
+        <div class="meta-item barcode-wrapper" *ngIf="product.codigoBarras">
+          <strong>Código de Barras</strong>
+          <div class="barcode-box">
+            <svg [appBarcode]="product.codigoBarras"></svg>
+          </div>
+        </div>
+      </div>
+      
+      <div class="action-section">
+         <button class="btn-primary">Adicionar ao Carrinho</button>
+      </div>
     </div>
   </div>
 
-  <div *ngIf="loading" class="loading">
-    Carregando detalhes do produto...
+  <div *ngIf="loading" class="empty-state">
+    <p>A carregar detalhes do produto...</p>
   </div>
 
-  <div *ngIf="error" class="error">
-    {{ error }}
+  <div *ngIf="error" class="empty-state">
+    <p>{{ error }}</p>
   </div>
 </div>

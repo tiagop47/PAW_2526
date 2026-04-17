@@ -1,20 +1,47 @@
-<div class="home-hero" style="text-align: center; padding: 50px 20px; background: #f4f7f6;">
-  <h1>Bem-vindo à Loja PAW</h1>
-  <p style="font-size: 1.2rem; color: #666;">Selecione um supermercado para ver as ofertas disponíveis:</p>
-  
-  <div class="supermarket-grid" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 30px;">
-    <div 
-      *ngFor="let s of supermarkets()" 
-      (click)="select(s._id)"
-      style="width: 250px; padding: 20px; border: 1px solid #ddd; border-radius: 12px; background: white; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"
-      onmouseover="this.style.transform='scale(1.05)'"
-      onmouseout="this.style.transform='scale(1)'"
-    >
-      <h3 style="margin-bottom: 10px; color: #2c3e50;">{{ s.nome }}</h3>
-      <p style="font-size: 0.9rem; color: #7f8c8d;">{{ s.localizacao }}</p>
-      <button style="margin-top: 15px; width: 100%; padding: 10px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer;">
-        Entrar na Loja
-      </button>
+<div class="home-container">
+  <div class="hero-section">
+    <h1>Descubra os Supermercados</h1>
+    <p>Escolha a sua zona e encontre as ofertas.</p>
+
+    <div class="search-container">
+      <select 
+        class="search-select" 
+        [ngModel]="selectedZone()"
+        (ngModelChange)="selectedZone.set($event)"
+      >
+        <option value="">Todas as Localidades</option>
+        <option *ngFor="let zone of availableZones()" [value]="zone">{{ zone }}</option>
+      </select>
     </div>
+  </div>
+  
+  <div class="zones-container">
+    <div *ngFor="let zoneGroup of supermarketsByZone()" class="zone-section">
+      <h2 class="zone-title">{{ zoneGroup.zone }}</h2>
+      
+      <div class="supermarket-grid">
+        <div 
+          *ngFor="let s of zoneGroup.supermarkets" 
+          (click)="select(s._id)"
+          class="supermarket-card"
+        >
+          <div class="card-content">
+            <h3>{{ s.nome }}</h3>
+            <p class="description" *ngIf="s.descricao">{{ s.descricao }}</p>
+            <div class="delivery-methods" *ngIf="s.metodosEntrega && s.metodosEntrega.length">
+              <span *ngFor="let method of s.metodosEntrega" class="badge">{{ method }}</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn-enter">Ver Produtos</button>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div *ngIf="supermarketsByZone().length === 0" class="empty-state">
+    Nenhuma localidade encontrada com essa pesquisa.
   </div>
 </div>

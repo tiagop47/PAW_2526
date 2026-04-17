@@ -1,0 +1,21 @@
+<nav class="navbar">
+  <div class="nav-brand">
+    <a routerLink="/" class="logo">
+      <span class="logo-text">Loja PAW</span>
+    </a>
+  </div>
+  
+  <div class="menu-toggle" (click)="toggleMenu()">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+  </div>
+
+  <ul class="nav-links" [class.active]="isMenuOpen">
+    <li><a routerLink="/" (click)="isMenuOpen = false">Início</a></li>
+    <li><a routerLink="/sobre" (click)="isMenuOpen = false">Sobre Nós</a></li>
+    <li class="user-actions">
+      <button class="btn-login">Entrar</button>
+    </li>
+  </ul>
+</nav>
