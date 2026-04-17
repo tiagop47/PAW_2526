@@ -1,14 +1,20 @@
-<div class="product-container" style="border: 2px solid green; min-height: 200px;">
-  <h2 style="color: blue;">Lista de Produtos ({{ products().length }})</h2>
+<div class="product-container">
+  <h2>Produtos Disponíveis ({{ products().length }})</h2>
 
-  <div *ngIf="loading()" class="info">Carregando produtos...</div>
+  <div *ngIf="loading()" class="info">A carregar produtos...</div>
   <div *ngIf="error()" class="error">{{ error() }}</div>
 
-  <div *ngIf="!loading() && !error()">
-    <div *ngFor="let product of products()" class="product-item" style="border: 1px solid red; margin: 10px; padding: 10px;">
-      <h3>{{ product.nome }}</h3>
-      <p>{{ product.preco | currency:'EUR' }}</p>
-      <button [routerLink]="['/product', product._id]">Ver Detalhes</button>
+  <div *ngIf="!loading() && !error()" class="product-grid">
+    <div *ngFor="let product of products()" class="product-card">
+      <div class="image-placeholder">
+        <img [src]="'http://localhost:3000' + product.imagem" [alt]="product.nome" *ngIf="product.imagem" />
+      </div>
+      <div class="product-details">
+        <h3>{{ product.nome }}</h3>
+        <p class="category">{{ product.categoriaId.nome }}</p>
+        <p class="price">{{ product.preco | currency:'EUR' }}</p>
+        <button [routerLink]="['/product', product._id]" class="view-btn">Ver Detalhes</button>
+      </div>
     </div>
   </div>
 
