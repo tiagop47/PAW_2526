@@ -108,8 +108,16 @@ supermarketService.obterProdutos = async function (supermercadoId) {
     return Product.find({ supermercadoId }).populate('categoriaId');
 };
 
-supermarketService.obterProdutoPorId = async function (supermercadoId, productId) {
-    return Product.findOne({ _id: productId, supermercadoId }).populate('categoriaId');
+/**
+ * Obter um único produto pelo ID.
+ * Se passar supermercadoId, garante que o produto pertence a esse supermercado (Segurança no Backoffice).
+ */
+supermarketService.obterProdutoPorId = async function (id, supermercadoId = null) {
+    const filtro = { _id: id };
+    if (supermercadoId) {
+        filtro.supermercadoId = supermercadoId;
+    }
+    return Product.findOne(filtro).populate('categoriaId');
 };
 
 supermarketService.criarProduto = async function (supermercadoId, productData) {
@@ -178,9 +186,7 @@ supermarketService.listarProdutosGeral = async function (supermercadoId) {
 /**
  * Obter um único produto pelo ID (para a página de detalhes)
  */
-supermarketService.obterProdutoPorId = async function (id) {
-    return Product.findById(id).populate('categoriaId', 'nome');
-};
+// (Removido por duplicação, unificado acima)
 
 supermarketService.pesquisarProdutos = async function (supermercadoId, { q, categoriaId }) {
     const filtro = { supermercadoId };
@@ -266,7 +272,6 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
 
     const estadoAnterior = order.estado;
 
-    // Regra de negócio: cliente só pode cancelar até 5 minutos após confirmação
     if (estado === 'cancelada') {
 
         const agora = Date.now();

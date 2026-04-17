@@ -57,7 +57,8 @@ router.post('/vendas', supermarketController.registarVenda);
  */
 router.param('productId', async (req, res, next, id) => {
     try {
-        const produto = await supermarketService.obterProdutoPorId(req.supermercado._id, id);
+        // Agora usamos a função unificada passando o ID do supermercado para segurança
+        const produto = await supermarketService.obterProdutoPorId(id, req.supermercado._id);
         if (!produto) {
             return res.status(404).send('Produto não encontrado');
         }
