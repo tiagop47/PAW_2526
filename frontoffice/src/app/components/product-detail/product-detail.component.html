@@ -1,0 +1,38 @@
+<div class="product-detail-container">
+  <a routerLink="/" class="back-link">← Voltar à Lista</a>
+
+  <div *ngIf="product" class="product-info">
+    <img
+      [src]="'http://localhost:3000' + product.imagem"
+      [alt]="product.nome"
+      class="product-image"
+    />
+
+    <h1>{{ product.nome }}</h1>
+
+    <div class="description" *ngIf="product.descricao">
+      {{ product.descricao }}
+    </div>
+
+    <span class="price">{{ product.preco | currency: 'EUR' }}</span>
+
+    <div class="meta">
+      <p><strong>Categoria:</strong> {{ product.categoriaId.nome }}</p>
+      <p *ngIf="product.categoriaId.descricao">
+        <strong>Sobre a Categoria:</strong><br />
+        {{ product.categoriaId.descricao }}
+      </p>
+      <p *ngIf="product.codigoBarras">
+        <strong>Código de Barras:</strong> {{ product.codigoBarras }}
+      </p>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    Carregando detalhes do produto...
+  </div>
+
+  <div *ngIf="error" class="error">
+    {{ error }}
+  </div>
+</div>

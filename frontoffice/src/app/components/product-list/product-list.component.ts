@@ -22,7 +22,6 @@ export class ProductListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Lemos o 'supermarketId' que definimos nas rotas
     const id = this.route.snapshot.paramMap.get('supermarketId');
     
     if (id) {

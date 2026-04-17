@@ -27,7 +27,6 @@ export class Home implements OnInit {
   }
 
   select(id: string): void {
-    // Já não precisamos de guardar no serviço, passamos pela URL!
     this.router.navigate(['/products', id]);
   }
 }
