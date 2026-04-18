@@ -2,6 +2,7 @@ const Product = require('../models/ProductModel');
 const Supermarket = require('../models/SupermarketModel');
 const Order = require('../models/OrderModel');
 const User = require('../models/UserModel');
+const Avaliacao = require('../models/AvaliacaoModel');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const config = require('../config/config');
@@ -11,7 +12,7 @@ const Category = require('../models/CategoryModel');
 const supermarketService = {};
 
 supermarketService.obterDadosDashboard = async function (supermercadoId) {
-    const [totalProdutos, totalEncomendas, encomendas, vendasStats, top5Produtos] = await Promise.all([
+    const [totalProdutos, totalEncomendas, encomendas, vendasStats, top5Produtos, avaliacaoStats, encomendasPendentes] = await Promise.all([
         Product.countDocuments({ supermercadoId }),
         Order.countDocuments({ supermercadoId, estado: { $ne: 'cancelada' } }),
         Order.find({ supermercadoId })
@@ -60,33 +61,37 @@ supermarketService.obterDadosDashboard = async function (supermercadoId) {
                     faturado: 1
                 }
             }
-        ])
+        ]),
+        Avaliacao.aggregate([
+            { $match: { supermercadoId: new mongoose.Types.ObjectId(supermercadoId) } },
+            { $group: { _id: null, media: { $avg: '$notaSupermercado' }, total: { $sum: 1 } } }
+        ]),
+        Order.countDocuments({ supermercadoId, estado: 'pendente' })
     ]);
+
+    const vendasTotais = vendasStats.length > 0 ? vendasStats[0].total : 0;
+    const valorMedio = totalEncomendas > 0 ? parseFloat((vendasTotais / totalEncomendas).toFixed(2)) : 0;
 
     return {
         totalProdutos,
         totalEncomendas,
-        vendasTotais: vendasStats.length > 0 ? vendasStats[0].total : 0,
+        vendasTotais,
+        valorMedio,
+        encomendasPendentes,
         encomendas,
-        top5Produtos
+        top5Produtos,
+        mediaAvaliacao: avaliacaoStats.length > 0 ? parseFloat(avaliacaoStats[0].media.toFixed(1)) : null,
+        totalAvaliacoes: avaliacaoStats.length > 0 ? avaliacaoStats[0].total : 0
     };
 };
 
 supermarketService.getAllSupermercados = async function () {
-    const supermercado = await Supermarket.find().select('_id nome descricao localizacao metodosEntrega');
-
-    if (!supermercado) {
-        throw new Error('Supermercado não encontrado');
-    }
+    const supermercado = await Supermarket.find({ estadoAprovacao: 'Aprovado' }).select('_id nome descricao localizacao localizacaoGeo custoEntregaPorMetodo');
     return supermercado;
 }
 
 supermarketService.getSupermercado = async function (userId) {
-    const supermercado = await Supermarket.findOne({ userId }).populate('userId', 'nif');
-    if (!supermercado) {
-        throw new Error('Supermercado não encontrado');
-    }
-    return supermercado;
+    return Supermarket.findOne({ userId }).populate('userId', 'nif');
 };
 
 supermarketService.obterProdutos = async function (supermercadoId) {
@@ -168,11 +173,6 @@ supermarketService.listarProdutosGeral = async function (supermercadoId) {
         .populate('categoriaId', 'nome');
 };
 
-/**
- * Obter um único produto pelo ID (para a página de detalhes)
- */
-// (Removido por duplicação, unificado acima)
-
 supermarketService.pesquisarProdutos = async function (supermercadoId, { q, categoriaId }) {
     const filtro = { supermercadoId };
 
@@ -215,12 +215,8 @@ supermarketService.verificarStock = async function (supermercadoId, itens) {
 
 };
 
-supermarketService.obterProdutosDisponiveis = async function (supermercadoId) {
-    return Product.find({ supermercadoId, stockDisponivel: { $gt: 0 } });
-};
-
 supermarketService.atualizarSupermercado = async function (supermercadoId, dadosSupermercado) {
-    const { latitude, longitude } = dadosSupermercado;
+    const { latitude, longitude, custoEntregaPorMetodo } = dadosSupermercado;
 
     if (latitude && longitude) {
         dadosSupermercado.localizacaoGeo = {
@@ -229,16 +225,15 @@ supermarketService.atualizarSupermercado = async function (supermercadoId, dados
         };
     }
 
-    if (dadosSupermercado.metodosEntrega) {
-        dadosSupermercado.metodosEntrega = Array.isArray(dadosSupermercado.metodosEntrega)
-            ? dadosSupermercado.metodosEntrega
-            : [dadosSupermercado.metodosEntrega];
+    if (custoEntregaPorMetodo) {
+        // Se a chave não vier no req.body (input disabled), fica null no modelo
+        dadosSupermercado.custoEntregaPorMetodo = {
+            levantamento_loja: custoEntregaPorMetodo.levantamento_loja !== undefined ? (parseFloat(custoEntregaPorMetodo.levantamento_loja) || 0) : null,
+            entrega_domicilio: custoEntregaPorMetodo.entrega_domicilio !== undefined ? (parseFloat(custoEntregaPorMetodo.entrega_domicilio) || 0) : null
+        };
     }
 
-    return Supermarket.findByIdAndUpdate(supermercadoId, {
-        ...dadosSupermercado,
-        estadoAprovacao: 'Pendente'
-    }, { new: true });
+    return Supermarket.findByIdAndUpdate(supermercadoId, dadosSupermercado, { new: true, runValidators: true });
 };
 
 supermarketService.getUserByIdSemPassword = async function (userId) {
@@ -423,12 +418,6 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
  */
 supermarketService.listarCategorias = async function () {
     return Category.find().sort({ nome: 1 });
-};
-
-
-supermarketService.verificarEstadoAprovacao = async function (userId) {
-    const superMercado = await Supermarket.findOne({ userId });
-    return superMercado ? superMercado.estadoAprovacao : 'Pendente';
 };
 
 /**

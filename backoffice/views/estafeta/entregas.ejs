@@ -34,7 +34,7 @@
                                         </p>
                                         <p class="mb-2"><strong>Total:</strong>
                                             <%= (entrega.valorTotal || 0).toFixed(2) %>€ | <strong>Taxa:</strong>
-                                                <%= (entrega.supermercadoId?.custoEntrega || 0).toFixed(2) %>€
+                                                <%= (entrega.supermercadoId?.custoEntregaPorMetodo?.[entrega.metodoEntrega] || 0).toFixed(2) %>€
                                         </p>
 
                                         <div class="d-flex gap-2">

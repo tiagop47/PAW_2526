@@ -32,11 +32,8 @@ estafetaController.exibirDashboard = async function (req, res) {
 
 estafetaController.listarEntregasDisponiveis = async function (req, res) {
     try {
-        const [entregas, supermercados] = await Promise.all([
-            estafetaService.obterEntregasDisponiveis(),
-            estafetaService.obterSupermercadosAtivos()
-        ]);
-        res.render('estafeta/entregas', { entregas, supermercadosCobertura: supermercados, estafetaId: req.user.id, lat: null, lng: null });
+        const entregas = await estafetaService.obterEntregasDisponiveis();
+        res.render('estafeta/entregas', { entregas, estafetaId: req.user.id });
     } catch (error) {
         res.render('estafeta/entregas', { entregas: [], erro: 'Erro ao carregar entregas' });
     }
@@ -71,35 +68,15 @@ estafetaController.confirmarEntrega = async function (req, res) {
 
 estafetaController.obterEntregasAPI = async function (req, res) {
     try {
-        const { lat, lng } = req.query;
-        const [entregas, supermercadosCobertura] = (lat && lng)
-            ? await Promise.all([estafetaService.obterEntregasPorLocalizacao(lat, lng), estafetaService.obterSupermercadosCoberturaPorLocalizacao(lat, lng)])
-            : [await estafetaService.obterEntregasDisponiveis(), []];
-        res.json({ sucesso: true, entregas, supermercadosCobertura });
+        const { concelho } = req.query;
+        const entregas = await estafetaService.obterEntregasPorConcelho(concelho);
+        res.json({ sucesso: true, entregas });
     } catch (error) {
+        console.error('Erro na API de entregas:', error);
         res.status(500).json({ sucesso: false, erro: 'Erro ao carregar entregas' });
     }
 };
 
-estafetaController.obterSupermercadosCoberturaAPI = async function (req, res) {
-    try {
-        const { lat, lng } = req.query;
-        if (!lat || !lng) return res.status(400).json({ sucesso: false, erro: 'Parâmetros lat e lng são obrigatórios' });
-        const supermercados = await estafetaService.obterSupermercadosCoberturaPorLocalizacao(lat, lng);
-        res.json({ sucesso: true, supermercados });
-    } catch (error) {
-        res.status(500).json({ sucesso: false, erro: error.message || 'Erro ao carregar cobertura' });
-    }
-};
 
-estafetaController.obterSupermercadosAPI = async function (req, res) {
-    try {
-        const supermercados = await estafetaService.obterSupermercadosAtivos();
-        res.json({ sucesso: true, supermercados });
-    } catch (error) {
-        console.error('Erro ao obter supermercados:', error);
-        res.status(500).json({ sucesso: false, erro: 'Erro ao carregar supermercados' });
-    }
-};
 
 module.exports = estafetaController;

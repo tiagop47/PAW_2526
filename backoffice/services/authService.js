@@ -25,14 +25,11 @@ authService.verificarCaptcha = async function (recaptchaResponse) {
     return true;
 };
 
-async function criarSupermercado(userId, { nome, morada, latitude, longitude, horario, custoEntrega, raioAtuacao, descricaoLoja, metodosEntrega }) {
+async function criarSupermercado(userId, { nome, morada, latitude, longitude, horario, custoEntregaPorMetodo, descricaoLoja }) {
     const coordenadas = {
         type: 'Point',
         coordinates: [parseFloat(longitude), parseFloat(latitude)]
     };
-    const metodos = Array.isArray(metodosEntrega)
-        ? metodosEntrega
-        : (metodosEntrega ? [metodosEntrega] : ['levantamento_loja']);
 
     return Supermarket.create({
         userId,
@@ -40,9 +37,10 @@ async function criarSupermercado(userId, { nome, morada, latitude, longitude, ho
         localizacao: morada || "Localização Manual",
         localizacaoGeo: coordenadas,
         horarioFuncionamento: horario || "09:00 - 19:00",
-        custoEntrega: custoEntrega || 0,
-        raioAtuacao: raioAtuacao || 5,
-        metodosEntrega: metodos,
+        custoEntregaPorMetodo: {
+            levantamento_loja: custoEntregaPorMetodo?.levantamento_loja !== undefined ? (parseFloat(custoEntregaPorMetodo.levantamento_loja) || 0) : null,
+            entrega_domicilio: custoEntregaPorMetodo?.entrega_domicilio !== undefined ? (parseFloat(custoEntregaPorMetodo.entrega_domicilio) || 0) : null
+        },
         descricao: descricaoLoja || "",
         estadoAprovacao: 'Pendente'
     });
@@ -50,7 +48,7 @@ async function criarSupermercado(userId, { nome, morada, latitude, longitude, ho
 
 authService.registarUtilizador = async function (userData) {
     const { nome, email, password, nif, telefone, morada, role } = userData;
-    const roleFinal = rolesPublicas.includes(role) ? role : rolesPublicas[0];
+    const roleFinal = rolesPublicas.includes(role) ? role : 'clientes';
 
     if (roleFinal === 'supermercados' && (!userData.latitude || !userData.longitude)) {
         throw new Error("É obrigatório selecionar a localização da loja no mapa.");
@@ -190,8 +188,7 @@ async function atribuirCupoesCliente(novoUser, morada) {
     const cupaoBoasVindas = await Coupon.create({
         codigo: codigoBoasVindas,
         percentagemDesconto: 10,
-        prazo: prazo30Dias,
-        limiteUtilizacoes: 1
+        prazo: prazo30Dias
     });
 
     if (!novoUser.cupoes) {

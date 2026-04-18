@@ -268,7 +268,7 @@ function inicializarMapaEntrega() {
     const elMapaEntrega = document.getElementById('mapaEscolherEntrega');
     const latSuper = Number(elMapaEntrega?.dataset.superLat);
     const lngSuper = Number(elMapaEntrega?.dataset.superLng);
-    const raioSuperKm = Number(elMapaEntrega?.dataset.superRaio || 5);
+    const raioSuperKm = 5;
     const temCoordenadasSuper = Number.isFinite(latSuper) && Number.isFinite(lngSuper);
 
     let latInicial = 41.1579;
@@ -285,10 +285,8 @@ function inicializarMapaEntrega() {
         L.marker([latSuper, lngSuper]).addTo(mapaInstancia).bindPopup("<b>Supermercado</b>");
 
         const circuloAtuacao = L.circle([latSuper, lngSuper], {
-            color: '#000000',
-            fillColor: '#000000',
-            fillOpacity: 0.1,
-            radius: (raioSuperKm * 1000)
+            ...CONFIG.ESTILO_AREA,
+            radius: (raioSuperKm * CONFIG.MULTIPLIER_RAIO)
         }).addTo(mapaInstancia);
 
         mapaInstancia.fitBounds(circuloAtuacao.getBounds(), { padding: [30, 30] });
@@ -327,7 +325,7 @@ function obterItensSelecionados() {
 }
 
 async function validarStock(itens) {
-    const response = await fetch('/supermercado/api/verificar-stock', {
+    const response = await fetch('/supermercado/vendas/verificar-stock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ itens: itens })

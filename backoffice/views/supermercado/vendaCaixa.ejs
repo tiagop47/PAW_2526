@@ -39,8 +39,12 @@
                     <div class="col-md-6">
                         <label class="form-label small fw-bold">Método de Entrega</label>
                         <select id="metodoEntrega" name="metodoEntrega" class="form-select" required>
-                            <option value="levantamento_loja">levantamento_loja</option>
-                            <option value="entrega_domicilio">entrega_domicilio</option>
+                            <% if (supermercado.custoEntregaPorMetodo?.levantamento_loja !== null) { %>
+                                <option value="levantamento_loja">levantamento_loja</option>
+                            <% } %>
+                            <% if (supermercado.custoEntregaPorMetodo?.entrega_domicilio !== null) { %>
+                                <option value="entrega_domicilio">entrega_domicilio</option>
+                            <% } %>
                         </select>
                     </div>
                     <div class="col-md-6">
@@ -92,7 +96,6 @@
                                 <div id="mapaEscolherEntrega" class="venda-caixa-mapa"
                                     data-super-lat="<%= supermercado && supermercado.localizacaoGeo && supermercado.localizacaoGeo.coordinates ? supermercado.localizacaoGeo.coordinates[1] : '' %>"
                                     data-super-lng="<%= supermercado && supermercado.localizacaoGeo && supermercado.localizacaoGeo.coordinates ? supermercado.localizacaoGeo.coordinates[0] : '' %>"
-                                    data-super-raio="<%= supermercado && supermercado.raioAtuacao ? supermercado.raioAtuacao : 5 %>"
                                     data-super-nome="<%= supermercado && supermercado.nome ? supermercado.nome : 'Supermercado' %>">
                                 </div>
                                 <small class="text-muted mt-2 d-block" id="coordsSelecionadas">Nenhuma coordenada

@@ -3,90 +3,98 @@
 
 <head>
     <%- include('../partials/head') %>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body class="bg-light">
     <%- include('../partials/navbar') %>
 
-    <main class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h4 fw-bold m-0">Supermercados Ativos</h1>
-        </div>
+        <main class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h4 fw-bold m-0">Supermercados Ativos</h1>
+            </div>
 
-        <div class="row g-4">
-            <!-- Tabela -->
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <table class="tabela-limpa mb-0" style="table-layout: fixed; width: 100%;">
-                        <thead>
-                            <tr>
-                                <th style="width: 25%;" class="text-start ps-3">Supermercado</th>
-                                <th style="width: 20%;">Responsável</th>
-                                <th style="width: 25%;">Localização</th>
-                                <th style="width: 10%;">Raio</th>
-                                <th style="width: 20%;" class="text-end pe-3">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="corpo-supermercados">
-                            <% if (locals.supermercados && supermercados.length > 0) { %>
-                                <% supermercados.forEach(function(s) { %>
-                                    <tr>
-                                        <td class="fw-bold text-start ps-3 text-truncate">
-                                            <%= s.nome %>
-                                        </td>
-                                        <td class="text-truncate">
-                                            <%= s.userId ? s.userId.nome : 'N/A' %>
-                                        </td>
-                                        <td class="text-muted small text-truncate" title="<%= s.localizacao %>">
-                                            <%= s.localizacao %>
-                                        </td>
-                                        <td>
-                                            <%= Number(s.raioAtuacao || 5) %>km
-                                        </td>
-                                        <td class="text-end pe-3">
-                                            <form action="/admin/supermercados/bloquear/<%= s._id %>" method="POST" style="display:inline;">
-                                                <button type="submit" class="btn btn-sm btn-light border text-dark w-100" style="max-width: 110px;">
-                                                    <%= s.estadoAprovacao === 'Bloqueado' ? 'Desbloquear' : 'Bloquear' %>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                <% }); %>
-                            <% } else { %>
+            <div class="row g-4">
+                <!-- Tabela -->
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <table class="tabela-limpa mb-0" style="table-layout: fixed; width: 100%;">
+                            <thead>
                                 <tr>
-                                    <td colspan="5" class="text-center py-5 text-muted">
-                                        Não existem supermercados ativos.
-                                    </td>
+                                    <th style="width: 25%;" class="text-start ps-3">Supermercado</th>
+                                    <th style="width: 20%;">Responsável</th>
+                                    <th style="width: 25%;">Localização</th>
+                                    <th style="width: 20%;" class="text-end pe-3">Ações</th>
                                 </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody id="corpo-supermercados">
+                                <% if (locals.supermercados && supermercados.length> 0) { %>
+                                    <% supermercados.forEach(function(s) { %>
+                                        <tr>
+                                            <td class="fw-bold text-start ps-3 text-truncate">
+                                                <%= s.nome %>
+                                            </td>
+                                            <td class="text-truncate">
+                                                <%= s.userId ? s.userId.nome : 'N/A' %>
+                                                    <br>
+                                                    <%= s.userId.nome ? s.userId.email : 'N/A' %>
+
+                                            </td>
+                                            <td class="text-muted small text-truncate" title="<%= s.localizacao %>">
+                                                <%= s.localizacao %>
+                                            </td>
+                                            <td class="text-end pe-3">
+                                                <div class="d-flex justify-content-end gap-2">
+                                                    <form action="/admin/supermercados/bloquear/<%= s._id %>"
+                                                        method="POST" style="display:inline;">
+                                                        <button type="submit"
+                                                            class="btn btn-sm btn-light border text-dark">
+                                                            <%= s.estadoAprovacao==='Bloqueado' ? 'Desbloquear'
+                                                                : 'Bloquear' %>
+                                                        </button>
+                                                    </form>
+                                                    <a href="/admin/supermercados/editar/<%= s._id %>"
+                                                        class="btn btn-sm btn-light border">
+                                                        Editar
+                                                    </a>
+                                                    <a href="/admin/supermercados/transferir/<%= s._id %>"
+                                                        class="btn btn-sm btn-light border text-dark">
+                                                        Transferir
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-5 text-muted">
+                                                        Não existem supermercados ativos.
+                                                    </td>
+                                                </tr>
+                                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <%- include('../partials/paginacao', { paginaUrl: '/admin/supermercados/ativos' }) %>
                 </div>
 
-                <%- include('../partials/paginacao', { paginaUrl: '/admin/supermercados/ativos' }) %>
+                <!--Mapa -->
+                <div class="col-12">
+                    <%- include('../partials/mapaComponent', { mapaId: 'mapa-supermercados-ativos' , mapaAltura: '500px'
+                        , mapaTitulo: 'Mapa de Supermercados Ativos' , mapaAcoes: '' }) %>
+                </div>
             </div>
+        </main>
 
-            <!--Mapa -->
-            <div class="col-12">
-                <%- include('../partials/mapaComponent', { 
-                    mapaId: 'mapa-supermercados-ativos', 
-                    mapaAltura: '500px', 
-                    mapaTitulo: 'Mapa de Supermercados Ativos', 
-                    mapaAcoes: '' 
-                }) %>
-            </div>
+        <div id="dados-supermercados-ativos" data-supermercados="<%= JSON.stringify(supermercadosMapa || []) %>"
+            data-pagina-atual="<%= paginaAtual %>" data-total-paginas="<%= totalPaginas %>" style="display: none;">
         </div>
-    </main>
 
-    <div id="dados-supermercados-ativos" data-supermercados="<%= JSON.stringify(supermercadosMapa || []) %>"
-        data-pagina-atual="<%= paginaAtual %>" data-total-paginas="<%= totalPaginas %>" style="display: none;">
-    </div>
-
-    <!-- Scripts de inicialização do Mapa -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="/javascript/mapa.js"></script>
-    <script src="/javascript/admin/adminMapaAtivos.js"></script>
+        <!-- Scripts de inicialização do Mapa -->
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="/javascript/mapa.js"></script>
+        <script src="/javascript/admin/adminMapaAtivos.js"></script>
 </body>
 
 </html>

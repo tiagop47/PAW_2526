@@ -13,9 +13,11 @@
         <main class="container py-5">
             <div class="mx-auto" style="max-width: 600px;">
                 <div class="card p-4 border-0 shadow-sm">
-                    <h2 class="h4 fw-bold mb-4 text-center">Configurações do Supermercado</h2>
+                    <h2 class="h4 fw-bold mb-4 text-center">
+                        <%= title %>
+                    </h2>
 
-                    <form action="/supermercado/editar" method="POST">
+                    <form action="<%= actionUrl %>" method="POST">
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Nome Comercial</label>
                             <input type="text" name="nome" class="form-control" value="<%= supermercado.nome %>"
@@ -35,15 +37,14 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-bold small d-block">Localização da Loja (Clique no Mapa para
-                                Ajustar)</label>
+                            <label class="form-label fw-bold small d-block">Localização da Loja (Clique no Mapa)</label>
                             <div id="mapa-edicao" style="height: 250px; border-radius: 4px; border: 1px solid #dee2e6;">
                             </div>
                             <div class="d-flex gap-2 mt-2">
                                 <% const lon=(supermercado.localizacaoGeo && supermercado.localizacaoGeo.coordinates) ?
-                                    supermercado.localizacaoGeo.coordinates[0] : -8.61; const
+                                    supermercado.localizacaoGeo.coordinates[0] : -8.2814; const
                                     lat=(supermercado.localizacaoGeo && supermercado.localizacaoGeo.coordinates) ?
-                                    supermercado.localizacaoGeo.coordinates[1] : 41.15; %>
+                                    supermercado.localizacaoGeo.coordinates[1] : 41.2777; %>
                                     <div class="w-50">
                                         <label class="small text-muted">Latitude</label>
                                         <input type="text" id="input-lat" name="latitude"
@@ -67,34 +68,34 @@
                             <label class="form-label fw-bold small d-block">Métodos de Entrega</label>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="checkbox" name="metodosEntrega"
-                                    value="levantamento_loja" <%=supermercado.metodosEntrega &&
-                                    supermercado.metodosEntrega.includes('levantamento_loja') ? 'checked' : '' %>>
+                                    value="levantamento_loja" <%= (supermercado.custoEntregaPorMetodo?.levantamento_loja !== undefined && supermercado.custoEntregaPorMetodo?.levantamento_loja !== null) ? 'checked' : '' %>>
                                 <label class="form-check-label small">levantamento_loja</label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="checkbox" name="metodosEntrega"
-                                    value="entrega_domicilio" <%=supermercado.metodosEntrega &&
-                                    supermercado.metodosEntrega.includes('entrega_domicilio') ? 'checked' : '' %>>
+                                    value="entrega_domicilio" <%= (supermercado.custoEntregaPorMetodo?.entrega_domicilio !== undefined && supermercado.custoEntregaPorMetodo?.entrega_domicilio !== null) ? 'checked' : '' %>>
                                 <label class="form-check-label small">entrega_domicilio</label>
                             </div>
                         </div>
 
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold small">Custo de Entrega (€)</label>
-                                <input type="number" step="0.01" name="custoEntrega" class="form-control"
-                                    value="<%= supermercado.custoEntrega %>" min="0">
+                                <label class="form-label fw-bold small">Custo - Levantamento em Loja (€)</label>
+                                <input type="number" step="0.01" name="custoEntregaPorMetodo[levantamento_loja]"
+                                    class="form-control"
+                                    value="<%= supermercado.custoEntregaPorMetodo?.levantamento_loja ?? 0 %>" min="0">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold small">Raio de Atuação (km)</label>
-                                <input type="number" name="raioAtuacao" class="form-control"
-                                    value="<%= supermercado.raioAtuacao %>" min="1" max="50">
+                                <label class="form-label fw-bold small">Custo - Entrega ao Domicílio (€)</label>
+                                <input type="number" step="0.01" name="custoEntregaPorMetodo[entrega_domicilio]"
+                                    class="form-control"
+                                    value="<%= supermercado.custoEntregaPorMetodo?.entrega_domicilio ?? 0 %>" min="0">
                             </div>
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary w-100 fw-bold">Atualizar Configurações</button>
-                            <a href="/supermercado/dashboard" class="btn btn-outline-secondary w-100">Cancelar</a>
+                            <button type="submit" class="btn btn-primary w-100 fw-bold">Guardar Alterações</button>
+                            <a href="<%= voltarUrl %>" class="btn btn-outline-secondary w-100">Cancelar</a>
                         </div>
                     </form>
                 </div>

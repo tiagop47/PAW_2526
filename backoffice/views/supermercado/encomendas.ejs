@@ -51,26 +51,28 @@
                                             <%= new Date(encomenda.criadoEm).toLocaleDateString('pt-PT') %>
                                         </td>
                                         <td class="text-end">
-                                            <form action="/supermercado/encomendas/<%= encomenda._id %>/estado"
-                                                method="POST" class="d-inline-flex gap-2">
-                                                <select name="estado" class="form-select form-select-sm">
-                                                    <option value="pendente" <%=encomenda.estado==='pendente'
-                                                        ? 'selected' : '' %>>pendente</option>
-                                                    <option value="confirmada" <%=encomenda.estado==='confirmada'
-                                                        ? 'selected' : '' %>>confirmada</option>
-                                                    <option value="preparacao" <%=encomenda.estado==='preparacao'
-                                                        ? 'selected' : '' %>>preparacao</option>
-                                                    <option value="em_entrega" <%=encomenda.estado==='em_entrega'
-                                                        ? 'selected' : '' %>>em_entrega</option>
-                                                    <option value="entregue" <%=encomenda.estado==='entregue'
-                                                        ? 'selected' : '' %>>entregue</option>
-                                                    <option value="cancelada" <%=encomenda.estado==='cancelada'
-                                                        ? 'selected' : '' %>>cancelada</option>
-                                                </select>
-                                                <button type="submit" class="btn btn-sm btn-primary">Atualizar</button>
-                                            </form>
-                                            <a href="/supermercado/encomendas/<%= encomenda._id %>/fatura"
-                                                class="btn btn-sm btn-primary">Fatura</a>
+                                            <div class="d-flex justify-content-end gap-2">
+                                                <form action="/supermercado/encomendas/<%= encomenda._id %>/estado"
+                                                    method="POST" class="d-inline-flex gap-2">
+                                                    <select name="estado" class="form-select form-select-sm" style="width: auto;">
+                                                        <option value="pendente" <%=encomenda.estado==='pendente'
+                                                            ? 'selected' : '' %>>pendente</option>
+                                                        <option value="confirmada" <%=encomenda.estado==='confirmada'
+                                                            ? 'selected' : '' %>>confirmada</option>
+                                                        <option value="preparacao" <%=encomenda.estado==='preparacao'
+                                                            ? 'selected' : '' %>>preparacao</option>
+                                                        <option value="em_entrega" <%=encomenda.estado==='em_entrega'
+                                                            ? 'selected' : '' %>>em_entrega</option>
+                                                        <option value="entregue" <%=encomenda.estado==='entregue'
+                                                            ? 'selected' : '' %>>entregue</option>
+                                                        <option value="cancelada" <%=encomenda.estado==='cancelada'
+                                                            ? 'selected' : '' %>>cancelada</option>
+                                                    </select>
+                                                    <button type="submit" class="btn btn-sm btn-dark">Atualizar</button>
+                                                </form>
+                                                <a href="/supermercado/encomendas/<%= encomenda._id %>/fatura"
+                                                    class="btn btn-sm btn-light border" target="_blank">Fatura</a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <% }) %>
@@ -90,7 +92,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('success')) {
                 alert('Ação concluída');
-                // Limpar o parâmetro da URL para não repetir o alert ao fazer refresh
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         </script>

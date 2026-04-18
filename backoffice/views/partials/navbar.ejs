@@ -10,8 +10,8 @@
                 else if (user.role === 'clientes') dashboardLink = "/cliente/dashboard";
             }
         %>
-        <a href="<%= dashboardLink %>" class="logotipo text-decoration-none text-dark">
-            <span class="nome-marca fw-bold">Página Principal</span>
+        <a href="<%= dashboardLink %>" class="btn btn-sm btn-light border border-dark text-dark fw-bold px-3">
+            Página Principal
         </a>
         <% if (user) { %>
             <p class="text-dark small mb-0">Utilizador: <%= user.nome %>

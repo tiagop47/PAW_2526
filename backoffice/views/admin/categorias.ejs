@@ -34,7 +34,7 @@
                                             <label class="form-label small">Descrição (Opcional)</label>
                                             <textarea name="descricao" class="form-control" rows="2" style="resize: none;"></textarea>
                                         </div>
-                                        <button type="submit" class="btn btn-dark btn-sm">Criar Categoria</button>
+                                        <button type="submit" class="btn btn-sm btn-light border text-dark">Criar Categoria</button>
                                     </form>
                                 </div>
                             </div>
@@ -61,7 +61,7 @@
                                                     <td class="text-center"><%= cat.totalProdutos %></td>
                                                     <td class="text-end">
                                                         <form action="/admin/categorias/eliminar/<%= cat._id %>" method="POST" style="display:inline;">
-                                                            <button type="submit" class="btn btn-sm btn-light border">Eliminar</button>
+                                                            <button type="submit" class="btn btn-sm btn-light border text-dark">Eliminar</button>
                                                         </form>
                                                     </td>
                                                 </tr>

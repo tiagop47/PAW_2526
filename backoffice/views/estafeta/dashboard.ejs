@@ -11,7 +11,7 @@
         <main class="container py-4">
 
             <div class="row g-3 mb-4">
-                <div class="col-sm-6 col-xl-3">
+                <div class="col-sm-6 col-md-4">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Entregas
@@ -22,7 +22,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-xl-3">
+                <div class="col-sm-6 col-md-4">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Em Curso</small>
@@ -33,7 +33,7 @@
                     </div>
                 </div>
               
-                <div class="col-sm-6 col-xl-3">
+                <div class="col-sm-6 col-md-4">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Ganhos
@@ -44,21 +44,31 @@
                         </div>
                     </div>
                 </div>
-                <% if (stats.zonaMaisPopular) { %>
-                    <div class="col-sm-6 col-xl-3">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body">
-                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Zona + Popular</small>
-                                <div class="h3 mb-0 mt-1">
-                                    <%= stats.zonaMaisPopular %>
-                                </div>
-                                <small class="text-muted" style="font-size: 0.7rem;">
-                                    <%= stats.totalZonaPopular %> <%= stats.totalZonaPopular === 1 ? 'encomenda' : 'encomendas' %> disponíveis
-                                </small>
-                            </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Avaliação Média</small>
+                            <div class="h3 mb-0 mt-1"><%= stats.mediaAvaliacao ?? 0 %> / 5</div>
+                            <small class="text-muted" style="font-size: 0.7rem;"><%= stats.totalAvaliacoes ?? 0 %> avaliação(ões)</small>
                         </div>
                     </div>
-                <% } %>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Disponíveis</small>
+                            <div class="h3 mb-0 mt-1"><%= stats.entregasDisponiveis ?? 0 %></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Entregas Este Mês</small>
+                            <div class="h3 mb-0 mt-1"><%= (stats.evolucaoMensal || [])[new Date().getMonth()] ?? 0 %></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="chart-data" data-evolucao-mensal="<%= JSON.stringify(stats.evolucaoMensal || []) %>"

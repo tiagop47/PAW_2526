@@ -1,3 +1,4 @@
+const cards = document.querySelectorAll('.order-card');
 const estafetaId = document.body.getAttribute('data-estafeta-id') || '';
 const storageZonaKey = `estafeta_zona_trabalho_${estafetaId || 'default'}`;
 const paginaEntregas = !!estafetaId;
@@ -32,7 +33,7 @@ const submeterAcaoEntrega = async ({ id, btn, endpoint, textoAProcessar, mensage
     atualizarEstadoBotao(btn, true, textoAProcessar || 'A processar...');
 
     try {
-        const response = await fetch(`/estafeta/api/entregas/${id}/${endpoint}`, {
+        const response = await fetch(`/api/estafeta/entregas/${id}/${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -53,9 +54,9 @@ const submeterAcaoEntrega = async ({ id, btn, endpoint, textoAProcessar, mensage
 };
 
 const aplicarFiltroZona = function () {
-    if (!paginaEntregas) return;
-
-    const cards = document.querySelectorAll('.order-card');
+    if (!paginaEntregas) {
+        return;
+    }
 
     cards.forEach((card) => {
         const zonaCard = (card.getAttribute('data-zona') || '').trim().toLowerCase();

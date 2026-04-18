@@ -8,10 +8,6 @@ const CouponSchema = new mongoose.Schema({
         uppercase: true,
         trim: true
     },
-    localidadeAlvo: {
-        type: String, // Se preenchido, só clientes desta localidade poderão usar/receber
-        required: false
-    },
     percentagemDesconto: {
         type: Number,
         required: [true, 'A percentagem de desconto é obrigatória'],
@@ -22,14 +18,9 @@ const CouponSchema = new mongoose.Schema({
         type: Date,
         required: [true, 'O prazo de validade é obrigatório']
     },
-    limiteUtilizacoes: {
-        type: Number,
-        required: [true, 'O limite de utilizações é obrigatório'],
-        min: [1, 'O limite deve ser pelo menos 1']
-    },
-    utilizacoesAtuais: {
-        type: Number,
-        default: 0
+    ativo: {
+        type: Boolean,
+        default: true
     },
     criadoEm: { type: Date, default: Date.now }
 });

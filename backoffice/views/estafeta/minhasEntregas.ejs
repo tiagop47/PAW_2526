@@ -68,9 +68,6 @@
                                                     <%= entrega.moradaEntrega || entrega.clienteId?.morada || 'N/A' %>
                                                     <% if (entrega.coordenadasEntrega && Number.isFinite(entrega.coordenadasEntrega.lat) && Number.isFinite(entrega.coordenadasEntrega.lng)) { %>
                                                         <br>
-                                                        <small>
-                                                            <a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q=<%= entrega.coordenadasEntrega.lat %>,<%= entrega.coordenadasEntrega.lng %>">Ver no mapa</a>
-                                                        </small>
                                                     <% } %>
                                                 </td>
                                                 <td>

@@ -14,6 +14,10 @@ router.get('/supermercados/pendentes', adminController.listarPendentes);
 router.post('/supermercados/aprovar/:supermarketId', adminController.aprovarSupermercado);
 router.post('/supermercados/rejeitar/:supermarketId', adminController.rejeitarSupermercado);
 router.post('/supermercados/bloquear/:supermarketId', adminController.bloquearSupermercado);
+router.get('/supermercados/transferir/:supermarketId', adminController.exibirTransferirPropriedade);
+router.post('/supermercados/transferir/:supermarketId', adminController.transferirPropriedade);
+router.get('/supermercados/editar/:supermarketId', adminController.exibirEditarSupermercado);
+router.post('/supermercados/editar/:supermarketId', adminController.editarSupermercado);
 router.post('/utilizadores/:userId/eliminar', adminController.eliminarUser);
 router.get('/utilizadores/:userId/editar', adminController.exibirEditarUser);
 router.post('/utilizadores/:userId/editar', adminController.editarUser);
@@ -30,6 +34,9 @@ router.post('/categorias/eliminar/:categoriaId', adminController.eliminarCategor
 //Gestão de Cupões
 router.get('/cupoes', adminController.exibirCupoes);
 router.post('/cupoes', adminController.criarCupao);
+router.post('/cupoes/desativar/:cupaoId', adminController.desativarCupao);
+router.post('/cupoes/ativar/:cupaoId', adminController.ativarCupao);
+router.post('/cupoes/eliminar/:cupaoId', adminController.eliminarCupao);
 
 router.param('userId', async (req, res, next, id) => {
     try {

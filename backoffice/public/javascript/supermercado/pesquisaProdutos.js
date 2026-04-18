@@ -38,7 +38,7 @@ function inicializarPesquisaProdutos(config = {}) {
     const {
         renderTabela = tabelaDefault,
         debounceMs = 300,
-        apiUrl = '/supermercado/api/produtos' // URL padrão
+        apiUrl = '/supermercado/produtos/pesquisar' // URL padrão
     } = config;
 
     async function executarPesquisa() {

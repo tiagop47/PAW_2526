@@ -9,7 +9,7 @@ mesmo que o professor não consiga acesso à base dados o administrador é criad
 
 | Perfil | Email | Password |
 | :--- | :--- | :--- |
-| **Administrador** | `admin@gmail.com` | `Admin12345` |
+| **Administrador** | `admin@teste.com` | `Teste12345` |
 | **Estafeta** | `estafeta@teste.com` | `Teste12345` |
 | **Supermercado** | `supermercado@teste.com` | `Teste12345` |
 | **Cliente** | `cliente@teste.com` | `Teste12345` |

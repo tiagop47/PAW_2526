@@ -11,6 +11,21 @@ router.use(async (req, res, next) => {
     try {
         if (req.user && req.user.id) {
             const supermercado = await supermarketService.getSupermercado(req.user.id);
+
+            if (!supermercado) {
+                // Caso o user tenha role de supermercado mas ainda não tenha o perfil criado ou aprovado
+                if (req.path === '/perfil' || req.path === '/editar') {
+                    req.supermercado = null;
+                    return next();
+                }
+
+                return res.render('supermercado/aguardaAprovacao', {
+                    title: 'Perfil Incompleto',
+                    estado: 'Pendente',
+                    user: req.user
+                });
+            }
+
             req.supermercado = supermercado;
         }
         next();
@@ -22,6 +37,10 @@ router.use(async (req, res, next) => {
 // Dashboard
 router.get('/dashboard', supermarketController.exibirDashboard);
 
+// Endpoints JSON (backoffice JS)
+router.get('/produtos/pesquisar', supermarketController.pesquisarProdutos);
+router.post('/vendas/verificar-stock', supermarketController.verificarStock);
+
 // Produtos
 router.get('/produtos', supermarketController.exibirProdutos);
 router.get('/produtos/novo', supermarketController.exibirFormularioNovo);
@@ -29,8 +48,6 @@ router.get('/produtos/:productId', supermarketController.exibirDetalhes);
 router.get('/produtos/editar/:productId', supermarketController.exibirFormularioEditar);
 
 
-router.get('/api/produtos', supermarketController.pesquisarProdutos);
-router.post('/api/verificar-stock', supermarketController.verificarStock);
 
 router.post('/produtos', upload.single('imagem'), supermarketController.criarProduto);
 router.post('/produtos/editar/:productId', upload.single('imagem'), supermarketController.atualizarProduto);

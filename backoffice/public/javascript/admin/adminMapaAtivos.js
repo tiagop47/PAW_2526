@@ -11,16 +11,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const mercados = JSON.parse(dadosBrutos.getAttribute('data-supermercados') || '[]');
     const coordenadasParaCentro = [];
 
-    mercados.forEach((m) => {
-        if (m.localizacaoGeo && m.localizacaoGeo.coordinates) {
-            const [lon, lat] = m.localizacaoGeo.coordinates;
-            adicionarMercadoNoMapa(m._id, m.nome, lat, lon, m.raioAtuacao || 5);
+    mercados.forEach((mapa) => {
+        if (mapa.localizacaoGeo && mapa.localizacaoGeo.coordinates) {
+            const [lon, lat] = mapa.localizacaoGeo.coordinates;
+            adicionarMercadoNoMapa(mapa._id, mapa.nome, lat, lon);
             coordenadasParaCentro.push([lat, lon]);
         }
     });
 
     if (coordenadasParaCentro.length > 0 && meuMapa) {
         const bounds = L.latLngBounds(coordenadasParaCentro);
+        Object.values(layers.mercados).forEach(m => {
+            if (m.area) bounds.extend(m.area.getBounds());
+        });
         meuMapa.fitBounds(bounds, { padding: [50, 50] });
     }
 });

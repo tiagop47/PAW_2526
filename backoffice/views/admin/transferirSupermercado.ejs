@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+    <%- include('../partials/navbar') %>
+
+        <main class="container py-4" style="max-width: 600px;">
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <h1 class="h4 fw-bold m-0">Transferir Proprietário</h1>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <p class="mb-4 text-muted small">
+                        Estás a transferir a propriedade de <strong>
+                            <%= supermercado.nome %>
+                        </strong>.
+                        O novo proprietário deve ter o cargo de <strong>Supermercado</strong> e não pode possuir outra
+                        loja.
+                    </p>
+
+                    <form action="/admin/supermercados/transferir/<%= supermercado._id %>" method="POST">
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold">Novo Responsável</label>
+                            <select name="novoUserId" class="form-select" required>
+                                <option value="" disabled selected>Escolha um utilizador...</option>
+                                <% candidatos.forEach(function(c) { %>
+                                    <option value="<%= c._id %>">
+                                        <%= c.nome %> (<%= c.email %>)
+                                    </option>
+                                    <% }); %>
+                            </select>
+                            <% if (candidatos.length===0) { %>
+                                <div class="form-text ">
+                                    Não existem utilizadores disponíveis com o cargo de supermercado sem loja associada.
+                                </div>
+                                <% } %>
+                        </div>
+
+                        <div class="alert-warning small">
+                            Após a transferência, o supermercado voltará ao estado <strong>Pendente</strong> para nova
+                            aprovação.
+                        </div>
+
+                        <button type="submit" class="btn btn-sm btn-light border text-dark w-100" <%=candidatos.length===0 ? 'disabled'
+                            : '' %>>
+                            Confirmar Transferência
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+</body>
+
+</html>

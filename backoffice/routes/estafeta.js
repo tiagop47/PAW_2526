@@ -13,14 +13,6 @@ router.get('/dashboard', estafetaController.exibirDashboard);
 router.get('/entregas', estafetaController.listarEntregasDisponiveis);
 router.get('/minhas-entregas', estafetaController.listarMinhasEntregas);
 
-// API para entregas
-router.get('/api/entregas', estafetaController.obterEntregasAPI);
-router.get('/api/supermercados', estafetaController.obterSupermercadosAPI);
-router.get('/api/supermercados-cobertura', estafetaController.obterSupermercadosCoberturaAPI);
-
-// Operações com encomendas (Aceitar/Confirmar)
-router.post('/api/entregas/:orderId/aceitar', estafetaController.aceitarEntrega);
-router.post('/api/entregas/:orderId/confirmar', estafetaController.confirmarEntrega);
 
 /**
  * Middleware de Parâmetro: Carrega a encomenda se :orderId estiver presente no URL.

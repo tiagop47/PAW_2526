@@ -28,17 +28,9 @@ const SupermarketSchema = new mongoose.Schema({
         }
     },
     horarioFuncionamento: String,
-    metodosEntrega: { type: [String], default: ['levantamento_loja'] },
-    custoEntrega: {
-        type: Number,
-        default: 0,
-        min: [0, "O custo de entrega não pode ser negativo"]
-    },
-    raioAtuacao: {
-        type: Number,
-        default: 5,
-        min: [1, "O raio mínimo é 1km"],
-        max: [50, "O raio máximo é 50km"]
+    custoEntregaPorMetodo: {
+        levantamento_loja: { type: Number, min: [0, "O custo não pode ser negativo"] },
+        entrega_domicilio: { type: Number, min: [0, "O custo não pode ser negativo"] }
     },
     estadoAprovacao: {
         type: String,

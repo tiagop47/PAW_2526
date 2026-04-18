@@ -69,12 +69,9 @@ emailService.enviarEmailRecuperacao = async (email, token, host) => {
         return info;
 
     } catch (err) {
-        console.error("ERRO NO ENVIO DE EMAIL (FALLBACK ATIVADO):", err.message);
-        console.log("------------------------------------------------------------");
         console.log("LINK DE RECUPERAÇÃO PARA O UTILIZADOR (%s):", email);
         console.log(link);
-        console.log("------------------------------------------------------------");
-        
+
         // Retornamos um objeto que simula sucesso para que o controlador não rebente
         return { messageId: 'fallback-console-id' };
     }
@@ -109,6 +106,47 @@ emailService.enviarEmailBoasVindas = async (email, nome, codigoCupao) => {
         return info;
     } catch (err) {
         console.error("ERRO NO ENVIO DO EMAIL DE BOAS VINDAS:", err.message);
+        return { messageId: 'fallback-console-id' };
+    }
+};
+
+/**
+* Envia o email de novo cupão para uma lista de utilizadores via BCC.
+*/
+emailService.enviarEmailNovoCupao = async (emails, dadosCupao) => {
+    if (!emails || emails.length === 0) return;
+
+    try {
+        const transporter = await criarTransporter();
+        const info = await transporter.sendMail({
+            from: `"Promoções PAW" <${config.EMAIL_USER || 'promo@paw.com'}>`,
+            to: config.EMAIL_USER || 'marketing@paw.com',
+            bcc: emails,
+            subject: `Novo Cupão Disponível: ${dadosCupao.codigo}`,
+            text: `Olá! Temos um novo cupão para ti: ${dadosCupao.codigo}. Desconto de ${dadosCupao.desconto}%.`,
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                    <h2 style="color: #28a745; text-align: center;">🎉 Novo Desconto para Ti!</h2>
+                    <p>Olá,</p>
+                    <p>Temos o prazer de anunciar um novo cupão de desconto que já está disponível na tua conta!</p>
+                    <div style="text-align: center; margin: 30px 0; background-color: #f8f9fa; padding: 20px; border-radius: 10px; border: 2px dashed #28a745;">
+                        <h3 style="margin: 0; color: #333;">CÓDIGO: <span style="color: #28a745; font-size: 1.5rem;">${dadosCupao.codigo}</span></h3>
+                        <p style="margin: 10px 0 0 0; font-weight: bold;">DESCONTO: ${dadosCupao.desconto}%</p>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #666; text-align: center;">Aproveita já antes que expire!</p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 0.8rem; color: #999; text-align: center;">Equipa PAW 2026</p>
+                </div>
+            `
+        });
+
+        console.log("Email de novo cupão enviado para %d destinatários.", emails.length);
+        if (!config.EMAIL_USER) {
+            console.log(nodemailer.getTestMessageUrl(info));
+        }
+        return info;
+    } catch (err) {
+        console.error("ERRO NO ENVIO DO EMAIL DE NOVO CUPÃO:", err.message);
         return { messageId: 'fallback-console-id' };
     }
 };

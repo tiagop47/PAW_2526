@@ -36,6 +36,25 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-4">
+                    <div class="border p-3 text-center">
+                        <div class="text-secondary small text-uppercase">Avaliação Média</div>
+                        <div class="h2 mb-0"><%= mediaAvaliacao ?? 0 %> / 5</div>
+                        <div class="text-secondary small"><%= totalAvaliacoes ?? 0 %> avaliação(ões)</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border p-3 text-center">
+                        <div class="text-secondary small text-uppercase">Encomendas Pendentes</div>
+                        <div class="h2 mb-0"><%= encomendasPendentes ?? 0 %></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border p-3 text-center">
+                        <div class="text-secondary small text-uppercase">Valor Médio / Encomenda</div>
+                        <div class="h2 mb-0"><%= Number(valorMedio ?? 0).toFixed(2) %>€</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Janelas de Entrada / Gestão Simples -->

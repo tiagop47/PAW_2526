@@ -26,7 +26,8 @@ adminController.exibirDashboard = async function (req, res) {
                 totalEncomendas: 0,
                 valorTotal: 0
             },
-            registosMensais: []
+            registosMensais: [],
+            faturacaoZona: []
         });
     }
 };
@@ -114,6 +115,61 @@ adminController.bloquearSupermercado = async function (req, res) {
 
     } catch (err) {
         res.status(500).send("Erro a tentar bloquear o supermercado.");
+    }
+};
+
+/**
+ * Exibe formulário para transferir propriedade de um supermercado.
+ */
+adminController.exibirTransferirPropriedade = async function (req, res) {
+    try {
+        const candidatos = await adminService.getUtilizadoresCandidatos();
+        res.render('admin/transferirSupermercado', {
+            title: 'Transferir Proprietário',
+            supermercado: req.targetSupermercado,
+            candidatos
+        });
+    } catch (err) {
+        res.status(500).send('Erro ao carregar candidatos.');
+    }
+};
+
+/**
+ * Processa a transferência de propriedade.
+ */
+adminController.transferirPropriedade = async function (req, res) {
+    try {
+        const { novoUserId } = req.body;
+        await adminService.transferirPropriedade(req.targetSupermercado._id, novoUserId);
+        res.redirect('/admin/supermercados/ativos');
+    } catch (err) {
+        res.status(500).send('Erro ao transferir: ' + err.message);
+    }
+};
+
+/**
+ * Exibe o formulário de edição de um supermercado para o Admin.
+ */
+adminController.exibirEditarSupermercado = function (req, res) {
+    res.render('supermercado/editarSupermercado', {
+        title: 'Editar Supermercado: ' + req.targetSupermercado.nome,
+        supermercado: req.targetSupermercado,
+        actionUrl: '/admin/supermercados/editar/' + req.targetSupermercado._id,
+        voltarUrl: '/admin/supermercados/ativos'
+    });
+};
+
+
+/**
+ * Processa a atualização de um supermercado pelo Admin.
+ */
+adminController.editarSupermercado = async function (req, res) {
+    try {
+        const supermarketService = require('../services/supermarketService');
+        await supermarketService.atualizarSupermercado(req.targetSupermercado._id, req.body);
+        res.redirect('/admin/supermercados/ativos');
+    } catch (err) {
+        res.status(500).send('Erro ao atualizar: ' + err.message);
     }
 };
 
@@ -285,14 +341,10 @@ adminController.exibirFatura = async function (req, res) {
 
 adminController.exibirCupoes = async function (req, res) {
     try {
-        const [cupoes, localidades] = await Promise.all([
-            adminService.listarCupoes(),
-            adminService.getLocalidadesSupermercados()
-        ]);
+        const cupoes = await adminService.listarCupoes();
         res.render('admin/cupom', {
             title: 'Gestão de Cupões',
-            cupoes,
-            localidades
+            cupoes
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar sistema de cupões: ' + err.message);
@@ -305,6 +357,33 @@ adminController.criarCupao = async function (req, res) {
         res.redirect('/admin/cupoes');
     } catch (err) {
         res.redirect('/admin/cupoes?error=' + encodeURIComponent('Erro ao criar: Podem faltar campos ou código estar duplicado.'));
+    }
+};
+
+adminController.desativarCupao = async function (req, res) {
+    try {
+        await adminService.desativarCupao(req.params.cupaoId);
+        res.redirect('/admin/cupoes');
+    } catch (err) {
+        res.redirect('/admin/cupoes?error=' + encodeURIComponent('Erro ao desativar cupão.'));
+    }
+};
+
+adminController.ativarCupao = async function (req, res) {
+    try {
+        await adminService.ativarCupao(req.params.cupaoId);
+        res.redirect('/admin/cupoes');
+    } catch (err) {
+        res.redirect('/admin/cupoes?error=' + encodeURIComponent('Erro ao ativar cupão.'));
+    }
+};
+
+adminController.eliminarCupao = async function (req, res) {
+    try {
+        await adminService.eliminarCupao(req.params.cupaoId);
+        res.redirect('/admin/cupoes');
+    } catch (err) {
+        res.redirect('/admin/cupoes?error=' + encodeURIComponent('Erro ao eliminar cupão.'));
     }
 };
 

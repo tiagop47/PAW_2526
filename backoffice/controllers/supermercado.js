@@ -11,7 +11,11 @@ supermarketController.exibirDashboard = async function (req, res) {
         totalProdutos: 0,
         totalEncomendas: 0,
         vendasTotais: 0,
-        encomendas: []
+        valorMedio: 0,
+        encomendasPendentes: 0,
+        encomendas: [],
+        mediaAvaliacao: null,
+        totalAvaliacoes: 0
     };
 
     try {
@@ -25,8 +29,12 @@ supermarketController.exibirDashboard = async function (req, res) {
         totalProdutos: dashboardData.totalProdutos,
         totalEncomendas: dashboardData.totalEncomendas,
         vendasTotais: dashboardData.vendasTotais,
+        valorMedio: dashboardData.valorMedio,
+        encomendasPendentes: dashboardData.encomendasPendentes,
         encomendas: dashboardData.encomendas,
-        top5Produtos: dashboardData.top5Produtos
+        top5Produtos: dashboardData.top5Produtos,
+        mediaAvaliacao: dashboardData.mediaAvaliacao,
+        totalAvaliacoes: dashboardData.totalAvaliacoes
     });
 };
 
@@ -159,7 +167,9 @@ supermarketController.pesquisarProdutos = async function (req, res) {
 supermarketController.exibirEditarSupermercado = function (req, res) {
     res.render('supermercado/editarSupermercado', {
         title: 'Editar Supermercado',
-        supermercado: req.supermercado
+        supermercado: req.supermercado || { nome: '', localizacao: '', descricao: '', horarioFuncionamento: '', custoEntregaPorMetodo: {} },
+        actionUrl: '/supermercado/editar',
+        voltarUrl: '/supermercado/dashboard'
     });
 };
 
@@ -168,20 +178,7 @@ supermarketController.exibirEditarSupermercado = function (req, res) {
  */
 supermarketController.atualizarSupermercado = async function (req, res) {
     try {
-        const { nome, descricao, localizacao, latitude, longitude, horarioFuncionamento, metodosEntrega, custoEntrega, raioAtuacao } = req.body;
-
-        await supermarketService.atualizarSupermercado(req.supermercado._id, {
-            nome,
-            descricao,
-            localizacao,
-            latitude,
-            longitude,
-            horarioFuncionamento,
-            metodosEntrega,
-            custoEntrega: custoEntrega || 0,
-            raioAtuacao: raioAtuacao || 5
-        });
-
+        await supermarketService.atualizarSupermercado(req.supermercado._id, req.body);
         res.redirect('/supermercado/dashboard');
     } catch (err) {
         console.error(err);
@@ -199,7 +196,7 @@ supermarketController.exibirPerfil = async function (req, res) {
         res.render('supermercado/perfil', {
             title: 'Meu Perfil',
             utilizador,
-            supermercado: req.supermercado
+            supermercado: req.supermercado || null
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar perfil.');

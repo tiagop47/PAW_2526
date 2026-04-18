@@ -3,7 +3,7 @@ const config = require('../config/config');
 const { getDashboardUrl } = require('../middlewares/authMiddleware');
 const { rolesBackoffice } = require('../public/javascript/userValidator');
 
-authService.inicializarAdmin();
+authService.inicializarAdmin().catch(err => console.error('Erro ao inicializar admin:', err));
 
 var authController = {};
 
@@ -14,7 +14,7 @@ authController.exibirLogin = function (req, res) {
 authController.exibirRegisto = function (req, res) {
     res.render("loginRegisto/registar", {
         errorMessage: null,
-        siteKey: config.CAPTCHA_API_KEY, // Enviar chave pública
+        siteKey: config.CAPTCHA_API_KEY, 
         dados: {}
     });
 };

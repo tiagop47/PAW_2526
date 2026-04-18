@@ -4,6 +4,7 @@ const Product = require('../models/ProductModel');
 const Order = require('../models/OrderModel');
 const Category = require('../models/CategoryModel');
 const Coupon = require('../models/cupomModel');
+const emailService = require('./emailService');
 
 const adminService = {};
 
@@ -167,7 +168,50 @@ adminService.getUserByIdSemPassword = async function (id) {
 };
 
 adminService.atualizarUserById = async function (id, dados) {
-    return User.findByIdAndUpdate(id, dados, { new: true, runValidators: true });
+    const userAntigo = await User.findById(id);
+    const userAtualizado = await User.findByIdAndUpdate(id, dados, { new: true, runValidators: true });
+
+    if (userAntigo && userAntigo.role === 'supermercados' && dados.role !== 'supermercados') {
+        // Bloqueamos o supermercado associado para garantir integridade
+        await Supermarket.findOneAndUpdate(
+            { userId: id },
+            { estadoAprovacao: 'Bloqueado' }
+        );
+    }
+
+    return userAtualizado;
+};
+
+/**
+ * Obtém utilizadores com role 'supermercados' que ainda não possuem um supermercado associado.
+ */
+adminService.getUtilizadoresCandidatos = async function () {
+    const usersComRole = await User.find({ role: 'supermercados' }).select('_id nome email').lean();
+    const idsComSupermercado = await Supermarket.distinct('userId');
+
+    // Filtrar utilizadores que NÃO estão na lista de IDs que já têm supermercado
+    const idsSet = new Set(idsComSupermercado.map(id => id.toString()));
+    return usersComRole.filter(u => !idsSet.has(u._id.toString()));
+};
+
+/**
+ * Transfere a propriedade de um supermercado para um novo utilizador.
+ */
+adminService.transferirPropriedade = async function (supermercadoId, novoUserId) {
+    const novoDono = await User.findById(novoUserId);
+    if (!novoDono || novoDono.role !== 'supermercados') {
+        throw new Error('O novo dono tem de ter a role de supermercados.');
+    }
+
+    const jaTem = await Supermarket.findOne({ userId: novoUserId });
+    if (jaTem) {
+        throw new Error('Este utilizador já é dono de outro supermercado.');
+    }
+
+    return Supermarket.findByIdAndUpdate(supermercadoId, {
+        userId: novoUserId,
+        estadoAprovacao: 'Pendente'
+    }, { new: true });
 };
 
 adminService.getSupermercadoById = async function (id) {
@@ -344,35 +388,47 @@ adminService.listarCupoes = async function () {
         .sort({ criadoEm: -1 });
 };
 
-adminService.getLocalidadesSupermercados = async function () {
-    const localidades = await Supermarket.distinct('localizacao', { localizacao: { $nin: [null, ""] } });
-    return localidades;
-};
-
 adminService.criarCupao = async function (dados) {
-    if (!dados.localidadeAlvo || dados.localidadeAlvo.trim() === '') {
-        delete dados.localidadeAlvo;
-    }
-
     if (dados.codigo) {
         dados.codigo = dados.codigo.toUpperCase().trim();
     }
 
     const novoCupao = await Coupon.create(dados);
 
-    if (novoCupao.localidadeAlvo) {
-        await User.updateMany(
-            { role: 'clientes', morada: novoCupao.localidadeAlvo },
-            { $push: { cupoes: novoCupao._id } }
-        );
-    } else {
-        await User.updateMany(
-            { role: 'clientes' },
-            { $push: { cupoes: novoCupao._id } }
-        );
+    // Associar cupão aos utilizadores na base de dados
+    await User.updateMany(
+        { role: 'clientes' },
+        { $push: { cupoes: novoCupao._id } }
+    );
+
+    // Notificar clientes por email
+    const clientes = await User.find({ role: 'clientes' }).select('email').lean();
+    const emails = clientes.map(c => c.email);
+
+    if (emails.length > 0) {
+        // O envio é assíncrono mas não bloqueamos a resposta ao admin
+        emailService.enviarEmailNovoCupao(emails, novoCupao);
     }
 
     return novoCupao;
+};
+
+adminService.desativarCupao = async function (id) {
+    return Coupon.findByIdAndUpdate(id, { ativo: false }, { new: true });
+};
+
+adminService.ativarCupao = async function (id) {
+    return Coupon.findByIdAndUpdate(id, { ativo: true }, { new: true });
+};
+
+adminService.eliminarCupao = async function (id) {
+    // Primeiro removemos a referência do cupão em todos os utilizadores
+    await User.updateMany(
+        { cupoes: id },
+        { $pull: { cupoes: id } }
+    );
+    // Depois eliminamos o cupão
+    return Coupon.findByIdAndDelete(id);
 };
 
 /**
