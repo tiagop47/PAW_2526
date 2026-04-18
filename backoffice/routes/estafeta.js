@@ -13,7 +13,6 @@ router.get('/dashboard', estafetaController.exibirDashboard);
 router.get('/entregas', estafetaController.listarEntregasDisponiveis);
 router.get('/minhas-entregas', estafetaController.listarMinhasEntregas);
 
-
 /**
  * Middleware de Parâmetro: Carrega a encomenda se :orderId estiver presente no URL.
  * Uniformiza com o padrão do Administrador e Supermercado.

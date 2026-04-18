@@ -47,8 +47,6 @@ router.get('/produtos/novo', supermarketController.exibirFormularioNovo);
 router.get('/produtos/:productId', supermarketController.exibirDetalhes);
 router.get('/produtos/editar/:productId', supermarketController.exibirFormularioEditar);
 
-
-
 router.post('/produtos', upload.single('imagem'), supermarketController.criarProduto);
 router.post('/produtos/editar/:productId', upload.single('imagem'), supermarketController.atualizarProduto);
 router.post('/produtos/eliminar/:productId', supermarketController.eliminarProduto);

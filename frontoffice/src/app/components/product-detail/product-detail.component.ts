@@ -10,7 +10,7 @@ import { BarcodeDirective } from '../../directives/barcode.directive';
   standalone: true,
   imports: [CommonModule, RouterModule, BarcodeDirective],
   templateUrl: './product-detail.component.html',
-  styleUrls: ['./product-detail.component.css']
+  styleUrls: ['./product-detail.component.css'],
 })
 export class ProductDetailComponent implements OnInit {
   product: ProductDTO | null = null;
