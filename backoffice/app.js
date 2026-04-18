@@ -53,7 +53,7 @@ app.use(injetarUserNasViews);
 // 1. Rota da Documentação
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// 2. Rotas do Backoffice (EJS / Gestão)
+// 2. Rotas do Backoffice (EJS / BackOffice)
 app.use('/', require('./routes/backofficeIndex'));
 
 // 3. Rotas da API (Angular / Frontoffice)
