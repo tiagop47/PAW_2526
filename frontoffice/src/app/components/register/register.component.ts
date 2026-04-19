@@ -1,5 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -12,32 +12,34 @@ import { SupermarketDTO } from '../../models/supermarket.dto';
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule, RouterLink],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
+  styleUrl: './register.component.css',
 })
 export class RegisterComponent implements OnInit {
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private supermarketService = inject(SupermarketService);
-  private router = inject(Router);
-
   supermercados: SupermarketDTO[] = [];
   errorMessage: string = '';
+  registerForm!: FormGroup;
 
-  registerForm = this.fb.group({
-    nome: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', Validators.required],
-    nif: ['', [Validators.minLength(9), Validators.maxLength(9)]],
-    telefone: ['', Validators.required],
-    morada: ['', Validators.required]
-  });
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private supermarketService: SupermarketService,
+    private router: Router,
+  ) {
+    this.registerForm = this.fb.group({
+      nome: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required],
+      nif: ['', [Validators.minLength(9), Validators.maxLength(9)]],
+      telefone: ['', Validators.required],
+      morada: ['', Validators.required],
+    });
+  }
 
   ngOnInit() {
-    this.supermarketService.getSupermarkets()
-      .subscribe({
-        next: (markets) => this.supermercados = markets,
-        error: (err) => console.error('Erro ao carregar supermercados:', err)
-      });
+    this.supermarketService.getSupermarkets().subscribe({
+      next: (markets) => (this.supermercados = markets),
+      error: (err) => console.error('Erro ao carregar supermercados:', err),
+    });
   }
 
   onSubmit() {
@@ -48,7 +50,7 @@ export class RegisterComponent implements OnInit {
         },
         error: (err) => {
           this.errorMessage = err.error?.error || 'Erro ao criar conta.';
-        }
+        },
       });
     }
   }

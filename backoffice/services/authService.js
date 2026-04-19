@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const { rolesPublicas } = require('../public/javascript/userValidator');
 const config = require('../config/config');
 const emailService = require('./emailService');
-const Coupon = require('../models/cupomModel');
+const Coupon = require('../models/CupomModel');
 
 const authService = {};
 

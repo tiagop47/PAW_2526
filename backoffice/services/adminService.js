@@ -3,7 +3,7 @@ const User = require('../models/UserModel');
 const Product = require('../models/ProductModel');
 const Order = require('../models/OrderModel');
 const Category = require('../models/CategoryModel');
-const Coupon = require('../models/cupomModel');
+const Coupon = require('../models/CupomModel');
 const emailService = require('./emailService');
 
 const adminService = {};
