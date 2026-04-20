@@ -21,38 +21,38 @@
 
                     <div class="card border-0 shadow-sm">
                         <div class="card-body p-4">
-                            <form action="/admin/utilizadores/<%= user._id %>/editar" method="POST">
+                            <form action="/admin/utilizadores/<%= targetUser._id %>/editar" method="POST">
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">Nome</label>
-                                    <input type="text" name="nome" class="form-control" value="<%= user.nome %>"
+                                    <input type="text" name="nome" class="form-control" value="<%= targetUser.nome %>"
                                         required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">Email</label>
-                                    <input type="email" name="email" class="form-control" value="<%= user.email %>"
+                                    <input type="email" name="email" class="form-control" value="<%= targetUser.email %>"
                                         required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">Telefone</label>
                                     <input type="text" name="telefone" class="form-control"
-                                        value="<%= user.telefone %>">
+                                        value="<%= targetUser.telefone %>">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">NIF</label>
-                                    <input type="text" name="nif" class="form-control" value="<%= user.nif || '' %>">
+                                    <input type="text" name="nif" class="form-control" value="<%= targetUser.nif || '' %>">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">Morada</label>
-                                    <input type="text" name="morada" class="form-control" value="<%= user.morada %>">
+                                    <input type="text" name="morada" class="form-control" value="<%= targetUser.morada %>">
                                 </div>
                                 <div class="mb-4">
                                     <label class="form-label small fw-bold">Cargo</label>
                                     <select name="role" class="form-select">
-                                        <option value="clientes" <%=user.role==='clientes' ? 'selected' : '' %>>Cliente
+                                        <option value="clientes" <%=targetUser.role==='clientes' ? 'selected' : '' %>>Cliente
                                         </option>
-                                        <option value="estafetas" <%=user.role==='estafetas' ? 'selected' : '' %>
+                                        <option value="estafetas" <%=targetUser.role==='estafetas' ? 'selected' : '' %>
                                             >Estafeta</option>
-                                        <option value="supermercados" <%=user.role==='supermercados' ? 'selected' : ''
+                                        <option value="supermercados" <%=targetUser.role==='supermercados' ? 'selected' : ''
                                             %>>Supermercado</option>
                                     </select>
                                 </div>
