@@ -24,7 +24,7 @@
                             <form action="/admin/utilizadores/<%= targetUser._id %>/editar" method="POST">
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">Nome</label>
-                                    <input type="text" name="nome" class="form-control" value="<%= targetUser.nome %>"
+                                    <input type="text" name="nome" class="form-control" value="<%= targetUser.nome %>" maxlength="3"
                                         required>
                                 </div>
                                 <div class="mb-3">
@@ -35,15 +35,15 @@
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">Telefone</label>
                                     <input type="text" name="telefone" class="form-control"
-                                        value="<%= targetUser.telefone %>">
+                                        value="<%= targetUser.telefone %>" minlength="9" maxlength="9" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">NIF</label>
-                                    <input type="text" name="nif" class="form-control" value="<%= targetUser.nif || '' %>">
+                                    <input type="text" name="nif" class="form-control" value="<%= targetUser.nif || '' %>" minlength="9" maxlength="9" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold">Morada</label>
-                                    <input type="text" name="morada" class="form-control" value="<%= targetUser.morada %>">
+                                    <input type="text" name="morada" class="form-control" value="<%= targetUser.morada %>" minlength="5" required>
                                 </div>
                                 <div class="mb-4">
                                     <label class="form-label small fw-bold">Cargo</label>
