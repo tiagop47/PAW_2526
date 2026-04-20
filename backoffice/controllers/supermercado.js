@@ -212,6 +212,7 @@ supermarketController.listarEncomendas = async function (req, res) {
         res.render('supermercado/encomendas', {
             title: 'Encomendas',
             encomendas,
+            transicoesPermitidas: supermarketService.transicoesPermitidas,
             success: req.query.success
         });
     } catch (err) {
@@ -303,7 +304,38 @@ supermarketController.exibirVendaCaixa = async function (req, res) {
 supermarketController.registarVenda = async function (req, res) {
     try {
         const { emailCliente, nomeCliente, nifCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, itens, metodoEntrega } = req.body;
-        const listaItens = JSON.parse(itens || '[]');
+
+        let listaItens;
+        try {
+            listaItens = JSON.parse(itens || '[]');
+        } catch (e) {
+            return res.status(400).render('error', {
+                message: 'Dados inválidos',
+                tituloErro: 'Erro no Registo de Venda',
+                detalheErro: 'O formato dos itens enviados é inválido.',
+                error: { status: 400 }
+            });
+        }
+
+        if (!Array.isArray(listaItens) || listaItens.length === 0) {
+            return res.status(400).render('error', {
+                message: 'Carrinho vazio',
+                tituloErro: 'Erro no Registo de Venda',
+                detalheErro: 'Adicione pelo menos um produto ao carrinho.',
+                error: { status: 400 }
+            });
+        }
+
+        for (const item of listaItens) {
+            if (!item.produtoId || !Number.isInteger(item.quantidade) || item.quantidade < 1) {
+                return res.status(400).render('error', {
+                    message: 'Item inválido',
+                    tituloErro: 'Erro no Registo de Venda',
+                    detalheErro: 'Cada item deve ter um produtoId válido e uma quantidade inteira positiva.',
+                    error: { status: 400 }
+                });
+            }
+        }
 
         await supermarketService.registarVenda(req.supermercado._id, {
             emailCliente, nomeCliente, nifCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, listaItens, metodoEntrega
@@ -317,7 +349,7 @@ supermarketController.registarVenda = async function (req, res) {
             message: err.message,
             tituloErro: 'Erro no Registo de Venda',
             detalheErro: err.message,
-            error: { status: 400, stack: '' }
+            error: { status: 400 }
         });
     }
 };

@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 
 const OrderItemSchema = new mongoose.Schema({
     produtoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
-    quantidade: { type: Number, required: true, min: 1 },
-    precoUnitario: { type: Number, required: true }
+    quantidade: { type: Number, required: true, min: [1, 'A quantidade mínima é 1'] },
+    precoUnitario: { type: Number, required: true, min: [0, 'O preço unitário não pode ser negativo'] }
 },
     { _id: false });
 
@@ -13,11 +13,14 @@ const OrderSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, ref: 'User'
     },
     estafetaId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    produtos: [OrderItemSchema],
-    valorTotal: { type: Number, required: true },
+    produtos: {
+        type: [OrderItemSchema],
+        validate: [function (arr) { return arr.length > 0; }, 'A encomenda deve ter pelo menos um produto']
+    },
+    valorTotal: { type: Number, required: true, min: [0, 'O valor total não pode ser negativo'] },
     estado: {
         type: String,
-        enum: ['pendente', 'confirmada', 'preparacao', 'em_entrega', 'entregue', 'cancelada'],
+        enum: ['pendente', 'confirmada', 'preparacao', 'em_entrega', 'aguarda_confirmacao', 'entregue', 'cancelada'],
         default: 'pendente'
     },
     metodoEntrega: {
@@ -32,8 +35,8 @@ const OrderSchema = new mongoose.Schema({
         }
     },
     coordenadasEntrega: {
-        lat: { type: Number },
-        lng: { type: Number }
+        lat: { type: Number, min: [-90, 'Latitude inválida'], max: [90, 'Latitude inválida'] },
+        lng: { type: Number, min: [-180, 'Longitude inválida'], max: [180, 'Longitude inválida'] }
     },
     faturaNumero: { type: String },
     faturaData: { type: Date },

@@ -11,18 +11,51 @@ const hintMoradaVenda = document.getElementById('hintMorada');
 const inputLatitudeEntrega = document.getElementById('latitudeEntrega');
 const inputLongitudeEntrega = document.getElementById('longitudeEntrega');
 const textoCoordsSelecionadas = document.getElementById('coordsSelecionadas');
-const elMapaEntrega = document.getElementById('mapaEscolherEntrega');
-const tabelaPesquisaModalBody = document.querySelector('[data-produto-pesquisa="tabela"]');
+const mapaEntregaElemento = document.getElementById('mapaEscolherEntrega');
 
+const tabelaPesquisaModalBody = document.querySelector('[data-produto-pesquisa="tabela"]');
 const carrinhoDeCompras = [];
 
 let mapaInstancia;
 let marcadorEntregaInstancia = null;
 let ultimosProdutosPesquisa = [];
 
+// ── Helpers ──
+
+function isEntregaDomicilio() {
+    return selectMetodoEntrega.value === ENTREGA_DOMICILIO;
+}
+
 function obterQtdNoCarrinho(produtoId) {
     const item = carrinhoDeCompras.find(i => i.id === produtoId);
     return item ? item.qtd : 0;
+}
+
+/**
+ * Sincroniza o DOM do carrinho e, se houver pesquisa activa, re-renderiza o modal.
+ */
+function sincronizarCarrinhoEModal() {
+    atualizarCarrinhoDOM();
+    if (ultimosProdutosPesquisa.length > 0) {
+        renderizarResultadosModal(ultimosProdutosPesquisa, tabelaPesquisaModalBody);
+    }
+}
+
+function definirCoordenadasEntrega(lat, lng) {
+    inputLatitudeEntrega.value = lat.toFixed(6);
+    inputLongitudeEntrega.value = lng.toFixed(6);
+    textoCoordsSelecionadas.textContent = `Coordenadas selecionadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+}
+
+function limparCoordenadasEntrega() {
+    inputLatitudeEntrega.value = '';
+    inputLongitudeEntrega.value = '';
+    textoCoordsSelecionadas.textContent = SEM_COORDS;
+
+    if (marcadorEntregaInstancia) {
+        mapaInstancia.removeLayer(marcadorEntregaInstancia);
+        marcadorEntregaInstancia = null;
+    }
 }
 
 function renderizarResultadosModal(produtos, tabelaBody) {
@@ -84,7 +117,7 @@ function renderizarResultadosModal(produtos, tabelaBody) {
                 format: 'CODE128',
                 width: 1.2,
                 height: 30,
-                displayValue: true, // Mostra o código em texto por baixo
+                displayValue: true, 
                 fontSize: 10,
                 margin: 0
             });
@@ -100,19 +133,10 @@ function adicionarUmAoCarrinho(id, nome, preco, stock) {
             itemExistente.qtd += 1;
         }
     } else {
-        carrinhoDeCompras.push({
-            id: id,
-            nome: nome,
-            preco: preco,
-            stock: stock,
-            qtd: 1
-        });
+        carrinhoDeCompras.push({ id, nome, preco, stock, qtd: 1 });
     }
 
-    atualizarCarrinhoDOM();
-    if (ultimosProdutosPesquisa.length > 0) {
-        renderizarResultadosModal(ultimosProdutosPesquisa, tabelaPesquisaModalBody);
-    }
+    sincronizarCarrinhoEModal();
 }
 
 function removerUmDoCarrinho(id) {
@@ -121,15 +145,11 @@ function removerUmDoCarrinho(id) {
     if (itemExistente) {
         itemExistente.qtd -= 1;
         if (itemExistente.qtd <= 0) {
-            const index = carrinhoDeCompras.indexOf(itemExistente);
-            carrinhoDeCompras.splice(index, 1);
+            carrinhoDeCompras.splice(carrinhoDeCompras.indexOf(itemExistente), 1);
         }
     }
 
-    atualizarCarrinhoDOM();
-    if (ultimosProdutosPesquisa.length > 0) {
-        renderizarResultadosModal(ultimosProdutosPesquisa, tabelaPesquisaModalBody);
-    }
+    sincronizarCarrinhoEModal();
 }
 
 function removerDoCarrinho(id) {
@@ -221,32 +241,8 @@ function atualizarCarrinhoDOM() {
     tabelaCarrinhoBody.innerHTML = htmlCarrinho;
 }
 
-function inicializarPesquisa() {
-    const filtroPesquisa = inicializarPesquisaProdutos({
-        debounceMs: 250,
-        renderTabela: renderizarResultadosModal
-    });
-
-    if (filtroPesquisa && typeof filtroPesquisa.executarPesquisa === 'function') {
-        filtroPesquisa.executarPesquisa();
-    }
-}
-
-function limparCoordenadasEntrega() {
-    inputLatitudeEntrega.value = '';
-    inputLongitudeEntrega.value = '';
-    textoCoordsSelecionadas.textContent = SEM_COORDS;
-
-    if (marcadorEntregaInstancia) {
-        mapaInstancia.removeLayer(marcadorEntregaInstancia);
-        marcadorEntregaInstancia = null;
-    }
-}
-
 function atualizarUIEntrega() {
-    const entregaDomicilio = selectMetodoEntrega.value === ENTREGA_DOMICILIO;
-
-    if (entregaDomicilio) {
+    if (isEntregaDomicilio()) {
         labelMoradaVenda.innerHTML = 'Morada de Destino <span class="text-danger">*</span>';
         inputMoradaVenda.required = true;
         hintMoradaVenda.textContent = 'Obrigatória para entregas por estafeta.';
@@ -265,19 +261,13 @@ function atualizarUIEntrega() {
 }
 
 function inicializarMapaEntrega() {
-    const elMapaEntrega = document.getElementById('mapaEscolherEntrega');
-    const latSuper = Number(elMapaEntrega?.dataset.superLat);
-    const lngSuper = Number(elMapaEntrega?.dataset.superLng);
-    const raioSuperKm = Number(elMapaEntrega?.dataset.superRaio) || 5;
+    const latSuper = Number(mapaEntregaElemento?.dataset.superLat);
+    const lngSuper = Number(mapaEntregaElemento?.dataset.superLng);
+    const raioSuperKm = Number(mapaEntregaElemento?.dataset.superRaio) || 5;
     const temCoordenadasSuper = Number.isFinite(latSuper) && Number.isFinite(lngSuper);
 
-    let latInicial = 41.1579;
-    let lngInicial = -8.6291;
-
-    if (temCoordenadasSuper) {
-        latInicial = latSuper;
-        lngInicial = lngSuper;
-    }
+    const latInicial = temCoordenadasSuper ? latSuper : 41.1579;
+    const lngInicial = temCoordenadasSuper ? lngSuper : -8.6291;
 
     mapaInstancia = inicializarMapa('mapaEscolherEntrega', latInicial, lngInicial);
 
@@ -296,46 +286,25 @@ function inicializarMapaEntrega() {
     }
 
     mapaInstancia.on('click', function (event) {
-        const metodo = document.getElementById('metodoEntrega')?.value;
-        if (metodo !== ENTREGA_DOMICILIO) {
+        if (!isEntregaDomicilio()) {
             return;
         }
 
         const lat = event.latlng.lat;
         const lng = event.latlng.lng;
 
-        // Validar se o ponto clicado está dentro do raio de entrega do supermercado
         if (temCoordenadasSuper) {
-            const posSuper = L.latLng(latSuper, lngSuper);
-            const posClique = L.latLng(lat, lng);
-            const distancia = posSuper.distanceTo(posClique);
+            const distancia = L.latLng(latSuper, lngSuper).distanceTo(L.latLng(lat, lng));
             const raioMaximo = raioSuperKm * CONFIG.MULTIPLIER_RAIO;
 
             if (distancia > raioMaximo) {
-                const txtCoords = document.getElementById('coordsSelecionadas');
-                if (txtCoords) txtCoords.textContent = 'Fora do raio de entrega! Selecione um ponto dentro da área marcada.';
-                
-                // Limpar coordenadas anteriores se existirem
-                const inputLat = document.getElementById('latitudeEntrega');
-                const inputLng = document.getElementById('longitudeEntrega');
-                if (inputLat) inputLat.value = '';
-                if (inputLng) inputLng.value = '';
-
-                if (marcadorEntregaInstancia) {
-                    mapaInstancia.removeLayer(marcadorEntregaInstancia);
-                    marcadorEntregaInstancia = null;
-                }
+                textoCoordsSelecionadas.textContent = 'Fora do raio de entrega! Selecione um ponto dentro da área marcada.';
+                limparCoordenadasEntrega();
                 return;
             }
         }
 
-        const inputLat = document.getElementById('latitudeEntrega');
-        const inputLng = document.getElementById('longitudeEntrega');
-        const txtCoords = document.getElementById('coordsSelecionadas');
-
-        if (inputLat) inputLat.value = lat.toFixed(6);
-        if (inputLng) inputLng.value = lng.toFixed(6);
-        if (txtCoords) txtCoords.textContent = `Coordenadas selecionadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        definirCoordenadasEntrega(lat, lng);
 
         if (!marcadorEntregaInstancia) {
             marcadorEntregaInstancia = L.marker([lat, lng]).addTo(mapaInstancia);
@@ -343,6 +312,17 @@ function inicializarMapaEntrega() {
             marcadorEntregaInstancia.setLatLng([lat, lng]);
         }
     });
+}
+
+function inicializarPesquisa() {
+    const filtroPesquisa = inicializarPesquisaProdutos({
+        debounceMs: 250,
+        renderTabela: renderizarResultadosModal
+    });
+
+    if (filtroPesquisa && typeof filtroPesquisa.executarPesquisa === 'function') {
+        filtroPesquisa.executarPesquisa();
+    }
 }
 
 function obterItensSelecionados() {
@@ -363,15 +343,13 @@ async function validarStock(itens) {
 }
 
 function validarFormulario() {
-    const entregaDomicilio = selectMetodoEntrega.value === ENTREGA_DOMICILIO;
-
-    if (entregaDomicilio && !inputMoradaVenda.value.trim()) {
+    if (isEntregaDomicilio() && !inputMoradaVenda.value.trim()) {
         alert('A morada de destino é obrigatória para encomendas a serem entregues por estafeta.');
         inputMoradaVenda.focus();
         return false;
     }
 
-    if (entregaDomicilio && (!inputLatitudeEntrega.value || !inputLongitudeEntrega.value)) {
+    if (isEntregaDomicilio() && (!inputLatitudeEntrega.value || !inputLongitudeEntrega.value)) {
         alert('Selecione no mapa as coordenadas da entrega.');
         return false;
     }

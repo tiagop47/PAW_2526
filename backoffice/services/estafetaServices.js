@@ -84,7 +84,7 @@ estafetaService.obterEntregasPorConcelho = async function (concelho) {
 };
 
 estafetaService.obterMinhasEntregas = async function (estafetaId) {
-    return Order.find({ estafetaId, estado: { $in: ['em_entrega', 'entregue'] } })
+    return Order.find({ estafetaId, estado: { $in: ['em_entrega', 'aguarda_confirmacao', 'entregue'] } })
         .populate('supermercadoId', 'nome localizacao localizacaoGeo')
         .populate('clienteId', 'nome morada')
         .sort({ criadoEm: -1 });
@@ -92,8 +92,8 @@ estafetaService.obterMinhasEntregas = async function (estafetaId) {
 
 estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
     const ativas = await Order.countDocuments({ estafetaId, estado: 'em_entrega' });
-    if (ativas >= 3) {
-        throw new Error('Atingiu o limite de 3 entregas em curso.');
+    if (ativas >= 1) {
+        throw new Error('Já tens uma entrega em curso. Conclui-a antes de aceitar outra.');
     }
 
     // Operação atómica: só atualiza se estafetaId for null E estado for 'confirmada'
@@ -116,7 +116,7 @@ estafetaService.confirmarEntrega = async function (encomendaId, estafetaId) {
         throw new Error('Operação inválida para esta entrega');
     }
 
-    encomenda.estado = 'entregue';
+    encomenda.estado = 'aguarda_confirmacao';
 
     return encomenda.save();
 };

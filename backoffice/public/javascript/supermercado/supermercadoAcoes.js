@@ -22,7 +22,9 @@ if (latInput && lonInput) {
         const lon = parseFloat(lonInput.value) || -8.2814;
 
         const map = inicializarMapa('mapa-edicao', lat, lon, 12);
-        if (!map) return;
+        if (!map) {
+            return;
+        }
 
         configurarCliqueMarcador(map, latInput, lonInput);
         setTimeout(function () { map.invalidateSize(); }, 200);

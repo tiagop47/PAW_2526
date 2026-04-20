@@ -59,3 +59,54 @@ Ao não configurar uma conta email pessoal o sistema possui um mecanismo de *fal
 
 
 ---
+
+## Fluxo de Encomendas
+
+### Estados possíveis
+
+| Estado | Descrição |
+| :--- | :--- |
+| `pendente` | Encomenda criada pelo cliente (frontoffice) — aguarda confirmação do supermercado |
+| `confirmada` | Supermercado confirmou a encomenda — pronta para preparação |
+| `preparacao` | Encomenda está a ser preparada pelo supermercado |
+| `em_entrega` | Estafeta aceitou e está a caminho do cliente |
+| `aguarda_confirmacao` | Estafeta confirmou a entrega — aguarda confirmação do cliente |
+| `entregue` | Cliente confirmou a receção — **estado final** |
+| `cancelada` | Encomenda cancelada em qualquer fase — **estado final** |
+
+### Diagrama de transições
+
+```
+pendente → confirmada → preparacao → em_entrega → aguarda_confirmacao → entregue
+    ↓           ↓            ↓            ↓                ↓
+ cancelada   cancelada    cancelada    cancelada        cancelada
+```
+
+### Quem faz o quê?
+
+| Transição | Responsável |
+| :--- | :--- |
+| `pendente` → `confirmada` | Supermercado (backoffice) |
+| `confirmada` → `preparacao` | Supermercado (backoffice) |
+| `preparacao` → `em_entrega` | Supermercado (backoffice) |
+| `em_entrega` → `aguarda_confirmacao` | Estafeta (ao confirmar a entrega) |
+| `aguarda_confirmacao` → `entregue` | Cliente (ao confirmar a receção) |
+| qualquer estado → `cancelada` | Supermercado (backoffice) |
+
+### Pontos de entrada
+
+**Venda em Caixa (POS — Backoffice)**
+- **Levantamento em loja**: A encomenda é criada diretamente como `entregue` (venda imediata).
+- **Entrega ao domicílio**: A encomenda é criada como `confirmada` (entra no fluxo de entrega).
+
+**Encomenda Online (Frontoffice)**
+- A encomenda é criada como `pendente` e segue o fluxo completo desde o início.
+
+### Regras de negócio
+- **Estados finais** (`entregue`, `cancelada`): não permitem mais alterações.
+- **Sem recuos**: um estado só pode avançar para o próximo, nunca voltar atrás.
+- **Stock**: é decrementado atomicamente no momento da criação da venda e reposto caso a encomenda seja cancelada.
+- **Fatura**: é gerada automaticamente na primeira transição para `confirmada` ou superior.
+- **Avaliação**: o cliente só pode avaliar após o estado `entregue`.
+
+---

@@ -32,8 +32,7 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Descrição da Loja</label>
-                            <textarea name="descricao" class="form-control"
-                                rows="2" maxlength="500">
+                            <textarea name="descricao" class="form-control" rows="2" maxlength="500">
                                 <%= supermercado.descricao || '' %> 
                             </textarea>
                         </div>
@@ -70,12 +69,16 @@
                             <label class="form-label fw-bold small d-block">Métodos de Entrega</label>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="checkbox" name="metodosEntrega"
-                                    value="levantamento_loja" <%= (supermercado.custoEntregaPorMetodo?.levantamento_loja !== undefined && supermercado.custoEntregaPorMetodo?.levantamento_loja !== null) ? 'checked' : '' %>>
+                                    value="levantamento_loja" <%=(supermercado.custoEntregaPorMetodo?.levantamento_loja
+                                    !==undefined && supermercado.custoEntregaPorMetodo?.levantamento_loja !==null)
+                                    ? 'checked' : '' %>>
                                 <label class="form-check-label small">levantamento_loja</label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="checkbox" name="metodosEntrega"
-                                    value="entrega_domicilio" <%= (supermercado.custoEntregaPorMetodo?.entrega_domicilio !== undefined && supermercado.custoEntregaPorMetodo?.entrega_domicilio !== null) ? 'checked' : '' %>>
+                                    value="entrega_domicilio" <%=(supermercado.custoEntregaPorMetodo?.entrega_domicilio
+                                    !==undefined && supermercado.custoEntregaPorMetodo?.entrega_domicilio !==null)
+                                    ? 'checked' : '' %>>
                                 <label class="form-check-label small">entrega_domicilio</label>
                             </div>
                         </div>
@@ -89,9 +92,8 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small">Raio de Entrega (km)</label>
-                                <input type="number" step="1" name="raioEntregaKm"
-                                    class="form-control"
-                                    value="<%= supermercado.raioEntregaKm ?? 5 %>" min="1" max="50">
+                                <input type="number" step="1" name="raioEntregaKm" class="form-control"
+                                    value="<%= supermercado.raioEntregaKm ?? 5 %>" min="1" max="10">
                                 <small class="text-muted">Define o alcance máximo das entregas ao domicílio.</small>
                             </div>
                         </div>

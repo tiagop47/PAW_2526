@@ -66,7 +66,7 @@ supermarketService.obterDadosDashboard = async function (supermercadoId) {
             { $match: { supermercadoId: new mongoose.Types.ObjectId(supermercadoId) } },
             { $group: { _id: null, media: { $avg: '$notaSupermercado' }, total: { $sum: 1 } } }
         ]),
-        Order.countDocuments({ supermercadoId, estado: 'pendente' })
+        Order.countDocuments({ supermercadoId, estado: { $in: ['pendente', 'aguarda_confirmacao'] } })
     ]);
 
     const vendasTotais = vendasStats.length > 0 ? vendasStats[0].total : 0;
@@ -255,6 +255,18 @@ supermarketService.obterEncomendaPorId = async function (supermercadoId, orderId
         .populate('clienteId', 'nome email telefone');
 };
 
+const transicoesPermitidas = {
+    pendente:               ['confirmada', 'cancelada'],
+    confirmada:             ['preparacao', 'cancelada'],
+    preparacao:             ['em_entrega', 'cancelada'],
+    em_entrega:             ['aguarda_confirmacao', 'cancelada'],
+    aguarda_confirmacao:    ['entregue', 'cancelada'],
+    entregue:               [],
+    cancelada:              [],
+};
+
+supermarketService.transicoesPermitidas = transicoesPermitidas;
+
 supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, orderId, estado) {
     const order = await Order.findOne({ _id: orderId, supermercadoId });
     if (!order) {
@@ -266,7 +278,12 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
         return order;
     }
 
-    const estadosComStockOcupado = ['pendente', 'confirmada', 'preparacao', 'em_entrega', 'entregue'];
+    const permitidos = transicoesPermitidas[estadoAnterior] || [];
+    if (!permitidos.includes(estado)) {
+        throw new Error(`Transição de estado inválida: ${estadoAnterior} → ${estado}`);
+    }
+
+    const estadosComStockOcupado = ['pendente', 'confirmada', 'preparacao', 'em_entrega', 'aguarda_confirmacao', 'entregue'];
     const eraOcupado = estadosComStockOcupado.includes(estadoAnterior);
     const vaiSerOcupado = estadosComStockOcupado.includes(estado);
 
@@ -294,7 +311,7 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
     }
 
     //Lógica de fatura: Gerar apenas se entrar num estado "avançado" e ainda não tiver
-    const estadosComFatura = ['confirmada', 'preparacao', 'em_entrega', 'entregue'];
+    const estadosComFatura = ['confirmada', 'preparacao', 'em_entrega', 'aguarda_confirmacao', 'entregue'];
     if (estadosComFatura.includes(estado) && !order.faturaNumero) {
         order.faturaNumero = await gerarNumeroFatura(supermercadoId);
         order.faturaData = new Date();

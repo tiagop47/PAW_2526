@@ -31,7 +31,7 @@ const SupermarketSchema = new mongoose.Schema({
         type: Number,
         default: 5,
         min: [1, "O raio mínimo é 1 km"],
-        max: [50, "O raio máximo é 50 km"]
+        max: [10, "O raio máximo é 10 km"]
     },
     horarioFuncionamento: String,
     custoEntregaPorMetodo: {
