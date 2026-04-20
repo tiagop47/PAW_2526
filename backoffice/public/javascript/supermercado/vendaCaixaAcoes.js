@@ -268,7 +268,7 @@ function inicializarMapaEntrega() {
     const elMapaEntrega = document.getElementById('mapaEscolherEntrega');
     const latSuper = Number(elMapaEntrega?.dataset.superLat);
     const lngSuper = Number(elMapaEntrega?.dataset.superLng);
-    const raioSuperKm = 5;
+    const raioSuperKm = Number(elMapaEntrega?.dataset.superRaio) || 5;
     const temCoordenadasSuper = Number.isFinite(latSuper) && Number.isFinite(lngSuper);
 
     let latInicial = 41.1579;
@@ -285,7 +285,10 @@ function inicializarMapaEntrega() {
         L.marker([latSuper, lngSuper]).addTo(mapaInstancia).bindPopup("<b>Supermercado</b>");
 
         const circuloAtuacao = L.circle([latSuper, lngSuper], {
-            ...CONFIG.ESTILO_AREA,
+            color: CONFIG.ESTILO_AREA.color,
+            fillColor: CONFIG.ESTILO_AREA.fillColor,
+            fillOpacity: CONFIG.ESTILO_AREA.fillOpacity,
+            weight: CONFIG.ESTILO_AREA.weight,
             radius: (raioSuperKm * CONFIG.MULTIPLIER_RAIO)
         }).addTo(mapaInstancia);
 
@@ -300,6 +303,31 @@ function inicializarMapaEntrega() {
 
         const lat = event.latlng.lat;
         const lng = event.latlng.lng;
+
+        // Validar se o ponto clicado está dentro do raio de entrega do supermercado
+        if (temCoordenadasSuper) {
+            const posSuper = L.latLng(latSuper, lngSuper);
+            const posClique = L.latLng(lat, lng);
+            const distancia = posSuper.distanceTo(posClique);
+            const raioMaximo = raioSuperKm * CONFIG.MULTIPLIER_RAIO;
+
+            if (distancia > raioMaximo) {
+                const txtCoords = document.getElementById('coordsSelecionadas');
+                if (txtCoords) txtCoords.textContent = 'Fora do raio de entrega! Selecione um ponto dentro da área marcada.';
+                
+                // Limpar coordenadas anteriores se existirem
+                const inputLat = document.getElementById('latitudeEntrega');
+                const inputLng = document.getElementById('longitudeEntrega');
+                if (inputLat) inputLat.value = '';
+                if (inputLng) inputLng.value = '';
+
+                if (marcadorEntregaInstancia) {
+                    mapaInstancia.removeLayer(marcadorEntregaInstancia);
+                    marcadorEntregaInstancia = null;
+                }
+                return;
+            }
+        }
 
         const inputLat = document.getElementById('latitudeEntrega');
         const inputLng = document.getElementById('longitudeEntrega');

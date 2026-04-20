@@ -5,7 +5,6 @@
 
 let meuMapa;
 
-// --- CONFIGURAÇÕES ---
 const CONFIG = {
     CORES: { mercado: '#000000', destino: '#333333' },
     ESTILO_AREA: { color: '#000000', fillColor: '#000000', fillOpacity: 0.15, weight: 2 },
@@ -18,7 +17,6 @@ const CONFIG = {
     }
 };
 
-// Armazenamento de camadas para manipulação dinâmica (filtros/foco)
 const layers = {
     mercados: {}, // { id: { marker, area, zona } }
     destinos: []  // [ { marker, zona } ]
@@ -41,12 +39,11 @@ function inicializarMapa(idElemento, lat = CONFIG.COORD_PADRAO[0], lon = CONFIG.
 /**
  * Adiciona um supermercado e a sua área de atuação ao mapa.
  */
-function adicionarMercadoNoMapa(id, nome, lat, lon, zona = '') {
+function adicionarMercadoNoMapa(id, nome, lat, lon, zona = '', raioKm = 5) {
     const pos = [lat, lon];
     const marker = L.marker(pos).addTo(meuMapa).bindPopup(`<b>${nome}</b>`);
 
-    const RAIO_PADRAO = 5;
-    const raioVisual = RAIO_PADRAO * CONFIG.MULTIPLIER_RAIO;
+    const raioVisual = raioKm * CONFIG.MULTIPLIER_RAIO;
 
     const area = L.circle(pos, {
         color: CONFIG.ESTILO_AREA.color,
@@ -75,7 +72,7 @@ async function carregarMercadosDoServidor() {
                 return;
             }
 
-            adicionarMercadoNoMapa(m._id, m.nome, c[1], c[0], m.localizacao);
+            adicionarMercadoNoMapa(m._id, m.nome, c[1], c[0], m.localizacao, m.raioEntregaKm || 5);
             coords.push([c[1], c[0]]);
         });
 

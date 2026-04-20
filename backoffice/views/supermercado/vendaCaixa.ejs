@@ -96,6 +96,7 @@
                                 <div id="mapaEscolherEntrega" class="venda-caixa-mapa"
                                     data-super-lat="<%= supermercado && supermercado.localizacaoGeo && supermercado.localizacaoGeo.coordinates ? supermercado.localizacaoGeo.coordinates[1] : '' %>"
                                     data-super-lng="<%= supermercado && supermercado.localizacaoGeo && supermercado.localizacaoGeo.coordinates ? supermercado.localizacaoGeo.coordinates[0] : '' %>"
+                                    data-super-raio="<%= supermercado && supermercado.raioEntregaKm ? supermercado.raioEntregaKm : 5 %>"
                                     data-super-nome="<%= supermercado && supermercado.nome ? supermercado.nome : 'Supermercado' %>">
                                 </div>
                                 <small class="text-muted mt-2 d-block" id="coordsSelecionadas">Nenhuma coordenada

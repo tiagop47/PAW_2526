@@ -27,6 +27,12 @@ const SupermarketSchema = new mongoose.Schema({
             required: [true, "As coordenadas são obrigatórias"]
         }
     },
+    raioEntregaKm: {
+        type: Number,
+        default: 5,
+        min: [1, "O raio mínimo é 1 km"],
+        max: [50, "O raio máximo é 50 km"]
+    },
     horarioFuncionamento: String,
     custoEntregaPorMetodo: {
         levantamento_loja: { type: Number, default: 0 },

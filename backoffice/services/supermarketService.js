@@ -86,7 +86,7 @@ supermarketService.obterDadosDashboard = async function (supermercadoId) {
 };
 
 supermarketService.getAllSupermercados = async function () {
-    const supermercado = await Supermarket.find({ estadoAprovacao: 'Aprovado' }).select('_id nome descricao localizacao localizacaoGeo custoEntregaPorMetodo');
+    const supermercado = await Supermarket.find({ estadoAprovacao: 'Aprovado' }).select('_id nome descricao localizacao localizacaoGeo raioEntregaKm custoEntregaPorMetodo');
     return supermercado;
 }
 
@@ -216,7 +216,11 @@ supermarketService.verificarStock = async function (supermercadoId, itens) {
 };
 
 supermarketService.atualizarSupermercado = async function (supermercadoId, dadosSupermercado) {
-    const { latitude, longitude, custoEntregaPorMetodo } = dadosSupermercado;
+    const { latitude, longitude, custoEntregaPorMetodo, raioEntregaKm } = dadosSupermercado;
+
+    if (raioEntregaKm !== undefined) {
+        dadosSupermercado.raioEntregaKm = parseInt(raioEntregaKm, 10) || 5;
+    }
 
     if (latitude && longitude) {
         dadosSupermercado.localizacaoGeo = {

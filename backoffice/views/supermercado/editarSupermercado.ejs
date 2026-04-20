@@ -87,6 +87,13 @@
                                     class="form-control"
                                     value="<%= supermercado.custoEntregaPorMetodo?.entrega_domicilio ?? 0 %>" min="0">
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Raio de Entrega (km)</label>
+                                <input type="number" step="1" name="raioEntregaKm"
+                                    class="form-control"
+                                    value="<%= supermercado.raioEntregaKm ?? 5 %>" min="1" max="50">
+                                <small class="text-muted">Define o alcance máximo das entregas ao domicílio.</small>
+                            </div>
                         </div>
 
                         <div class="d-flex gap-2">
