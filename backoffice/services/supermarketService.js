@@ -255,17 +255,20 @@ supermarketService.obterEncomendaPorId = async function (supermercadoId, orderId
         .populate('clienteId', 'nome email telefone');
 };
 
-const transicoesPermitidas = {
-    pendente:               ['confirmada', 'cancelada'],
-    confirmada:             ['preparacao', 'cancelada'],
-    preparacao:             ['em_entrega', 'cancelada'],
-    em_entrega:             ['aguarda_confirmacao', 'cancelada'],
-    aguarda_confirmacao:    ['entregue', 'cancelada'],
-    entregue:               [],
-    cancelada:              [],
-};
+function transicoesPermitidasParaEncomenda(encomenda) {
+    const eLoja = encomenda.metodoEntrega === 'levantamento_loja';
+    return {
+        pendente:               ['confirmada', 'cancelada'],
+        confirmada:             ['preparacao', 'cancelada'],
+        preparacao:             eLoja ? ['entregue', 'cancelada'] : ['em_entrega', 'cancelada'],
+        em_entrega:             ['aguarda_confirmacao', 'cancelada'],
+        aguarda_confirmacao:    ['entregue', 'cancelada'],
+        entregue:               [],
+        cancelada:              [],
+    };
+}
 
-supermarketService.transicoesPermitidas = transicoesPermitidas;
+supermarketService.transicoesPermitidasParaEncomenda = transicoesPermitidasParaEncomenda;
 
 supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, orderId, estado) {
     const order = await Order.findOne({ _id: orderId, supermercadoId });
@@ -278,7 +281,7 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
         return order;
     }
 
-    const permitidos = transicoesPermitidas[estadoAnterior] || [];
+    const permitidos = transicoesPermitidasParaEncomenda(order)[estadoAnterior] || [];
     if (!permitidos.includes(estado)) {
         throw new Error(`Transição de estado inválida: ${estadoAnterior} → ${estado}`);
     }

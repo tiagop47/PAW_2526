@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+
+    <%- include('../partials/navbar') %>
+
+        <main class="container py-4" style="max-width: 860px;">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <h1 class="h4 fw-bold m-0">Ajuda à Gestão de Encomendas</h1>
+            </div>
+
+            <% const badge=s=> `<span class="badge bg-dark px-3 py-2"
+                    style="font-size:.85rem;font-weight:500;">${s}</span>`; %>
+
+                <!-- Fluxo domicílio -->
+                <div class="card border shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-semibold mb-1">Entrega ao Domicílio</h5>
+                        <p class="text-muted small mb-3">Pedidos feitos online com entrega em casa. O estafeta é
+                            responsável pela fase de entrega.</p>
+                        <div class="d-flex align-items-center flex-wrap gap-2 mb-4">
+                            <% ['pendente','confirmada','preparacao','em_entrega','aguarda_confirmacao','entregue'].forEach(function(s,
+                                i, arr) { %>
+                                <%- badge(s) %>
+                                    <% if (i < arr.length - 1) { %><span class="text-muted fs-5">&#8594;</span>
+                                        <% } %>
+                                            <% }) %>
+                        </div>
+                        <table class="table table-sm table-bordered small mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:35%">Estado</th>
+                                    <th>O que significa / quem age</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><%- badge('pendente') %></td>
+                                    <td>Encomenda recebida, aguarda confirmação do supermercado.</td>
+                                </tr>
+                                <tr>
+                                    <td><%- badge('confirmada') %></td>
+                                    <td>Supermercado confirmou. Fica disponível para um estafeta aceitar.</td>
+                                </tr>
+                                <tr>
+                                    <td><%- badge('preparacao') %></td>
+                                    <td>Supermercado está a preparar os produtos.</td>
+                                </tr>
+                                <tr>
+                                    <td><%- badge('em_entrega') %></td>
+                                    <td>Estafeta aceitou e está a entregar.</td>
+                                </tr>
+                                <tr>
+                                    <td><%- badge('aguarda_confirmacao') %></td>
+                                    <td>Estafeta confirmou entrega. Supermercado valida e fecha.</td>
+                                </tr>
+                                <tr>
+                                    <td><%- badge('entregue') %></td>
+                                    <td>Entrega concluída. Estado final.</td>
+                                </tr>
+                                <tr>
+                                    <td><%- badge('cancelada') %></td>
+                                    <td>Disponível a partir de qualquer estado. Stock é reposto.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Fluxo loja -->
+                <div class="card border shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-semibold mb-1">Levantamento em Loja</h5>
+                        <p class="text-muted small mb-3">Pedidos online para levantar na loja, ou vendas feitas
+                            diretamente na caixa (vão direto para entregue).</p>
+                        <div class="d-flex align-items-center flex-wrap gap-2 mb-4">
+                            <% ['pendente','confirmada','preparacao','entregue'].forEach(function(s, i, arr) { %>
+                                <%- badge(s) %>
+                                    <% if (i < arr.length - 1) { %><span class="text-muted fs-5">&#8594;</span>
+                                        <% } %>
+                                            <% }) %>
+                        </div>
+                        <table class="table table-sm table-bordered small mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:35%">Estado</th>
+                                    <th>O que significa / quem age</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><%- badge('pendente') %></td>
+                                    <td>Encomenda recebida, aguarda confirmação do supermercado.</td>
+                                </tr>
+                                <tr>
+                                    <td><%- badge('confirmada') %></td>
+                                    <td>Supermercado confirmou a encomenda.</td>
+                                </tr>
+                                <tr>
+                                    <td><%- badge('preparacao') %></td>
+                                    <td>Produtos a ser preparados para levantamento.</td>
+                                </tr>
+                                <tr>
+                                    <td><%- badge('entregue') %></td>
+                                    <td>Cliente levantou. Estado final. Não passa pelo estafeta.</td>
+                                </tr>
+                                <tr>
+                                    <td><%- badge('cancelada') %></td>
+                                    <td>Disponível a partir de qualquer estado. Stock é reposto.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+        </main>
+
+</body>
+
+</html>

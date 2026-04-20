@@ -32,6 +32,7 @@ export class RegisterComponent implements OnInit {
       nif: ['', [Validators.minLength(9), Validators.maxLength(9)]],
       telefone: ['', Validators.required],
       morada: ['', Validators.required],
+      supermercadoFavorito: [''],
     });
   }
 

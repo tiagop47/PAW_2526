@@ -212,12 +212,16 @@ supermarketController.listarEncomendas = async function (req, res) {
         res.render('supermercado/encomendas', {
             title: 'Encomendas',
             encomendas,
-            transicoesPermitidas: supermarketService.transicoesPermitidas,
+            transicoesPermitidasParaEncomenda: supermarketService.transicoesPermitidasParaEncomenda,
             success: req.query.success
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar encomendas.');
     }
+};
+
+supermarketController.exibirAjudaEncomendas = function (req, res) {
+    res.render('supermercado/encomendas_ajuda', { title: 'Ajuda à Gestão de Encomendas' });
 };
 
 /**

@@ -1,5 +1,6 @@
 const authService = require('../../services/authService');
 const User = require('../../models/UserModel');
+const Supermarket = require('../../models/SupermarketModel');
 
 const authController = {};
 
@@ -20,9 +21,24 @@ authController.login = async function (req, res) {
 
 authController.registar = async function (req, res) {
     try {
-        const { nome, email, password, nif, telefone, morada } = req.body;
+        const { nome, email, password, nif, telefone, morada, supermercadoFavorito } = req.body;
         const dadosCliente = { nome, email, password, nif, telefone, morada, role: "clientes" };
-        await authService.registarUtilizador(dadosCliente);
+
+        // Se o cliente escolheu um supermercado favorito, guardamos a referência
+        if (supermercadoFavorito) {
+            dadosCliente.supermercadoFavorito = supermercadoFavorito;
+        }
+
+        const novoCliente = await authService.registarUtilizador(dadosCliente);
+
+        // Adicionar o cliente ao array de clientes do supermercado (apenas se for role 'clientes')
+        if (supermercadoFavorito && novoCliente.role === 'clientes') {
+            const supermercado = await Supermarket.findById(supermercadoFavorito);
+            if (supermercado) {
+                supermercado.clientes.addToSet(novoCliente._id);
+                await supermercado.save();
+            }
+        }
 
         res.status(201).json({ message: "Cliente registado com sucesso" });
     } catch (err) {

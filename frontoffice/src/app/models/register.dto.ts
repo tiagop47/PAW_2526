@@ -5,4 +5,5 @@ export interface RegisterDTO {
   nif?: string;
   telefone: string;
   morada: string;
+  supermercadoFavorito?: string;
 }

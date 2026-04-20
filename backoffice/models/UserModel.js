@@ -54,6 +54,10 @@ const UserSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Coupon'
     }],
+    supermercadoFavorito: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Supermarket'
+    },
     role: {
         type: String,
         enum: ['clientes', 'supermercados', 'estafetas', 'administrador'],

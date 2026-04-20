@@ -34,10 +34,15 @@
         </div>
         
         <div class="form-group full-width">
+          <label>Morada</label>
+          <input type="text" class="form-control" formControlName="morada" placeholder="Ex: Rua do Exemplo, nº 1, Porto" required>
+        </div>
+
+        <div class="form-group full-width">
           <label>Supermercado Favorito (A sua zona)</label>
-          <select class="form-control" formControlName="morada" required>
+          <select class="form-control" formControlName="supermercadoFavorito">
             <option value="" disabled selected>Escolha o seu supermercado local</option>
-            <option *ngFor="let m of supermercados" [value]="m.localizacao">
+            <option *ngFor="let m of supermercados" [value]="m._id">
               {{ m.nome }} ({{ m.localizacao }})
             </option>
           </select>

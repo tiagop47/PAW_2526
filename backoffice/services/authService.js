@@ -47,14 +47,14 @@ async function criarSupermercado(userId, { nome, morada, latitude, longitude, ho
 }
 
 authService.registarUtilizador = async function (userData) {
-    const { nome, email, password, nif, telefone, morada, role } = userData;
+    const { nome, email, password, nif, telefone, morada, role, supermercadoFavorito } = userData;
     const roleFinal = rolesPublicas.includes(role) ? role : 'clientes';
 
     if (roleFinal === 'supermercados' && (!userData.latitude || !userData.longitude)) {
         throw new Error("É obrigatório selecionar a localização da loja no mapa.");
     }
 
-    const novoUser = new User({ nome, email, password, nif, telefone, morada, role: roleFinal });
+    const novoUser = new User({ nome, email, password, nif, telefone, morada, role: roleFinal, supermercadoFavorito });
 
     let codigoBoasVindas = null;
     if (roleFinal === 'clientes') {
