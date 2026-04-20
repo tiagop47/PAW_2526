@@ -24,22 +24,6 @@ function calcularPercentagemDesconto(preco, precoAntigo) {
 }
 
 /**
- * Atualiza a previsão de desconto no formulário.
- */
-function atualizarPrevisaoDesconto() {
-    const preview = document.getElementById('previsaoDesconto');
-    if (!preview || !precoInput || !precoAntigoInput) return;
-
-    const percentagem = calcularPercentagemDesconto(precoInput.value, precoAntigoInput.value);
-
-    if (percentagem <= 0 || percentagem >= 99) {
-        preview.innerHTML = `<span class="badge bg-opacity-10 text-success border-0 small">Não podes aplicar esse desconto!</span>`;
-    } else {
-        preview.innerHTML = '';
-    }
-}
-
-/**
  * Procura por elementos de detalhes e preenche o desconto automaticamente.
  */
 function preencherDescontosPagina() {
@@ -103,11 +87,6 @@ function validarFormularioProduto(form) {
 document.addEventListener('DOMContentLoaded', () => {
     preencherDescontosPagina();
 
-    if (precoInput && precoAntigoInput) {
-        precoInput.addEventListener('input', atualizarPrevisaoDesconto);
-        precoAntigoInput.addEventListener('input', atualizarPrevisaoDesconto);
-        atualizarPrevisaoDesconto();
-    }
 
     if (formCriar) {
         formCriar.addEventListener('submit', (e) => {
