@@ -21,7 +21,7 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Nome Comercial</label>
                             <input type="text" name="nome" class="form-control" value="<%= supermercado.nome %>"
-                                required>
+                                minlength="3" maxlength="50" required>
                         </div>
 
                         <div class="mb-3">
@@ -33,7 +33,9 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Descrição da Loja</label>
                             <textarea name="descricao" class="form-control"
-                                rows="2"><%= supermercado.descricao || '' %></textarea>
+                                rows="2" maxlength="500">
+                                <%= supermercado.descricao || '' %> 
+                            </textarea>
                         </div>
 
                         <div class="mb-4">
