@@ -32,8 +32,8 @@ function atualizarPrevisaoDesconto() {
 
     const percentagem = calcularPercentagemDesconto(precoInput.value, precoAntigoInput.value);
 
-    if (percentagem > 0 && percentagem < 99) {
-        preview.innerHTML = `<span class="badge bg-success bg-opacity-10 text-success border-0 small">Desconto de ${percentagem}% detetado</span>`;
+    if (percentagem <= 0 || percentagem > 99) {
+        preview.innerHTML = `<span class="badge bg-opacity-10 text-success border-0 small">Não podes aplicar esse desconto!</span>`;
     } else {
         preview.innerHTML = '';
     }
@@ -48,9 +48,10 @@ function preencherDescontosPagina() {
 
     const p = elemento.getAttribute('data-preco');
     const pa = elemento.getAttribute('data-preco-antigo');
-    
+
     const percentagem = calcularPercentagemDesconto(p, pa);
-    if (percentagem > 0) {
+
+    if (percentagem > 0 && percentagem < 99) {
         elemento.innerText = percentagem + '%';
     }
 }
@@ -95,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (precoInput && precoAntigoInput) {
         precoInput.addEventListener('input', atualizarPrevisaoDesconto);
         precoAntigoInput.addEventListener('input', atualizarPrevisaoDesconto);
-        atualizarPrevisaoDesconto(); 
+        atualizarPrevisaoDesconto();
     }
 
     if (formCriar) {
