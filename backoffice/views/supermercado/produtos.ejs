@@ -73,9 +73,10 @@
                                                     class="btn btn-sm btn-light border">Detalhes</a>
                                                 <a href="/supermercado/produtos/editar/<%= p._id %>"
                                                     class="btn btn-sm btn-light border">Editar</a>
-                                                <form action="/supermercado/produtos/eliminar/<%= p._id %>" method="POST"
-                                                    class="d-inline" onsubmit="return confirm('Tem a certeza?')">
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                                <form action="/supermercado/produtos/eliminar/<%= p._id %>"
+                                                    method="POST" class="d-inline">
+                                                    <button type="submit"
+                                                        class="btn btn-sm btn-light border">Eliminar</button>
                                                 </form>
                                             </div>
                                         </td>
@@ -97,7 +98,7 @@
         <script src="/javascript/supermercado/pesquisaProdutos.js"></script>
         <script>
             inicializarPesquisaProdutos();
-            
+
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('success')) {
                 alert('Ação concluída');

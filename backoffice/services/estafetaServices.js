@@ -59,7 +59,7 @@ estafetaService.obterDadosDashboard = async function (estafetaId) {
 };
 
 estafetaService.obterEntregasDisponiveis = async function () {
-    return Order.find({ estafetaId: null, estado: 'confirmada' })
+    return Order.find({ estafetaId: null, estado: 'preparacao', metodoEntrega: 'entrega_domicilio' })
         .populate('supermercadoId', 'nome localizacao localizacaoGeo custoEntregaPorMetodo')
         .populate('clienteId', 'nome morada')
         .sort({ criadoEm: -1 });
@@ -76,7 +76,8 @@ estafetaService.obterEntregasPorConcelho = async function (concelho) {
     return Order.find({
         supermercadoId: { $in: mercados.map(s => s._id) },
         estafetaId: null,
-        estado: 'confirmada'
+        estado: 'preparacao',
+        metodoEntrega: 'entrega_domicilio'
     })
         .populate('supermercadoId', 'nome localizacao localizacaoGeo custoEntregaPorMetodo')
         .populate('clienteId', 'nome morada')
@@ -98,7 +99,7 @@ estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
 
     // Operação atómica: só atualiza se estafetaId for null E estado for 'confirmada'
     const encomenda = await Order.findOneAndUpdate(
-        { _id: encomendaId, estafetaId: null, estado: 'confirmada' },
+        { _id: encomendaId, estafetaId: null, estado: 'preparacao', metodoEntrega: 'entrega_domicilio' },
         { $set: { estafetaId: estafetaId, estado: 'em_entrega' } },
         { new: true }
     );
@@ -131,7 +132,7 @@ async function obterEstatisticas(estafetaId) {
     const [entregasRealizadas, entregasEmCurso, entregasDisponiveis, avaliacaoStats] = await Promise.all([
         Order.countDocuments({ estafetaId, estado: 'entregue' }),
         Order.countDocuments({ estafetaId, estado: 'em_entrega' }),
-        Order.countDocuments({ estafetaId: null, estado: 'confirmada' }),
+        Order.countDocuments({ estafetaId: null, estado: 'preparacao', metodoEntrega: 'entrega_domicilio' }),
         Avaliacao.aggregate([
             { $match: { estafetaId: new mongoose.Types.ObjectId(estafetaId), notaEstafeta: { $ne: null } } },
             { $group: { _id: null, media: { $avg: '$notaEstafeta' }, total: { $sum: 1 } } }

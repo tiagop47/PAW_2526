@@ -408,7 +408,7 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
     }
 
     const eDomicilio = metodoEntrega === 'entrega_domicilio';
-    const estadoFinal = eDomicilio ? 'confirmada' : 'entregue';
+    const estadoFinal = eDomicilio ? 'preparacao' : 'entregue';
     const lat = Number(latitudeEntrega);
     const lng = Number(longitudeEntrega);
     const temCoordenadasValidas = Number.isFinite(lat) && Number.isFinite(lng);

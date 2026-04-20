@@ -19,7 +19,7 @@
                     <div class="row mb-4">
                         <% emCurso.forEach(entrega=> { %>
                             <div class="col-md-6 mb-3">
-                                <div class="card border-primary">
+                                <div class="card border">
                                     <div class="card-body">
                                         <h6>#<%= entrega._id.toString().slice(-6).toUpperCase() %>
                                         </h6>
@@ -46,7 +46,7 @@
 
                         <% const aguardaConfirmacao=entregas.filter(e=> e.estado === 'aguarda_confirmacao'); %>
                             <% if (aguardaConfirmacao.length > 0) { %>
-                                <h5>Aguarda Confirmação do Cliente</h5>
+                                <h5>Aguarda Confirmação do Supermercado</h5>
                                 <table class="table table-sm mb-4">
                                     <thead>
                                         <tr>

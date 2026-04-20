@@ -9,100 +9,103 @@
 
     <%- include('../partials/navbar') %>
 
-        <main class="container py-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h4 fw-bold m-0">Encomendas</h1>
-                <a href="/supermercado/encomendas/ajuda" class="btn btn-sm btn-dark">Ajuda à Gestão de Encomendas</a>
-            </div>
+    <%
+    const labelEstado = {
+        pendente: 'Pendente',
+        confirmada: 'Confirmada',
+        preparacao: 'Em Preparação',
+        em_entrega: 'Em Entrega',
+        aguarda_confirmacao: 'Aguarda Confirmação',
+        entregue: 'Entregue',
+        cancelada: 'Cancelada'
+    };
+    const labelAcao = {
+        confirmada: 'Confirmar',
+        preparacao: 'Iniciar Preparação',
+        em_entrega: 'Enviar para Entrega',
+        aguarda_confirmacao: 'Aguardar Confirmação',
+        entregue: 'Marcar como Entregue',
+        cancelada: 'Cancelar'
+    };
+    %>
 
-            <div class="card border-0 shadow-sm">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Cliente</th>
-                                <th>Total</th>
-                                <th>Estado</th>
-                                <th>Entrega</th>
-                                <th>Data</th>
-                                <th class="text-end">Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% if (encomendas && encomendas.length> 0) { %>
-                                <% encomendas.forEach(function(encomenda) { %>
-                                    <tr>
-                                        <td>
-                                            <div class="fw-bold">
-                                                <%= encomenda.clienteId ? encomenda.clienteId.nome
-                                                    : 'Cliente Desconhecido' %>
-                                            </div>
-                                            <div class="small text-muted">
-                                                <%= encomenda.clienteId ? encomenda.clienteId.email : '' %>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <%= Number(encomenda.valorTotal || 0).toFixed(2) %>EUR
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-dark">
-                                                <%= encomenda.estado %>
-                                            </span>
-                                        </td>
-                                        <td class="small">
-                                            <% if (encomenda.metodoEntrega === 'entrega_domicilio') { %>
-                                                <span class="badge bg-dark">Domicílio</span>
-                                            <% } else { %>
-                                                <span class="badge bg-secondary">Loja</span>
-                                            <% } %>
-                                        </td>
-                                        <td class="small text-muted">
-                                            <%= new Date(encomenda.criadoEm).toLocaleDateString('pt-PT') %>
-                                        </td>
-                                        <td class="text-end">
-                                            <div class="d-flex justify-content-end gap-2">
-                                                <% const permitidos = transicoesPermitidasParaEncomenda(encomenda)[encomenda.estado] || []; %>
-                                                <% if (permitidos.length > 0) { %>
-                                                    <form action="/supermercado/encomendas/<%= encomenda._id %>/estado"
-                                                        method="POST" class="d-inline-flex gap-2">
-                                                        <select name="estado" class="form-select form-select-sm" style="width: auto;" required>
-                                                            <option value="" selected disabled>-- selecionar --</option>
-                                                            <% permitidos.forEach(function(e) { %>
-                                                                <option value="<%= e %>"><%= e %></option>
-                                                            <% }) %>
-                                                        </select>
-                                                        <button type="submit" class="btn btn-sm btn-dark">Atualizar</button>
-                                                    </form>
-                                                <% } else { %>
-                                                    <span class="badge bg-secondary">Estado final</span>
-                                                <% } %>
-                                                <% if (encomenda.faturaNumero) { %>
-                                                    <a href="/supermercado/encomendas/<%= encomenda._id %>/fatura"
-                                                        class="btn btn-sm btn-light border" target="_blank">Fatura</a>
-                                                <% } %>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <% }) %>
-                                        <% } else { %>
-                                            <tr>
-                                                <td colspan="6" class="text-center py-4 text-muted">Ainda não existem
-                                                    encomendas.</td>
-                                            </tr>
-                                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
+    <main class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 fw-bold m-0">Encomendas</h1>
+            <a href="/supermercado/encomendas/ajuda" class="btn btn-sm btn-outline-dark">Gestão de Encomendas (Ajuda)</a>
+        </div>
 
-        <script>
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('success')) {
-                alert('Ação concluída');
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        </script>
+        <% if (encomendas && encomendas.length > 0) { %>
+            <div class="d-flex flex-column gap-3">
+                <% encomendas.forEach(function(encomenda) { %>
+                    <% const permitidos = transicoesPermitidasParaEncomenda(encomenda)[encomenda.estado] || []; %>
+                    <div class="card border shadow-sm">
+                        <div class="card-body">
+                            <div class="row align-items-center g-3">
+
+                                <div class="col-sm-4">
+                                    <div class="fw-semibold">
+                                        <%= encomenda.clienteId ? encomenda.clienteId.nome : 'Cliente Desconhecido' %>
+                                    </div>
+                                    <div class="small text-muted">
+                                        <%= encomenda.clienteId ? encomenda.clienteId.email : '' %>
+                                    </div>
+                                    <div class="small text-muted">
+                                        <%= new Date(encomenda.criadoEm).toLocaleDateString('pt-PT') %>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-3">
+                                    <div class="small text-muted mb-1">
+                                        <%= encomenda.metodoEntrega === 'entrega_domicilio' ? 'Entrega ao domicílio' : 'Levantamento em loja' %>
+                                    </div>
+                                    <span class="badge bg-dark">
+                                        <%= labelEstado[encomenda.estado] || encomenda.estado %>
+                                    </span>
+                                </div>
+
+                                <div class="col-sm-2">
+                                    <span class="fw-bold"><%= Number(encomenda.valorTotal || 0).toFixed(2) %> EUR</span>
+                                </div>
+
+                                <div class="col-sm-3 d-flex flex-wrap gap-2 justify-content-sm-end">
+                                    <% if (permitidos.length > 0) { %>
+                                        <form action="/supermercado/encomendas/<%= encomenda._id %>/estado" method="POST" class="d-flex gap-2">
+                                            <select name="estado" class="form-select form-select-sm" style="width: auto;">
+                                                <% permitidos.forEach(function(estado, i) { %>
+                                                    <option value="<%= estado %>" <%= i === 0 ? 'selected' : '' %>><%= labelAcao[estado] || estado %></option>
+                                                <% }) %>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-dark">OK</button>
+                                        </form>
+                                    <% } else { %>
+                                        <span class="text-muted small">Estado final</span>
+                                    <% } %>
+                                    <% if (encomenda.faturaNumero) { %>
+                                        <a href="/supermercado/encomendas/<%= encomenda._id %>/fatura"
+                                            class="btn btn-sm btn-outline-dark" target="_blank">Fatura</a>
+                                    <% } %>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <div class="text-center py-5 text-muted">
+                Ainda não existem encomendas.
+            </div>
+        <% } %>
+    </main>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('success')) {
+            alert('Ação concluída');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    </script>
 </body>
 
 </html>
