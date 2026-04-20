@@ -32,7 +32,7 @@ function atualizarPrevisaoDesconto() {
 
     const percentagem = calcularPercentagemDesconto(precoInput.value, precoAntigoInput.value);
 
-    if (percentagem > 0) {
+    if (percentagem > 0 && percentagem < 99) {
         preview.innerHTML = `<span class="badge bg-success bg-opacity-10 text-success border-0 small">Desconto de ${percentagem}% detetado</span>`;
     } else {
         preview.innerHTML = '';

@@ -29,7 +29,7 @@ const SupermarketSchema = new mongoose.Schema({
     },
     horarioFuncionamento: String,
     custoEntregaPorMetodo: {
-        levantamento_loja: { type: Number, min: [0, "O custo não pode ser negativo"] },
+        levantamento_loja: { type: Number, default: 0 },
         entrega_domicilio: { type: Number, min: [0, "O custo não pode ser negativo"] }
     },
     estadoAprovacao: {
