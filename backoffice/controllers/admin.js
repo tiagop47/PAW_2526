@@ -40,9 +40,10 @@ adminController.exibirEditarUser = function (req, res) {
     if (req.targetUser.role === 'administrador') {
         return res.status(403).send('Não é permitido editar o administrador.');
     }
+
     res.render('admin/editarUtilizador', {
         title: 'Editar Utilizador',
-        user: req.targetUser,
+        targetUser: req.targetUser,
         errorMessage: null
     });
 };
@@ -59,7 +60,7 @@ adminController.editarUser = async function (req, res) {
     } catch (err) {
         res.render('admin/editarUtilizador', {
             title: 'Editar Utilizador',
-            user: req.targetUser,
+            targetUser: req.targetUser,
             errorMessage: err.message
         });
     }
@@ -238,8 +239,6 @@ adminController.listarSupermercados = async function (req, res) {
         res.status(500).send('Erro ao listar supermercados.');
     }
 };
-
-
 
 /**
  * Lista estafetas para gestão admin (Limite 3).
