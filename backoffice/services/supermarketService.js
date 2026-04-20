@@ -228,7 +228,7 @@ supermarketService.atualizarSupermercado = async function (supermercadoId, dados
     if (custoEntregaPorMetodo) {
         // Se a chave não vier no req.body (input disabled), fica null no modelo
         dadosSupermercado.custoEntregaPorMetodo = {
-            levantamento_loja: custoEntregaPorMetodo.levantamento_loja !== undefined ? (parseFloat(custoEntregaPorMetodo.levantamento_loja) || 0) : null,
+            levantamento_loja: 0,
             entrega_domicilio: custoEntregaPorMetodo.entrega_domicilio !== undefined ? (parseFloat(custoEntregaPorMetodo.entrega_domicilio) || 0) : null
         };
     }
