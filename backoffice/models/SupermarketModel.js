@@ -39,21 +39,6 @@ const SupermarketSchema = new mongoose.Schema({
         levantamento_loja: { type: Number, default: 0 },
         entrega_domicilio: { type: Number, min: [0, "O custo não pode ser negativo"] }
     },
-    clientes: {
-        type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-        validate: {
-            validator: async function (ids) {
-                if (!ids || ids.length === 0) {
-                    return true;
-                }
-
-                const User = mongoose.model('User');
-                const invalidos = await User.countDocuments({ _id: { $in: ids }, role: { $ne: 'clientes' } });
-                return invalidos === 0;
-            },
-            message: 'Apenas utilizadores com role "clientes" podem ser adicionados.'
-        }
-    },
     estadoAprovacao: {
         type: String,
         enum: ['Pendente', 'Aprovado', 'Rejeitado', 'Bloqueado'],

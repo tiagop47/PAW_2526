@@ -62,4 +62,18 @@ orderApiController.cancelarEncomenda = async function (req, res) {
     }
 };
 
+/**
+ * POST /api/orders/:id/confirmar-rececao
+ * O cliente confirma que recebeu a encomenda.
+ */
+orderApiController.confirmarRececao = async function (req, res) {
+    try {
+        const clienteId = req.user.id;
+        const encomenda = await orderService.confirmarRececaoCliente(clienteId, req.params.id);
+        res.json({ sucesso: true, message: 'Receção confirmada com sucesso.', encomenda });
+    } catch (err) {
+        res.status(400).json({ sucesso: false, erro: err.message });
+    }
+};
+
 module.exports = orderApiController;

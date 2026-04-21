@@ -31,15 +31,6 @@ authController.registar = async function (req, res) {
 
         const novoCliente = await authService.registarUtilizador(dadosCliente);
 
-        // Adicionar o cliente ao array de clientes do supermercado (apenas se for role 'clientes')
-        if (supermercadoFavorito && novoCliente.role === 'clientes') {
-            const supermercado = await Supermarket.findById(supermercadoFavorito);
-            if (supermercado) {
-                supermercado.clientes.addToSet(novoCliente._id);
-                await supermercado.save();
-            }
-        }
-
         res.status(201).json({ message: "Cliente registado com sucesso" });
     } catch (err) {
         res.status(400).json({ error: err.message });

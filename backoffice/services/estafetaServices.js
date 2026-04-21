@@ -111,7 +111,7 @@ estafetaService.confirmarEntrega = async function (encomendaId, estafetaId) {
         throw new Error('Operação inválida para esta entrega');
     }
 
-    encomenda.estado = 'aguarda validação';
+    encomenda.estado = 'entregue';
 
     return encomenda.save();
 };

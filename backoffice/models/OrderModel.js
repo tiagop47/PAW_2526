@@ -18,9 +18,11 @@ const OrderSchema = new mongoose.Schema({
         validate: [function (arr) { return arr.length > 0; }, 'A encomenda deve ter pelo menos um produto']
     },
     valorTotal: { type: Number, required: true, min: [0, 'O valor total não pode ser negativo'] },
+    cupaoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
+    descontoValor: { type: Number, default: 0 },
     estado: {
         type: String,
-        enum: ['pendente', 'confirmada', 'em preparação', 'em entrega', 'aguarda validação', 'entregue', 'cancelada'],
+        enum: ['pendente', 'confirmada', 'em preparação', 'em entrega', 'entregue', 'cancelada'],
         default: 'pendente'
     },
     metodoEntrega: {

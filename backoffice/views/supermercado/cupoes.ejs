@@ -36,8 +36,7 @@
                                                     <input type="date" class="form-control" name="prazo" required
                                                         min="<%= new Date().toISOString().split('T')[0] %>">
                                                 </div>
-                                                <button type="submit" class="btn btn-sm btn-dark w-100">Criar
-                                                    Cupão</button>
+                                                <button type="submit" class="btn btn-sm btn-light border w-100">Criar Cupão</button>
                                             </form>
                                         </div>
                                     </div>
@@ -92,7 +91,7 @@
                                                                                     action="/supermercado/cupoes/desativar/<%= cupao._id %>"
                                                                                     method="POST">
                                                                                     <button type="submit"
-                                                                                        class="btn btn-sm btn-light border text-dark">
+                                                                                        class="btn btn-sm btn-light border">
                                                                                         Desativar
                                                                                     </button>
                                                                                 </form>
@@ -101,7 +100,7 @@
                                                                                         action="/supermercado/cupoes/ativar/<%= cupao._id %>"
                                                                                         method="POST">
                                                                                         <button type="submit"
-                                                                                            class="btn btn-sm btn-light border text-dark">
+                                                                                            class="btn btn-sm btn-light border">
                                                                                             Ativar
                                                                                         </button>
                                                                                     </form>
@@ -111,7 +110,7 @@
                                                                                                 action="/supermercado/cupoes/eliminar/<%= cupao._id %>"
                                                                                                 method="POST">
                                                                                                 <button type="submit"
-                                                                                                    class="btn btn-sm btn-outline-danger border"
+                                                                                                    class="btn btn-sm btn-light border"
                                                                                                     onclick="return confirm('Tens a certeza que queres eliminar este cupão?')">
                                                                                                     Eliminar
                                                                                                 </button>

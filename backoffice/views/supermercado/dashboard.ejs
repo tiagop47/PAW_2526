@@ -9,127 +9,97 @@
 
     <%- include('../partials/navbar') %>
 
-        <main class="container py-4">
+    <main class="container py-4">
 
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <div class="border p-3 text-center">
-                        <div class="text-secondary small text-uppercase">Encomendas (Ativas)</div>
-                        <div class="h2 mb-0">
-                            <%= totalEncomendas %>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="border p-3 text-center">
-                        <div class="text-secondary small text-uppercase">Stock Crítico (< 5 unid.)</div>
-                        <div class="h2 mb-0">
-                            <%= stockBaixo %>
-                        </div>
-                        <div class="text-secondary small">
-                            Produtos precisam atenção
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="border p-3 text-center">
-                        <div class="text-secondary small text-uppercase">Faturação Total</div>
-                        <div class="h2 mb-0">
-                            <%= Number(vendasTotais).toFixed(2) %>€
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="border p-3 text-center">
-                        <div class="text-secondary small text-uppercase">Avaliação Média</div>
-                        <div class="h2 mb-0"><%= mediaAvaliacao ?? 0 %> / 5</div>
-                        <div class="text-secondary small"><%= totalAvaliacoes ?? 0 %> avaliação(ões)</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="border p-3 text-center">
-                        <div class="text-secondary small text-uppercase">Encomendas Pendentes</div>
-                        <div class="h2 mb-0"><%= encomendasPendentes ?? 0 %></div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="border p-3 text-center">
-                        <div class="text-secondary small text-uppercase">Valor Médio / Encomenda</div>
-                        <div class="h2 mb-0"><%= Number(valorMedio ?? 0).toFixed(2) %>€</div>
-                    </div>
+        <div class="row g-3">
+            <!-- Sidebar de Gestão -->
+            <div class="col-md-4">
+                <div class="list-group">
+                    <a href="/supermercado/encomendas" class="list-group-item list-group-item-action">Gerir Encomendas</a>
+                    <a href="/supermercado/produtos" class="list-group-item list-group-item-action">Gestão de Produtos</a>
+                    <a href="/supermercado/vendas/nova" class="list-group-item list-group-item-action">Venda em Caixa</a>
+                    <a href="/supermercado/cupoes" class="list-group-item list-group-item-action">Gestão de Cupões</a>
+                    <a href="/supermercado/editar" class="list-group-item list-group-item-action">Configurações da Loja</a>
                 </div>
             </div>
 
-            <!-- Janelas de Entrada / Gestão Simples -->
-            <h5 class="mb-3">Gestão de Loja</h5>
-            <div class="row g-3 mb-4">
-                <div class="col-md-3">
-                    <div class="border p-3 text-center">
-                        <h6>Produtos</h6>
-                        <a href="/supermercado/produtos" class="btn btn-sm btn-secondary w-100 mt-2">Abrir</a>
+            <!-- Estatísticas (Caixas Normais) -->
+            <div class="col-md-8">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="border p-3 text-center">
+                            <div class="text-secondary small text-uppercase">Encomendas (Ativas)</div>
+                            <div class="h2 mb-0"><%= totalEncomendas %></div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="border p-3 text-center">
-                        <h6>Encomendas</h6>
-                        <a href="/supermercado/encomendas" class="btn btn-sm btn-secondary w-100 mt-2">Gerir</a>
+                    <div class="col-md-4">
+                        <div class="border p-3 text-center">
+                            <div class="text-secondary small text-uppercase">Stock Crítico (Nº Produtos)</div>
+                            <div class="h2 mb-0"><%= stockBaixo %></div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="border p-3 text-center">
-                        <h6>Venda Caixa</h6>
-                        <a href="/supermercado/vendas/nova" class="btn btn-sm btn-secondary w-100 mt-2">Registar</a>
+                    <div class="col-md-4">
+                        <div class="border p-3 text-center">
+                            <div class="text-secondary small text-uppercase">Faturação Total</div>
+                            <div class="h2 mb-0"><%= Number(vendasTotais).toFixed(2) %>€</div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="border p-3 text-center">
-                        <h6>Configurações</h6>
-                        <a href="/supermercado/editar" class="btn btn-sm btn-secondary w-100 mt-2">Editar</a>
+                    <div class="col-md-6">
+                        <div class="border p-3 text-center">
+                            <div class="text-secondary small text-uppercase">Avaliação Média</div>
+                            <div class="h2 mb-0"><%= mediaAvaliacao ?? 0 %> / 5</div>
+                            <div class="text-secondary small"><%= totalAvaliacoes ?? 0 %> avaliação(ões)</div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="border p-3 text-center">
-                        <h6>Cupões</h6>
-                        <a href="/supermercado/cupoes" class="btn btn-sm btn-secondary w-100 mt-2">Gerir</a>
+                    <div class="col-md-6">
+                        <div class="border p-3 text-center">
+                            <div class="text-secondary small text-uppercase">Valor Médio / Encomenda</div>
+                            <div class="h2 mb-0"><%= Number(valorMedio ?? 0).toFixed(2) %>€</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="border p-3 text-center">
+                            <div class="text-secondary small text-uppercase">Encomendas Pendentes</div>
+                            <div class="h2 mb-0"><%= encomendasPendentes ?? 0 %></div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Top 5 Produtos -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <h5 class="mb-3">Top 5 Produtos Mais Vendidos</h5>
-                    <div class="border p-0">
-                        <table class="table table-sm table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Produto</th>
-                                    <th class="text-center">Quantidade Vendida</th>
-                                    <th class="text-end">Total Faturado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% if (top5Produtos && top5Produtos.length > 0) { %>
-                                    <% top5Produtos.forEach(p => { %>
-                                        <tr>
-                                            <td><%= p.nome %></td>
-                                            <td class="text-center"><%= p.totalVendido %></td>
-                                            <td class="text-end"><%= Number(p.faturado).toFixed(2) %>€</td>
-                                        </tr>
-                                    <% }); %>
-                                <% } else { %>
+        <!-- Top 5 Produtos -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <h5 class="mb-3">Top 5 Produtos Mais Vendidos</h5>
+                <div class="border p-0">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Produto</th>
+                                <th class="text-center">Quantidade Vendida</th>
+                                <th class="text-end">Total Faturado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (top5Produtos && top5Produtos.length > 0) { %>
+                                <% top5Produtos.forEach(p => { %>
                                     <tr>
-                                        <td colspan="3" class="text-center py-3 text-muted">Ainda não existem dados de vendas para este supermercado.</td>
+                                        <td><%= p.nome %></td>
+                                        <td class="text-center"><%= p.totalVendido %></td>
+                                        <td class="text-end"><%= Number(p.faturado).toFixed(2) %>€</td>
                                     </tr>
-                                <% } %>
-                            </tbody>
-                        </table>
-                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="3" class="text-center py-3 text-muted">Ainda não existem dados de vendas.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
-
-        </main>
+        </div>
+    </main>
 
 </body>
 

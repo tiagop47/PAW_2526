@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const User = require('../models/UserModel');
 const Supermarket = require('../models/SupermarketModel');
 const bcrypt = require('bcrypt');
@@ -55,17 +56,16 @@ authService.registarUtilizador = async function (userData) {
     }
 
     const novoUser = new User({ nome, email, password, nif, telefone, morada, role: roleFinal, supermercadoFavorito });
-
-    let codigoBoasVindas = null;
-    if (roleFinal === 'clientes') {
-        codigoBoasVindas = await atribuirCupoesCliente(novoUser, morada);
-    }
-
     const userGuardado = await novoUser.save();
 
-    if (roleFinal === 'clientes' && codigoBoasVindas) {
+    let dadosBoasVindas = null;
+    if (roleFinal === 'clientes') {
+        dadosBoasVindas = await atribuirCupoesCliente(userGuardado);
+    }
+
+    if (roleFinal === 'clientes' && dadosBoasVindas) {
         try {
-            await emailService.enviarEmailBoasVindas(email, nome, codigoBoasVindas);
+            await emailService.enviarEmailBoasVindas(email, nome, dadosBoasVindas.codigo, dadosBoasVindas.nomeSupermercado);
         } catch (e) {
             console.error("Erro ao enviar email de boas-vindas", e.message);
         }
@@ -174,38 +174,38 @@ authService.getUserByIdSemPassword = async function (id) {
     return User.findById(id).select('-password');
 };
 
-async function atribuirCupoesCliente(novoUser, morada) {
+async function atribuirCupoesCliente(user) {
+    if (!user.supermercadoFavorito) return null;
 
-    const condicoes = [
-        { localidadeAlvo: { $exists: false } },
-        { localidadeAlvo: "" }
-    ];
-    if (morada) {
-        condicoes.push({ localidadeAlvo: morada });
-    }
-
-    const cupoesValidos = await Coupon.find({ $or: condicoes });
-    if (cupoesValidos.length > 0) {
-        novoUser.cupoes = cupoesValidos.map(c => c._id);
-    }
+    const supermercado = await Supermarket.findById(user.supermercadoFavorito);
+    if (!supermercado) return null;
 
     const prazo30Dias = new Date();
     prazo30Dias.setDate(prazo30Dias.getDate() + 30);
     const codigoBoasVindas = 'WELCOME' + Math.floor(10000 + Math.random() * 90000);
 
-    const cupaoBoasVindas = await Coupon.create({
-        codigo: codigoBoasVindas,
-        percentagemDesconto: 10,
-        prazo: prazo30Dias
-    });
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const [cupaoBoasVindas] = await Coupon.create([{
+            codigo: codigoBoasVindas,
+            percentagemDesconto: 10,
+            prazo: prazo30Dias,
+            supermercadoId: user.supermercadoFavorito
+        }], { session });
 
-    if (!novoUser.cupoes) {
-        novoUser.cupoes = [];
+        await Supermarket.findByIdAndUpdate(user.supermercadoFavorito, { $push: { cupoes: cupaoBoasVindas._id } }, { session });
+        await User.findByIdAndUpdate(user._id, { $push: { cupoes: cupaoBoasVindas._id } }, { session });
+
+        await session.commitTransaction();
+    } catch (err) {
+        await session.abortTransaction();
+        throw err;
+    } finally {
+        session.endSession();
     }
 
-    novoUser.cupoes.push(cupaoBoasVindas._id);
-
-    return codigoBoasVindas;
+    return { codigo: codigoBoasVindas, nomeSupermercado: supermercado.nome };
 }
 
 module.exports = authService;

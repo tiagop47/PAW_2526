@@ -2,13 +2,13 @@ const Order = require('../models/OrderModel');
 const Product = require('../models/ProductModel');
 const Supermarket = require('../models/SupermarketModel');
 const User = require('../models/UserModel');
+const Coupon = require('../models/CupomModel');
 
 const orderService = {};
 
 orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
-    const { supermercadoId, produtos, metodoEntrega, moradaEntrega, coordenadasEntrega } = dadosEncomenda;
+    const { supermercadoId, produtos, metodoEntrega, moradaEntrega, coordenadasEntrega, codigoCupao } = dadosEncomenda;
 
-    // Validar que o supermercado existe e está aprovado
     const supermercado = await Supermarket.findOne({ _id: supermercadoId, estadoAprovacao: 'Aprovado' });
     if (!supermercado) {
         throw new Error('Supermercado não encontrado ou não aprovado.');
@@ -25,9 +25,8 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
         throw new Error('Todos os produtos devem pertencer ao mesmo supermercado.');
     }
 
-    // Regra d): Verificar stock disponível para cada produto
     const produtosEncomenda = [];
-    let valorTotal = 0;
+    let valorSubtotal = 0;
 
     for (const item of produtos) {
         const produto = produtosDB.find(p => p._id.toString() === item.produtoId);
@@ -44,8 +43,37 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
             quantidade: item.quantidade,
             precoUnitario: produto.preco
         });
-        valorTotal += produto.preco * item.quantidade;
+        valorSubtotal += produto.preco * item.quantidade;
     }
+
+    let cupaoAplicado = null;
+    let descontoValor = 0;
+
+    if (codigoCupao) {
+        const cupao = await Coupon.findOne({ codigo: codigoCupao.toUpperCase().trim(), ativo: true });
+        
+        if (!cupao) {
+            throw new Error('Cupão inválido ou inativo.');
+        }
+
+        if (new Date(cupao.prazo) < new Date()) {
+            throw new Error('Este cupão já expirou.');
+        }
+
+        if (cupao.supermercadoId && cupao.supermercadoId.toString() !== supermercadoId) {
+            throw new Error('Este cupão não é válido para este supermercado.');
+        }
+
+        const cliente = await User.findById(clienteId);
+        if (!cliente.cupoes.includes(cupao._id)) {
+            throw new Error('Não tens este cupão disponível na tua conta.');
+        }
+
+        descontoValor = (valorSubtotal * cupao.percentagemDesconto) / 100;
+        cupaoAplicado = cupao;
+    }
+
+    const valorTotalFinal = Math.max(0, valorSubtotal - descontoValor);
 
     // Decrementar stock atomicamente
     for (const item of produtos) {
@@ -75,7 +103,9 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
         supermercadoId,
         clienteId,
         produtos: produtosEncomenda,
-        valorTotal,
+        valorTotal: valorTotalFinal,
+        cupaoId: cupaoAplicado ? cupaoAplicado._id : undefined,
+        descontoValor: descontoValor,
         estado: 'pendente',
         metodoEntrega: metodoEntrega || 'levantamento_loja',
         moradaEntrega: metodoEntrega === 'entrega_domicilio' ? (moradaEntrega || cliente.morada) : undefined,
@@ -89,7 +119,15 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
         } : undefined
     });
 
-    return novaEncomenda.save();
+    const orderGuardada = await novaEncomenda.save();
+
+    if (cupaoAplicado) {
+        await User.findByIdAndUpdate(clienteId, {
+            $pull: { cupoes: cupaoAplicado._id }
+        });
+    }
+
+    return orderGuardada;
 };
 
 orderService.cancelarEncomenda = async function (clienteId, encomendaId) {
@@ -103,7 +141,6 @@ orderService.cancelarEncomenda = async function (clienteId, encomendaId) {
         throw new Error('Esta encomenda já não pode ser cancelada. Estado atual: ' + encomenda.estado);
     }
 
-    // Regra b): Se confirmada, verificar se passaram menos de 5 minutos
     if (encomenda.estado === 'confirmada' && encomenda.confirmadaEm) {
         const agora = new Date();
         const diffMs = agora.getTime() - encomenda.confirmadaEm.getTime();
@@ -122,6 +159,24 @@ orderService.cancelarEncomenda = async function (clienteId, encomendaId) {
     }
 
     encomenda.estado = 'cancelada';
+    return encomenda.save();
+};
+
+/**
+ * O cliente confirma que recebeu a encomenda (Estado Final).
+ */
+orderService.confirmarRececaoCliente = async function (clienteId, encomendaId) {
+    const encomenda = await Order.findOne({ _id: encomendaId, clienteId });
+
+    if (!encomenda) {
+        throw new Error('Encomenda não encontrada.');
+    }
+
+    if (encomenda.estado !== 'em entrega') {
+        throw new Error('Apenas encomendas em entrega podem ser confirmadas.');
+    }
+
+    encomenda.estado = 'entregue';
     return encomenda.save();
 };
 

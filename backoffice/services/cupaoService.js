@@ -1,5 +1,7 @@
 const Coupon = require('../models/CupomModel');
 const Supermarket = require('../models/SupermarketModel');
+const User = require('../models/UserModel');
+const emailService = require('./emailService');
 
 const cupaoService = {};
 
@@ -19,19 +21,44 @@ cupaoService.listarCupoes = async function (supermercadoId) {
 
 /**
  * Cria um novo cupão e regista-o no array do supermercado.
+ * Distribui também o cupão aos clientes que têm este supermercado como favorito.
  */
 cupaoService.criarCupao = async function (supermercadoId, dados) {
     if (dados.codigo) {
         dados.codigo = dados.codigo.toUpperCase().trim();
     }
 
-    const novoCupao = await Coupon.create(dados);
+    const novoCupao = await Coupon.create({
+        ...dados,
+        supermercadoId: supermercadoId
+    });
 
     // Guardar referência no supermercado
     await Supermarket.findByIdAndUpdate(
         supermercadoId,
         { $push: { cupoes: novoCupao._id } }
     );
+
+    // Associar cupão aos clientes que têm este supermercado como favorito
+    await User.updateMany(
+        { supermercadoFavorito: supermercadoId, role: 'clientes' },
+        { $push: { cupoes: novoCupao._id } }
+    );
+
+    // Notificar esses clientes por email
+    const clientes = await User.find({ supermercadoFavorito: supermercadoId, role: 'clientes' })
+        .select('email')
+        .lean();
+    
+    const emails = clientes.map(c => c.email);
+
+    if (emails.length > 0) {
+        // Envio assíncrono para não bloquear
+        emailService.enviarEmailNovoCupao(emails, {
+            codigo: novoCupao.codigo,
+            desconto: novoCupao.percentagemDesconto
+        });
+    }
 
     return novoCupao;
 };
@@ -53,17 +80,25 @@ cupaoService.ativarCupao = async function (supermercadoId, cupaoId) {
 };
 
 /**
- * Elimina um cupão e remove a referência do supermercado.
+ * Elimina um cupão, remove a referência do supermercado e dos perfis dos utilizadores.
  */
 cupaoService.eliminarCupao = async function (supermercadoId, cupaoId) {
     await _verificarPosse(supermercadoId, cupaoId);
 
-    await Coupon.findByIdAndDelete(cupaoId);
+    // Remove referência do cupão em todos os utilizadores
+    await User.updateMany(
+        { cupoes: cupaoId },
+        { $pull: { cupoes: cupaoId } }
+    );
 
+    // Remove referência do supermercado
     await Supermarket.findByIdAndUpdate(
         supermercadoId,
         { $pull: { cupoes: cupaoId } }
     );
+
+    // Elimina o cupão
+    await Coupon.findByIdAndDelete(cupaoId);
 };
 
 /**

@@ -406,52 +406,8 @@ adminService.getRegistosMensais = async function () {
  * Gestão de cupons de desconto
  */
 
-adminService.listarCupoes = async function () {
-    return Coupon.find()
-        .sort({ criadoEm: -1 });
-};
-
-adminService.criarCupao = async function (dados) {
-    if (dados.codigo) {
-        dados.codigo = dados.codigo.toUpperCase().trim();
-    }
-
-    const novoCupao = await Coupon.create(dados);
-
-    // Associar cupão aos utilizadores na base de dados
-    await User.updateMany(
-        { role: 'clientes' },
-        { $push: { cupoes: novoCupao._id } }
-    );
-
-    // Notificar clientes por email
-    const clientes = await User.find({ role: 'clientes' }).select('email').lean();
-    const emails = clientes.map(c => c.email);
-
-    if (emails.length > 0) {
-        // O envio é assíncrono mas não bloqueamos a resposta ao admin
-        emailService.enviarEmailNovoCupao(emails, novoCupao);
-    }
-
-    return novoCupao;
-};
-
-adminService.desativarCupao = async function (id) {
-    return Coupon.findByIdAndUpdate(id, { ativo: false }, { new: true });
-};
-
-adminService.ativarCupao = async function (id) {
-    return Coupon.findByIdAndUpdate(id, { ativo: true }, { new: true });
-};
-
-adminService.eliminarCupao = async function (id) {
-    // Primeiro removemos a referência do cupão em todos os utilizadores
-    await User.updateMany(
-        { cupoes: id },
-        { $pull: { cupoes: id } }
-    );
-    // Depois eliminamos o cupão
-    return Coupon.findByIdAndDelete(id);
+adminService.eliminarUser = async function (id) {
+    return User.findByIdAndDelete(id);
 };
 
 /**

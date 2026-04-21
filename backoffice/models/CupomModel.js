@@ -14,6 +14,10 @@ const CouponSchema = new mongoose.Schema({
         min: [1, 'A percentagem mínima é 1%'],
         max: [100, 'A percentagem máxima é 100%']
     },
+    supermercadoId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Supermarket'
+    },
     prazo: {
         type: Date,
         required: [true, 'O prazo de validade é obrigatório']

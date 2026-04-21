@@ -280,10 +280,9 @@ function transicoesPermitidasParaEncomenda(encomenda) {
     const eLoja = encomenda.metodoEntrega === 'levantamento_loja';
     return {
         pendente:               ['confirmada', 'cancelada'],
-        confirmada:             eLoja ? ['em preparação', 'cancelada'] : ['cancelada'],
-        'em preparação':        eLoja ? ['entregue', 'cancelada'] : ['cancelada'],
-        'em entrega':           ['cancelada'],
-        'aguarda validação':  ['entregue', 'cancelada'],
+        confirmada:             eLoja ? ['em preparação', 'cancelada'] : ['em entrega', 'cancelada'],
+        'em preparação':        ['entregue', 'cancelada'],
+        'em entrega':           ['entregue', 'cancelada'],
         entregue:               [],
         cancelada:              [],
     };
@@ -434,7 +433,9 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
     }
 
     const eDomicilio = metodoEntrega === 'entrega_domicilio';
-    const estadoFinal = eDomicilio ? 'confirmada' : 'entregue';
+    // Todas as vendas em caixa (Levantamento ou Entrega) começam em 'confirmada' para preparação.
+    const estadoFinal = 'confirmada';
+
     const lat = Number(latitudeEntrega);
     const lng = Number(longitudeEntrega);
     const temCoordenadasValidas = Number.isFinite(lat) && Number.isFinite(lng);
@@ -446,9 +447,9 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
         valorTotal,
         metodoPagamento: 'dinheiro',
         estado: estadoFinal,
-        confirmadaEm: estadoFinal === 'confirmada' ? new Date() : undefined,
-        metodoEntrega: metodoEntrega || 'levantamento_loja',
-        moradaEntrega: eDomicilio ? moradaCliente : 'Venda Local em Loja',
+        confirmadaEm: new Date(),
+        metodoEntrega: eDomicilio ? 'entrega_domicilio' : 'levantamento_loja',
+        moradaEntrega: eDomicilio ? (moradaCliente || 'Entrega ao Domicílio') : 'Levantamento em Loja',
         coordenadasEntrega: temCoordenadasValidas ? { lat, lng } : undefined,
         faturaNumero: await gerarNumeroFatura(supermercadoId),
         faturaData: new Date(),
