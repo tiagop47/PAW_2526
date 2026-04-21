@@ -144,7 +144,9 @@ async function carregarEntregasDisponiveis() {
     try {
         const resposta = await fetch(CONFIG.ROTAS.entregas);
         const dados = await resposta.json();
-        if (!dados.sucesso) return;
+        if (!dados.sucesso) {
+            return;
+        }
 
         layers.destinos.forEach(destino => meuMapa.removeLayer(destino.marker));
         layers.destinos = [];
