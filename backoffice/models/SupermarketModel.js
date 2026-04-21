@@ -15,6 +15,7 @@ const SupermarketSchema = new mongoose.Schema({
     localizacao: {
         type: String,
         required: [true, "Localização é obrigatória"],
+        trim: true
     },
     localizacaoGeo: {
         type: {

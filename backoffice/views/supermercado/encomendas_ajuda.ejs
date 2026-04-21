@@ -24,7 +24,7 @@
                         <p class="text-muted small mb-3">Pedidos feitos online com entrega em casa. O estafeta é
                             responsável pela fase de entrega.</p>
                         <div class="d-flex align-items-center flex-wrap gap-2 mb-4">
-                            <% ['pendente','confirmada','preparacao','em_entrega','aguarda_confirmacao','entregue'].forEach(function(s,
+                            <% ['pendente','confirmada','em entrega','aguarda validação','entregue'].forEach(function(s,
                                 i, arr) { %>
                                 <%- badge(s) %>
                                     <% if (i < arr.length - 1) { %><span class="text-muted fs-5">&#8594;</span>
@@ -45,23 +45,19 @@
                                 </tr>
                                 <tr>
                                     <td><%- badge('confirmada') %></td>
-                                    <td>Supermercado confirmou. A aguardar início de preparação.</td>
+                                    <td>Supermercado confirmou. Fica disponível para um estafeta aceitar.</td>
                                 </tr>
                                 <tr>
-                                    <td><%- badge('preparacao') %></td>
-                                    <td>Supermercado está a preparar os produtos. Fica disponível para um estafeta aceitar.</td>
+                                    <td><%- badge('em entrega') %></td>
+                                    <td>Estafeta aceitou e está a caminho do cliente.</td>
                                 </tr>
                                 <tr>
-                                    <td><%- badge('em_entrega') %></td>
-                                    <td>Estafeta aceitou e está a entregar.</td>
-                                </tr>
-                                <tr>
-                                    <td><%- badge('aguarda_confirmacao') %></td>
-                                    <td>Estafeta confirmou entrega. Supermercado valida e fecha.</td>
+                                    <td><%- badge('aguarda validação') %></td>
+                                    <td>Estafeta entregou. Aguarda que o cliente valide a receção no Frontoffice.</td>
                                 </tr>
                                 <tr>
                                     <td><%- badge('entregue') %></td>
-                                    <td>Entrega concluída. Estado final.</td>
+                                    <td>Cliente validou a receção. Estado final.</td>
                                 </tr>
                                 <tr>
                                     <td><%- badge('cancelada') %></td>
@@ -79,7 +75,7 @@
                         <p class="text-muted small mb-3">Pedidos online para levantar na loja, ou vendas feitas
                             diretamente na caixa (vão direto para entregue).</p>
                         <div class="d-flex align-items-center flex-wrap gap-2 mb-4">
-                            <% ['pendente','confirmada','preparacao','entregue'].forEach(function(s, i, arr) { %>
+                            <% ['pendente','confirmada','em preparação','entregue'].forEach(function(s, i, arr) { %>
                                 <%- badge(s) %>
                                     <% if (i < arr.length - 1) { %><span class="text-muted fs-5">&#8594;</span>
                                         <% } %>
@@ -102,7 +98,7 @@
                                     <td>Supermercado confirmou a encomenda.</td>
                                 </tr>
                                 <tr>
-                                    <td><%- badge('preparacao') %></td>
+                                    <td><%- badge('em preparação') %></td>
                                     <td>Produtos a ser preparados para levantamento.</td>
                                 </tr>
                                 <tr>

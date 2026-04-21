@@ -9,36 +9,32 @@ const estafetaService = {};
  * Obtém todos os dados necessários para o dashboard do estafeta.
  */
 estafetaService.obterDadosDashboard = async function (estafetaId) {
-    const [stats, entregas] = await Promise.all([
+    const [stats, entregas, supermercados] = await Promise.all([
         obterEstatisticas(estafetaId),
-        estafetaService.obterEntregasDisponiveis()
+        estafetaService.obterEntregasDisponiveis(),
+        Supermarket.find({ estadoAprovacao: 'Aprovado' }).select('_id nome localizacao')
     ]);
 
     const contagem = {};
-    const zonasSet = new Set();
     let mercadoLider = null;
     let max = 0;
 
     entregas.forEach(function (e) {
-        const m = e.supermercadoId;
-        if (!m) {
+        const mercado = e.supermercadoId;
+        if (!mercado) {
             return;
         }
 
-        if (m.localizacao) {
-            zonasSet.add(m.localizacao);
-        }
-
-        contagem[m._id] = (contagem[m._id] || 0) + 1;
-        if (contagem[m._id] > max) {
-            max = contagem[m._id];
-            mercadoLider = { nome: m.nome, localizacao: m.localizacao, total: max };
+        contagem[mercado._id] = (contagem[mercado._id] || 0) + 1;
+        if (contagem[mercado._id] > max) {
+            max = contagem[mercado._id];
+            mercadoLider = { nome: mercado.nome, localizacao: mercado.localizacao, total: max };
         }
     });
 
     stats.entregasDisponiveis = entregas.length;
 
-    const zonasTrabalho = Array.from(zonasSet)
+    const zonasTrabalho = Array.from(new Set(supermercados.map(s => s.localizacao?.trim()).filter(Boolean)))
         .sort(function (a, b) { return a.localeCompare(b, 'pt'); })
         .map(function (local) {
             return { value: local.toLowerCase(), label: local };
@@ -65,7 +61,7 @@ estafetaService.obterDadosDashboard = async function (estafetaId) {
 estafetaService.obterEntregasDisponiveis = async function (concelho = null) {
     const filtro = {
         estafetaId: null,
-        estado: 'preparacao',
+        estado: 'confirmada',
         metodoEntrega: 'entrega_domicilio'
     };
 
@@ -84,21 +80,21 @@ estafetaService.obterEntregasDisponiveis = async function (concelho = null) {
 };
 
 estafetaService.obterMinhasEntregas = async function (estafetaId) {
-    return Order.find({ estafetaId, estado: { $in: ['em_entrega', 'aguarda_confirmacao', 'entregue'] } })
+    return Order.find({ estafetaId, estado: { $in: ['em entrega', 'aguarda validação', 'entregue'] } })
         .populate('supermercadoId', 'nome localizacao')
         .populate('clienteId', 'nome morada')
         .sort({ criadoEm: -1 });
 };
 
 estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
-    const ativas = await Order.countDocuments({ estafetaId, estado: 'em_entrega' });
+    const ativas = await Order.countDocuments({ estafetaId, estado: 'em entrega' });
     if (ativas >= 1) {
         throw new Error('Já tens uma entrega em curso. Conclui-a antes de aceitar outra.');
     }
 
     const encomenda = await Order.findOneAndUpdate(
-        { _id: encomendaId, estafetaId: null, estado: 'preparacao', metodoEntrega: 'entrega_domicilio' },
-        { $set: { estafetaId: estafetaId, estado: 'em_entrega' } },
+        { _id: encomendaId, estafetaId: null, estado: 'confirmada', metodoEntrega: 'entrega_domicilio' },
+        { $set: { estafetaId: estafetaId, estado: 'em entrega' } },
         { new: true }
     );
 
@@ -111,11 +107,11 @@ estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
 
 estafetaService.confirmarEntrega = async function (encomendaId, estafetaId) {
     const encomenda = await Order.findById(encomendaId);
-    if (!encomenda || encomenda.estafetaId?.toString() !== estafetaId.toString() || encomenda.estado !== 'em_entrega') {
+    if (!encomenda || encomenda.estafetaId?.toString() !== estafetaId.toString() || encomenda.estado !== 'em entrega') {
         throw new Error('Operação inválida para esta entrega');
     }
 
-    encomenda.estado = 'aguarda_confirmacao';
+    encomenda.estado = 'aguarda validação';
 
     return encomenda.save();
 };
@@ -129,7 +125,7 @@ estafetaService.obterEncomendaPorId = async function (id) {
 async function obterEstatisticas(estafetaId) {
     const [entregasRealizadas, entregasEmCurso, avaliacaoStats] = await Promise.all([
         Order.countDocuments({ estafetaId, estado: 'entregue' }),
-        Order.countDocuments({ estafetaId, estado: 'em_entrega' }),
+        Order.countDocuments({ estafetaId, estado: 'em entrega' }),
         Avaliacao.aggregate([
             { $match: { estafetaId: new mongoose.Types.ObjectId(estafetaId), notaEstafeta: { $ne: null } } },
             { $group: { _id: null, media: { $avg: '$notaEstafeta' }, total: { $sum: 1 } } }

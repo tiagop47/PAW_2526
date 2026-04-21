@@ -20,7 +20,7 @@ const OrderSchema = new mongoose.Schema({
     valorTotal: { type: Number, required: true, min: [0, 'O valor total não pode ser negativo'] },
     estado: {
         type: String,
-        enum: ['pendente', 'confirmada', 'preparacao', 'em_entrega', 'aguarda_confirmacao', 'entregue', 'cancelada'],
+        enum: ['pendente', 'confirmada', 'em preparação', 'em entrega', 'aguarda validação', 'entregue', 'cancelada'],
         default: 'pendente'
     },
     metodoEntrega: {

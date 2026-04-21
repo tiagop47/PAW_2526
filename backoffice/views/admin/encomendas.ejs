@@ -10,12 +10,13 @@
 
     <%
     const labelEstado = {
-        pendente: 'Pendente',
-        confirmada: 'Confirmada',
-        preparacao: 'Em Preparação',
-        em_entrega: 'Em Entrega',
-        entregue: 'Entregue',
-        cancelada: 'Cancelada'
+        pendente: 'pendente',
+        confirmada: 'confirmada',
+        'em preparação': 'em preparação',
+        'em entrega': 'em entrega',
+        'aguarda validação': 'aguarda validação',
+        entregue: 'entregue',
+        cancelada: 'cancelada'
     };
     %>
 
@@ -67,7 +68,7 @@
                                         </td>
                                         <td>
                                             <span class="badge bg-dark">
-                                                <%= (e.estado === 'em_entrega' && !e.estafetaId) ? 'Aguarda Estafeta' : (labelEstado[e.estado] || e.estado) %>
+                                                <%= labelEstado[e.estado] || e.estado %>
                                             </span>
                                         </td>
                                         <td>

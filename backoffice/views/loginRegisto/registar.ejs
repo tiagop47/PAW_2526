@@ -42,8 +42,8 @@
                         <input type="number" id="telefone" name="telefone" class="form-control" value="<%= locals.dados?.telefone || '' %>" minlength="9" maxlength="9" required>
                     </div>
                     <div class="col-12">
-                        <label class="form-label small fw-bold">Morada</label>
-                        <input type="text" name="morada" class="form-control" value="<%= locals.dados?.morada || '' %>" minlength="5" required>
+                        <label class="form-label small fw-bold">Morada Completa</label>
+                        <input type="text" name="morada" class="form-control" value="<%= locals.dados?.morada || '' %>" minlength="5" placeholder="Ex: Rua Direita, nº 123" required>
                     </div>
                     <div class="col-12">
                         <label class="form-label small fw-bold">Tipo de Perfil</label>
@@ -56,7 +56,19 @@
                     <!-- Campos Específicos para Supermercado -->
                     <div id="campos-supermercado" class="row g-3 m-0 pt-3 border-top mt-3">
                         <div class="col-12">
-                            <label class="form-label small fw-bold">Marcar Loja no Mapa</label>
+                            <label class="form-label small fw-bold">Concelho (Zona de Trabalho)</label>
+                            <select name="localizacao" id="seletor-concelho" class="form-select">
+                                <option value="" disabled selected>Selecione o concelho...</option>
+                                <option value="Lousada">Lousada</option>
+                                <option value="Porto">Porto</option>
+                                <option value="Felgueiras">Felgueiras</option>
+                                <option value="Penafiel">Penafiel</option>
+                            </select>
+                            <small class="text-muted" style="font-size: 0.7rem;">O concelho define a zona onde os estafetas encontrarão as suas encomendas.</small>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <label class="form-label small fw-bold">Localização Exata (Clique no Mapa)</label>
                             <div id="mapa-edicao" style="height: 250px; border-radius: 8px; border: 1px solid #dee2e6;"></div>
                             <div class="d-flex gap-2 mt-2">
                                 <div class="w-50">

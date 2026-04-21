@@ -53,7 +53,7 @@ function adicionarMercadoNoMapa(id, nome, lat, lon, zona = '', raioKm = 5) {
         radius: raioVisual
     }).addTo(meuMapa);
 
-    layers.mercados[id] = { marker, area, zona: (zona || '').toLowerCase().trim() };
+    layers.mercados[id] = { marker, area, zona: (zona || '').trim().toLowerCase() };
 }
 
 /**
@@ -61,31 +61,42 @@ function adicionarMercadoNoMapa(id, nome, lat, lon, zona = '', raioKm = 5) {
  */
 async function carregarMercadosDoServidor() {
     try {
-        const res = await fetch(CONFIG.ROTAS.mercados);
-        const dados = await res.json();
+        const resposta = await fetch(CONFIG.ROTAS.mercados);
+        const dados = await resposta.json();
         const mercados = Array.isArray(dados) ? dados : (dados.supermercados || []);
 
-        const coords = [];
-        mercados.forEach(m => {
-            const c = m.localizacaoGeo?.coordinates;
-            if (!c) {
+        const coordenadasGerais = [];
+        mercados.forEach(mercado => {
+            const coordenadas = mercado.localizacaoGeo?.coordinates;
+            if (!coordenadas) {
                 return;
             }
 
-            adicionarMercadoNoMapa(m._id, m.nome, c[1], c[0], m.localizacao, m.raioEntregaKm || 5);
-            coords.push([c[1], c[0]]);
+            adicionarMercadoNoMapa(
+                mercado._id,
+                mercado.nome,
+                coordenadas[1],
+                coordenadas[0],
+                mercado.localizacao,
+                mercado.raioEntregaKm || 5
+            );
+            coordenadasGerais.push([coordenadas[1], coordenadas[0]]);
         });
 
 
-        if (coords.length > 0) {
-            meuMapa.fitBounds(L.latLngBounds(coords), { padding: [50, 50] });
+        const estafetaId = document.body.getAttribute('data-estafeta-id');
+        const zonaSessao = sessionStorage.getItem(`estafeta_zona_trabalho_${estafetaId || 'default'}`);
+
+        // Só ajusta a visão global se não estivermos no contexto de estafeta com zona definida
+        if (coordenadasGerais.length > 0 && (!location.pathname.includes('/estafeta') || !zonaSessao)) {
+            meuMapa.fitBounds(L.latLngBounds(coordenadasGerais), { padding: [50, 50] });
         }
 
         if (location.pathname.includes('/estafeta')) {
-            carregarEntregasDisponiveis();
+            await carregarEntregasDisponiveis();
         }
-    } catch (err) {
-        console.error("Erro ao carregar mercados:", err);
+    } catch (erro) {
+        console.error("Erro ao carregar mercados:", erro);
     }
 }
 
@@ -93,37 +104,36 @@ async function carregarMercadosDoServidor() {
  * Filtra a visibilidade dos elementos no mapa por zona.
  */
 function filtrarMercadosNoMapa(zona = '') {
-    const z = (zona || '').toLowerCase().trim();
-    const coordsVisiveis = [];
+    const zonaAlvo = (zona || '').toLowerCase().trim();
+    let limitesDaZona = null;
 
-    // Filtrar Mercados
-    Object.values(layers.mercados).forEach(m => {
-        const visivel = !z || m.zona === z;
-        if (visivel) {
-            m.marker.addTo(meuMapa);
-            m.area.addTo(meuMapa);
-            coordsVisiveis.push(m.marker.getLatLng());
+    Object.values(layers.mercados).forEach(mercado => {
+        const estaVisivel = !zonaAlvo || mercado.zona === zonaAlvo;
+        if (estaVisivel) {
+            mercado.marker.addTo(meuMapa);
+            mercado.area.addTo(meuMapa);
+            if (zonaAlvo) {
+                limitesDaZona = limitesDaZona
+                    ? limitesDaZona.extend(mercado.area.getBounds())
+                    : mercado.area.getBounds();
+            }
         } else {
-            meuMapa.removeLayer(m.marker);
-            meuMapa.removeLayer(m.area);
+            meuMapa.removeLayer(mercado.marker);
+            meuMapa.removeLayer(mercado.area);
         }
     });
 
-    // Filtrar Destinos
-    layers.destinos.forEach(d => {
-        const visivel = !z || d.zona === z;
-        if (visivel) {
-            d.marker.addTo(meuMapa);
-            coordsVisiveis.push(d.marker.getLatLng());
+    layers.destinos.forEach(destino => {
+        const estaVisivel = !zonaAlvo || destino.zona === zonaAlvo;
+        if (estaVisivel) {
+            destino.marker.addTo(meuMapa);
         } else {
-            meuMapa.removeLayer(d.marker);
+            meuMapa.removeLayer(destino.marker);
         }
     });
 
-    // Focar automaticamente em tudo o que estiver visível na zona
-    if (z && coordsVisiveis.length > 0 && meuMapa) {
-        const bounds = L.latLngBounds(coordsVisiveis);
-        meuMapa.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+    if (zonaAlvo && limitesDaZona && meuMapa) {
+        meuMapa.fitBounds(limitesDaZona, { padding: [50, 50] });
     }
 }
 
@@ -132,30 +142,35 @@ function filtrarMercadosNoMapa(zona = '') {
  */
 async function carregarEntregasDisponiveis() {
     try {
-        const res = await fetch(CONFIG.ROTAS.entregas);
-        const dados = await res.json();
+        const resposta = await fetch(CONFIG.ROTAS.entregas);
+        const dados = await resposta.json();
         if (!dados.sucesso) return;
 
-        layers.destinos.forEach(d => meuMapa.removeLayer(d.marker));
+        layers.destinos.forEach(destino => meuMapa.removeLayer(destino.marker));
         layers.destinos = [];
 
-        dados.entregas.forEach(e => {
-            const coords = e.coordenadasEntrega;
-            if (!coords?.lat || !coords?.lng) return;
+        dados.entregas.forEach(entrega => {
+            const coordenadas = entrega.coordenadasEntrega;
+            if (!coordenadas?.lat || !coordenadas?.lng) {
+                return;
+            }
 
-            const marker = L.circleMarker([coords.lat, coords.lng], {
+            const marcador = L.circleMarker([coordenadas.lat, coordenadas.lng], {
                 radius: 6, color: CONFIG.CORES.destino, fillColor: CONFIG.CORES.destino, fillOpacity: 0.8
             }).addTo(meuMapa);
 
-            layers.destinos.push({ marker, zona: (e.supermercadoId?.localizacao || '').toLowerCase().trim() });
+            layers.destinos.push({
+                marker: marcador,
+                zona: (entrega.supermercadoId?.localizacao || '').toLowerCase().trim()
+            });
         });
 
         const estafetaId = document.body.getAttribute('data-estafeta-id');
         const zonaSessao = sessionStorage.getItem(`estafeta_zona_trabalho_${estafetaId || 'default'}`);
 
         filtrarMercadosNoMapa(zonaSessao);
-    } catch (err) {
-        console.error("Erro ao carregar entregas:", err);
+    } catch (erro) {
+        console.error("Erro ao carregar entregas:", erro);
     }
 }
 

@@ -151,23 +151,4 @@ orderService.obterEncomendaCliente = async function (clienteId, encomendaId) {
         .populate('estafetaId', 'nome telefone');
 };
 
-/**
- * Confirmar receção da encomenda pelo cliente.
- * Transição: aguarda_confirmacao → entregue
- */
-orderService.confirmarRececao = async function (clienteId, encomendaId) {
-    const encomenda = await Order.findOne({ _id: encomendaId, clienteId });
-
-    if (!encomenda) {
-        throw new Error('Encomenda não encontrada.');
-    }
-
-    if (encomenda.estado !== 'aguarda_confirmacao') {
-        throw new Error('Esta encomenda não está a aguardar confirmação de entrega.');
-    }
-
-    encomenda.estado = 'entregue';
-    return encomenda.save();
-};
-
 module.exports = orderService;

@@ -221,8 +221,7 @@ adminController.listarSupermercados = async function (req, res) {
     try {
         const limite = 3;
         const pagina = parseInt(req.query.pagina) || 1;
-        const contador = (pagina - 1) * limite;
-        const dados = await adminService.getMercadosAtivos(contador, limite);
+        const dados = await adminService.getMercadosAtivos(pagina, limite);
 
         const supermercadosMapa = await adminService.getTodosMercadosAtivos();
         const topSupermarkets = await adminService.getTopSupermercados();

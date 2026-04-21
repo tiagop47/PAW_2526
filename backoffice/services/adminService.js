@@ -75,7 +75,7 @@ adminService.getDashboardStats = async function () {
             }
         ]),
         Order.aggregate([
-            { $match: { estafetaId: null, estado: 'preparacao', metodoEntrega: 'entrega_domicilio' } },
+            { $match: { estafetaId: null, estado: 'confirmada', metodoEntrega: 'entrega_domicilio' } },
             { $group: { _id: '$supermercadoId', total: { $sum: 1 } } },
             { $sort: { total: -1 } },
             { $limit: 1 },
@@ -244,7 +244,8 @@ adminService.getCategoriaById = async function (id) {
     return Category.findById(id);
 };
 
-adminService.getMercadosAtivos = async function (contador, limite) {
+adminService.getMercadosAtivos = async function (pagina, limite) {
+    const contador = (pagina - 1) * limite;
     const total = await Supermarket.countDocuments({ estadoAprovacao: { $in: ['Aprovado', 'Bloqueado'] } });
     const supermercados = await Supermarket.find({ estadoAprovacao: { $in: ['Aprovado', 'Bloqueado'] } })
         .populate('userId')
@@ -253,7 +254,7 @@ adminService.getMercadosAtivos = async function (contador, limite) {
 
     return {
         supermercados,
-        paginaAtual: Math.floor(Number(contador) / Number(limite)) + 1,
+        paginaAtual: pagina,
         totalPaginas: Math.ceil(total / limite)
     };
 };

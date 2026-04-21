@@ -10,102 +10,87 @@
 
         <div class="container mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4>Minhas Entregas</h4>
+                <h4 class="fw-bold">Gestão de Entregas</h4>
             </div>
 
-            <% const emCurso=entregas.filter(e=> e.estado === 'em_entrega'); %>
-                <% if (emCurso.length> 0) { %>
-                    <h5>Em Curso</h5>
-                    <div class="row mb-4">
-                        <% emCurso.forEach(entrega=> { %>
-                            <div class="col-md-6 mb-3">
-                                <div class="card border">
-                                    <div class="card-body">
-                                        <h6>#<%= entrega._id.toString().slice(-6).toUpperCase() %>
-                                        </h6>
-                                        <p class="small mb-2">
-                                            <strong>De:</strong>
-                                            <%= entrega.supermercadoId?.nome || 'N/A' %><br>
-                                                <strong>Para:</strong>
-                                                <%= entrega.moradaEntrega || entrega.clienteId?.morada || 'N/A' %>
-                                                <% if (entrega.coordenadasEntrega && Number.isFinite(entrega.coordenadasEntrega.lat) && Number.isFinite(entrega.coordenadasEntrega.lng)) { %>
-                                                    <br>
-                                                    <strong>Coords:</strong> <%= entrega.coordenadasEntrega.lat %>, <%= entrega.coordenadasEntrega.lng %>
-                                                <% } %>
-                                        </p>
-                                        <button class="btn btn-sm btn-dark btn-confirmar-entrega"
-                                            data-id="<%= entrega._id %>">
-                                            Confirmar Entrega
-                                        </button>
+            <% const emCurso = entregas.filter(e => e.estado === 'em entrega'); %>
+            <% if (emCurso.length > 0) { %>
+                <h5 class="fw-bold mb-3">Em Curso</h5>
+                <div class="row mb-4">
+                    <% emCurso.forEach(entrega => { %>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="fw-bold">#<%= entrega._id.toString().slice(-6).toUpperCase() %></h6>
+                                    <p class="small mb-2">
+                                        <strong>De:</strong> <%= entrega.supermercadoId?.nome || 'N/A' %><br>
+                                        <strong>Para:</strong> <%= entrega.moradaEntrega || entrega.clienteId?.morada || 'N/A' %>
+                                    </p>
+                                    <button class="btn btn-sm btn-dark btn-confirmar-entrega" data-id="<%= entrega._id %>">
+                                        entregar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+
+            <% const aguardando = entregas.filter(e => e.estado === 'aguarda validação'); %>
+            <% if (aguardando.length > 0) { %>
+                <h5 class="fw-bold mb-3">A aguardar confirmação do cliente</h5>
+                <div class="row mb-4">
+                    <% aguardando.forEach(entrega => { %>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border bg-light">
+                                <div class="card-body">
+                                    <h6 class="fw-bold">#<%= entrega._id.toString().slice(-6).toUpperCase() %></h6>
+                                    <p class="small mb-0">
+                                        <strong>Supermercado:</strong> <%= entrega.supermercadoId?.nome || 'N/A' %><br>
+                                        <strong>Destino:</strong> <%= entrega.moradaEntrega || entrega.clienteId?.morada || 'N/A' %>
+                                    </p>
+                                    <div class="mt-2">
+                                        <span class="badge bg-dark">Entregue - Aguarda validação</span>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+
+            <% const historico = entregas.filter(e => e.estado === 'entregue'); %>
+            <% if (historico.length > 0) { %>
+                <h5 class="fw-bold mb-3">Histórico de Concluídas</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover border">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Supermercado</th>
+                                <th>Destino</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% historico.forEach(entrega => { %>
+                                <tr>
+                                    <td class="fw-bold">#<%= entrega._id.toString().slice(-6).toUpperCase() %></td>
+                                    <td><%= entrega.supermercadoId?.nome || 'N/A' %></td>
+                                    <td><%= entrega.moradaEntrega || entrega.clienteId?.morada || 'N/A' %></td>
+                                    <td><%= new Date(entrega.criadoEm).toLocaleDateString('pt-PT') %></td>
+                                </tr>
                             <% }); %>
-                    </div>
-                    <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
 
-                        <% const aguardaConfirmacao=entregas.filter(e=> e.estado === 'aguarda_confirmacao'); %>
-                            <% if (aguardaConfirmacao.length > 0) { %>
-                                <h5>Aguarda Confirmação do Supermercado</h5>
-                                <table class="table table-sm mb-4">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Supermercado</th>
-                                            <th>Destino</th>
-                                            <th>Data</th>
-                                            <th>Estado</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <% aguardaConfirmacao.forEach(entrega=> { %>
-                                            <tr>
-                                                <td>#<%= entrega._id.toString().slice(-6).toUpperCase() %></td>
-                                                <td><%= entrega.supermercadoId?.nome || 'N/A' %></td>
-                                                <td><%= entrega.moradaEntrega || entrega.clienteId?.morada || 'N/A' %></td>
-                                                <td><%= new Date(entrega.criadoEm).toLocaleDateString('pt-PT') %></td>
-                                                <td><span class="badge bg-dark">A aguardar</span></td>
-                                            </tr>
-                                        <% }); %>
-                                    </tbody>
-                                </table>
-                            <% } %>
-
-                        <% const historico=entregas.filter(e=> e.estado === 'entregue'); %>
-                            <% if (historico.length> 0) { %>
-                                <h5>Histórico</h5>
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Supermercado</th>
-                                            <th>Destino</th>
-                                            <th>Data</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <% historico.forEach(entrega=> { %>
-                                            <tr>
-                                                <td>#<%= entrega._id.toString().slice(-6).toUpperCase() %>
-                                                </td>
-                                                <td>
-                                                    <%= entrega.supermercadoId?.nome || 'N/A' %>
-                                                </td>
-                                                <td>
-                                                    <%= entrega.moradaEntrega || entrega.clienteId?.morada || 'N/A' %>
-                                                    <% if (entrega.coordenadasEntrega && Number.isFinite(entrega.coordenadasEntrega.lat) && Number.isFinite(entrega.coordenadasEntrega.lng)) { %>
-                                                        <br>
-                                                    <% } %>
-                                                </td>
-                                                <td>
-                                                    <%= new Date(entrega.criadoEm).toLocaleDateString('pt-PT') %>
-                                                </td>
-                                            </tr>
-                                            <% }); %>
-                                    </tbody>
-                                </table>
-                                <% } %>
-
+            <% if (entregas.length === 0) { %>
+                <div class="text-center py-5 text-muted">
+                    <p>Ainda não tens nenhuma atividade de entrega registada.</p>
+                </div>
+            <% } %>
         </div>
 
         <script src="/javascript/estafeta/estafetaAcoes.js"></script>

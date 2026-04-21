@@ -67,7 +67,7 @@ supermarketService.obterDadosDashboard = async function (supermercadoId) {
             { $match: { supermercadoId: new mongoose.Types.ObjectId(supermercadoId) } },
             { $group: { _id: null, media: { $avg: '$notaSupermercado' }, total: { $sum: 1 } } }
         ]),
-        Order.countDocuments({ supermercadoId, estado: { $in: ['pendente', 'aguarda_confirmacao'] } }),
+        Order.countDocuments({ supermercadoId, estado: 'pendente' }),
         Product.countDocuments({ supermercadoId, stockDisponivel: { $lt: 5 } })
     ]);
 
@@ -280,9 +280,10 @@ function transicoesPermitidasParaEncomenda(encomenda) {
     const eLoja = encomenda.metodoEntrega === 'levantamento_loja';
     return {
         pendente:               ['confirmada', 'cancelada'],
-        confirmada:             ['preparacao', 'cancelada'],
-        preparacao:             eLoja ? ['entregue', 'cancelada'] : ['em_entrega', 'cancelada'],
-        em_entrega:             ['cancelada'], // Supermercado só a pode cancelar, confirmação é do estafeta/cliente
+        confirmada:             eLoja ? ['em preparação', 'cancelada'] : ['cancelada'],
+        'em preparação':        eLoja ? ['entregue', 'cancelada'] : ['cancelada'],
+        'em entrega':           ['cancelada'],
+        'aguarda validação':  ['entregue', 'cancelada'],
         entregue:               [],
         cancelada:              [],
     };
@@ -306,7 +307,7 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
         throw new Error(`Transição de estado inválida: ${estadoAnterior} → ${estado}`);
     }
 
-    const estadosComStockOcupado = ['pendente', 'confirmada', 'preparacao', 'em_entrega', 'aguarda_confirmacao', 'entregue'];
+    const estadosComStockOcupado = ['pendente', 'confirmada', 'em preparação', 'em entrega', 'entregue'];
     const eraOcupado = estadosComStockOcupado.includes(estadoAnterior);
     const vaiSerOcupado = estadosComStockOcupado.includes(estado);
 
@@ -334,7 +335,7 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
     }
 
     //Lógica de fatura: Gerar apenas se entrar num estado "avançado" e ainda não tiver
-    const estadosComFatura = ['confirmada', 'preparacao', 'em_entrega', 'aguarda_confirmacao', 'entregue'];
+    const estadosComFatura = ['confirmada', 'em preparação', 'em entrega', 'entregue'];
     if (estadosComFatura.includes(estado) && !order.faturaNumero) {
         order.faturaNumero = await gerarNumeroFatura(supermercadoId);
         order.faturaData = new Date();
@@ -433,7 +434,7 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
     }
 
     const eDomicilio = metodoEntrega === 'entrega_domicilio';
-    const estadoFinal = eDomicilio ? 'preparacao' : 'entregue';
+    const estadoFinal = eDomicilio ? 'confirmada' : 'entregue';
     const lat = Number(latitudeEntrega);
     const lng = Number(longitudeEntrega);
     const temCoordenadasValidas = Number.isFinite(lat) && Number.isFinite(lng);
@@ -445,6 +446,7 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
         valorTotal,
         metodoPagamento: 'dinheiro',
         estado: estadoFinal,
+        confirmadaEm: estadoFinal === 'confirmada' ? new Date() : undefined,
         metodoEntrega: metodoEntrega || 'levantamento_loja',
         moradaEntrega: eDomicilio ? moradaCliente : 'Venda Local em Loja',
         coordenadasEntrega: temCoordenadasValidas ? { lat, lng } : undefined,

@@ -99,7 +99,7 @@ document.addEventListener('click', async function (e) {
     });
 });
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     if (paginaEntregas) {
         carregarZonaDaSessao();
 
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         inicializarMapa('mapa-entregas');
-        carregarMercadosDoServidor();
+        await carregarMercadosDoServidor();
         aplicarFiltroZona();
     }
 });

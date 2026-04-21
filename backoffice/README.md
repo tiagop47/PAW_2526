@@ -58,6 +58,14 @@ Ao não configurar uma conta email pessoal o sistema possui um mecanismo de *fal
 3. O link para visualizar o email gerado será impresso diretamente no **terminal do servidor**.
 
 
+## Zonas de Operação e Geolocalização
+
+Para garantir a consistência dos dados e facilitar o trabalho dos estafetas, o sistema utiliza um sistema de zonas restritas:
+
+- **Zonas Ativas**: Lousada, Porto, Felgueiras e Penafiel.
+- **Registo de Supermercado**: O utilizador deve selecionar um concelho da lista. Ao selecionar, o mapa foca automaticamente nessa região para facilitar a marcação exata da loja no supermercado não há possibilidade de a venda ser feita fora do círculo.
+- **Filtragem de Estafetas**: Os estafetas escolhem a sua zona de trabalho e o mapa abre focado apenas nos supermercados e entregas dessa região, ignorando tudo o resto para uma interface limpa e rápida.
+
 ---
 
 ## Fluxo de Encomendas
@@ -67,19 +75,27 @@ Ao não configurar uma conta email pessoal o sistema possui um mecanismo de *fal
 | Estado | Descrição |
 | :--- | :--- |
 | `pendente` | Encomenda criada pelo cliente (frontoffice) — aguarda confirmação do supermercado |
-| `confirmada` | Supermercado confirmou a encomenda — pronta para preparação |
-| `preparacao` | Encomenda está a ser preparada pelo supermercado |
-| `em_entrega` | Estafeta aceitou e está a caminho do cliente |
-| `aguarda_confirmacao` | Estafeta confirmou a entrega — aguarda confirmação do cliente |
-| `entregue` | Cliente confirmou a receção — **estado final** |
+| `confirmada` | Supermercado confirmou a encomenda — pronta para preparação ou entrega |
+| `em preparação` | Encomenda está a ser preparada pelo supermercado (apenas para levantamento em loja) |
+| `em entrega` | Estafeta aceitou a encomenda e está a caminho do cliente |
+| `aguarda validação` | Estafeta entregou no destino — aguarda confirmação final do cliente |
+| `entregue` | Cliente confirmou a receção ou venda imediata em caixa — **estado final** |
 | `cancelada` | Encomenda cancelada em qualquer fase — **estado final** |
 
 ### Diagrama de transições
 
+**Entrega ao Domicílio:**
 ```
-pendente → confirmada → preparacao → em_entrega → aguarda_confirmacao → entregue
-    ↓           ↓            ↓            ↓                ↓
- cancelada   cancelada    cancelada    cancelada        cancelada
+pendente → confirmada → em entrega → aguarda validação → entregue
+    ↓           ↓             ↓               ↓
+ cancelada   cancelada     cancelada       cancelada
+```
+
+**Levantamento em Loja:**
+```
+pendente → confirmada → em preparação → entregue
+    ↓           ↓              ↓
+ cancelada   cancelada      cancelada
 ```
 
 ### Quem faz o quê?
@@ -87,11 +103,11 @@ pendente → confirmada → preparacao → em_entrega → aguarda_confirmacao �
 | Transição | Responsável |
 | :--- | :--- |
 | `pendente` → `confirmada` | Supermercado |
-| `confirmada` → `preparacao` | Supermercado |
-| `preparacao` → `em_entrega` | Supermercado (informa que está pronta a recolher) |
-| `preparacao` → `entregue` | Supermercado (se levantamento em loja) |
-| `em_entrega` → `aguarda_confirmacao` | Estafeta (ao chegar ao domicílio) |
-| `aguarda_confirmacao` → `entregue` | Cliente (via Frontoffice) |
+| `confirmada` → `em preparação` | Supermercado (Levantamento em Loja) |
+| `confirmada` → `em entrega` | Estafeta (ao aceitar a entrega) |
+| `em entrega` → `aguarda validação` | Estafeta (ao chegar ao destino) |
+| `aguarda validação` → `entregue` | Cliente (via Frontoffice) |
+| `em preparação` → `entregue` | Supermercado (no ato do levantamento) |
 | qualquer estado → `cancelada` | Supermercado / Cliente (se nos primeiros 5 min) |
 
 ### Pontos de entrada
@@ -108,7 +124,7 @@ pendente → confirmada → preparacao → em_entrega → aguarda_confirmacao �
 - **Sem recuos**: um estado só pode avançar para o próximo, nunca voltar atrás.
 - **Cancelamento pelo Cliente**: o cliente pode cancelar a encomenda a qualquer momento enquanto estiver `pendente`. Após ser `confirmada`, o cancelamento apenas é permitido nos primeiros **5 minutos**.
 - **Um Supermercado por Encomenda**: cada encomenda apenas pode conter produtos de um único supermercado.
-- **Uma Entrega por Estafeta**: cada estafeta apenas pode ter uma entrega ativa (`em_entrega`) de cada vez.
+- **Uma Entrega por Estafeta**: cada estafeta apenas pode ter uma entrega ativa (`em entrega`) de cada vez.
 - **Stock**: produtos sem stock não podem ser adicionados ao carrinho. O stock é decrementado atomicamente no momento da criação da venda e reposto caso a encomenda seja cancelada.
 - **Fatura**: é gerada automaticamente na primeira transição para `confirmada` ou superior.
 - **Avaliação**: o cliente só pode avaliar após o estado `entregue`.

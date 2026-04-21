@@ -25,9 +25,14 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Localização (Concelho)</label>
-                            <textarea name="localizacao" class="form-control"
-                                rows="2"><%= supermercado.localizacao || '' %></textarea>
+                            <label class="form-label fw-bold small">Concelho</label>
+                            <select name="localizacao" id="seletor-concelho" class="form-select" required>
+                                <option value="Lousada" <%= supermercado.localizacao === 'Lousada' ? 'selected' : '' %>>Lousada</option>
+                                <option value="Porto" <%= supermercado.localizacao === 'Porto' ? 'selected' : '' %>>Porto</option>
+                                <option value="Felgueiras" <%= supermercado.localizacao === 'Felgueiras' ? 'selected' : '' %>>Felgueiras</option>
+                                <option value="Penafiel" <%= supermercado.localizacao === 'Penafiel' ? 'selected' : '' %>>Penafiel</option>
+                            </select>
+                            <small class="text-muted">O concelho define a zona onde os estafetas encontrarão as suas encomendas.</small>
                         </div>
 
                         <div class="mb-3">

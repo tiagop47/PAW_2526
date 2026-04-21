@@ -25,7 +25,7 @@ authService.verificarCaptcha = async function (recaptchaResponse) {
     return true;
 };
 
-async function criarSupermercado(userId, { nome, morada, latitude, longitude, horario, custoEntregaPorMetodo, descricaoLoja }) {
+async function criarSupermercado(userId, { nome, localizacao, morada, latitude, longitude, horario, custoEntregaPorMetodo, descricaoLoja }) {
     const coordenadas = {
         type: 'Point',
         coordinates: [parseFloat(longitude), parseFloat(latitude)]
@@ -34,7 +34,7 @@ async function criarSupermercado(userId, { nome, morada, latitude, longitude, ho
     return Supermarket.create({
         userId,
         nome,
-        localizacao: morada || "Localização Manual",
+        localizacao: localizacao || morada || "Localização Manual",
         localizacaoGeo: coordenadas,
         horarioFuncionamento: horario || "09:00 - 19:00",
         custoEntregaPorMetodo: {

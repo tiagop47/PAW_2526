@@ -68,8 +68,7 @@ estafetaController.confirmarEntrega = async function (req, res) {
 
 estafetaController.obterEntregasAPI = async function (req, res) {
     try {
-        const { concelho } = req.query;
-        const entregas = await estafetaService.obterEntregasPorConcelho(concelho);
+        const entregas = await estafetaService.obterEntregasDisponiveis();
         res.json({ sucesso: true, entregas });
     } catch (error) {
         console.error('Erro na API de entregas:', error);

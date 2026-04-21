@@ -102,22 +102,4 @@ router.get('/:id', orderApiController.obterEncomenda);
  */
 router.post('/:id/cancelar', orderApiController.cancelarEncomenda);
 
-/**
- * @swagger
- * /api/orders/{id}/confirmar-rececao:
- *   post:
- *     summary: Confirmar receção de uma encomenda
- *     tags: [Encomendas]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *     responses:
- *       200:
- *         description: Receção confirmada
- */
-router.post('/:id/confirmar-rececao', orderApiController.confirmarRececao);
-
 module.exports = router;
