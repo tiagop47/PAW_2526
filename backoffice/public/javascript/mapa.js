@@ -147,7 +147,7 @@ async function carregarEntregasDisponiveis() {
         if (!dados.sucesso) {
             return;
         }
-
+a
         layers.destinos.forEach(destino => meuMapa.removeLayer(destino.marker));
         layers.destinos = [];
 
