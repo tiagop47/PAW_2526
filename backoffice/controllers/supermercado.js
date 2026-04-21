@@ -44,15 +44,17 @@ supermarketController.exibirDashboard = async function (req, res) {
  */
 supermarketController.exibirProdutos = async function (req, res) {
     try {
-        const [produtos, categorias] = await Promise.all([
-            supermarketService.obterProdutos(req.supermercado._id),
-            supermarketService.listarCategorias()
-        ]);
+        const pagina = parseInt(req.query.pagina) || 1;
+        const { produtos, totalPaginas } = await supermarketService.obterProdutos(req.supermercado._id, pagina);
+        const categorias = await supermarketService.listarCategorias();
 
         res.render('supermercado/produtos', {
             title: 'Gerir Produtos',
             produtos,
             categorias,
+            paginaAtual: pagina,
+            totalPaginas,
+            paginaUrl: '/supermercado/produtos',
             success: req.query.success
         });
     } catch (err) {
@@ -209,10 +211,15 @@ supermarketController.exibirPerfil = async function (req, res) {
  */
 supermarketController.listarEncomendas = async function (req, res) {
     try {
-        const encomendas = await supermarketService.obterEncomendas(req.supermercado._id);
+        const pagina = parseInt(req.query.pagina) || 1;
+        const limite = 5;
+        const dados = await supermarketService.obterEncomendas(req.supermercado._id, pagina, limite);
+        
         res.render('supermercado/encomendas', {
             title: 'Encomendas',
-            encomendas,
+            encomendas: dados.encomendas,
+            paginaAtual: dados.paginaAtual,
+            totalPaginas: dados.totalPaginas,
             transicoesPermitidasParaEncomenda: supermarketService.transicoesPermitidasParaEncomenda,
             success: req.query.success
         });

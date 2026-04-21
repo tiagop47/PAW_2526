@@ -8,25 +8,27 @@ const estafetaService = {};
 /**
  * Obtém todos os dados necessários para o dashboard do estafeta.
  */
-estafetaService.obterDadosDashboard = async (estafetaId) => {
-    const [stats, locaisDistintos, entregas] = await Promise.all([
+estafetaService.obterDadosDashboard = async function (estafetaId) {
+    const [stats, entregas] = await Promise.all([
         obterEstatisticas(estafetaId),
-        Supermarket.distinct("localizacao", { estadoAprovacao: 'Aprovado' }),
         estafetaService.obterEntregasDisponiveis()
     ]);
 
-    const zonasTrabalho = locaisDistintos
-        .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b, 'pt'))
-        .map(local => ({ value: local.toLowerCase(), label: local }));
-
+    const contagem = {};
+    const zonasSet = new Set();
     let mercadoLider = null;
     let max = 0;
-    const contagem = {};
 
-    entregas.forEach(e => {
+    entregas.forEach(function (e) {
         const m = e.supermercadoId;
-        if (!m) return;
+        if (!m) {
+            return;
+        }
+
+        if (m.localizacao) {
+            zonasSet.add(m.localizacao);
+        }
+
         contagem[m._id] = (contagem[m._id] || 0) + 1;
         if (contagem[m._id] > max) {
             max = contagem[m._id];
@@ -34,52 +36,66 @@ estafetaService.obterDadosDashboard = async (estafetaId) => {
         }
     });
 
+    stats.entregasDisponiveis = entregas.length;
+
+    const zonasTrabalho = Array.from(zonasSet)
+        .sort(function (a, b) { return a.localeCompare(b, 'pt'); })
+        .map(function (local) {
+            return { value: local.toLowerCase(), label: local };
+        });
+
     return {
-        stats: { ...stats, mercadoLider },
-        zonasTrabalho
+        stats: {
+            entregasRealizadas: stats.entregasRealizadas,
+            entregasEmCurso: stats.entregasEmCurso,
+            entregasDisponiveis: stats.entregasDisponiveis,
+            ganhosTotais: stats.ganhosTotais,
+            evolucaoMensal: stats.evolucaoMensal,
+            mediaAvaliacao: stats.mediaAvaliacao,
+            totalAvaliacoes: stats.totalAvaliacoes,
+            mercadoLider: mercadoLider
+        },
+        zonasTrabalho: zonasTrabalho
     };
 };
 
-estafetaService.obterEntregasDisponiveis = async () => {
-    return Order.find({ estafetaId: null, estado: 'preparacao', metodoEntrega: 'entrega_domicilio' })
-        .populate('supermercadoId', 'nome localizacao localizacaoGeo custoEntregaPorMetodo')
-        .populate('clienteId', 'nome morada')
-        .sort({ criadoEm: -1 });
-};
-
-estafetaService.obterEntregasPorConcelho = async (concelho) => {
-    if (!concelho) return estafetaService.obterEntregasDisponiveis();
-
-    const mercados = await Supermarket.find({ 
-        localizacao: { $regex: new RegExp("^" + concelho + "$", "i") },
-        estadoAprovacao: 'Aprovado' 
-    }).select('_id');
-
-    return Order.find({
-        supermercadoId: { $in: mercados.map(s => s._id) },
+/**
+ * Método unificado para obter entregas disponíveis, opcionalmente filtradas por concelho.
+ */
+estafetaService.obterEntregasDisponiveis = async function (concelho = null) {
+    const filtro = {
         estafetaId: null,
         estado: 'preparacao',
         metodoEntrega: 'entrega_domicilio'
-    })
-        .populate('supermercadoId', 'nome localizacao localizacaoGeo custoEntregaPorMetodo')
+    };
+
+    if (concelho) {
+        const mercados = await Supermarket.find({
+            localizacao: { $regex: new RegExp("^" + concelho + "$", "i") },
+            estadoAprovacao: 'Aprovado'
+        }).select('_id');
+        filtro.supermercadoId = { $in: mercados.map(function (s) { return s._id; }) };
+    }
+
+    return Order.find(filtro)
+        .populate('supermercadoId', 'nome localizacao custoEntregaPorMetodo')
         .populate('clienteId', 'nome morada')
         .sort({ criadoEm: -1 });
 };
 
-estafetaService.obterMinhasEntregas = async (estafetaId) => {
-    return Order.find({ estafetaId, estado: { $in: ['em_entrega', 'entregue'] } })
-        .populate('supermercadoId', 'nome localizacao localizacaoGeo')
+estafetaService.obterMinhasEntregas = async function (estafetaId) {
+    return Order.find({ estafetaId, estado: { $in: ['em_entrega', 'aguarda_confirmacao', 'entregue'] } })
+        .populate('supermercadoId', 'nome localizacao')
         .populate('clienteId', 'nome morada')
         .sort({ criadoEm: -1 });
 };
 
-estafetaService.aceitarEntrega = async (encomendaId, estafetaId) => {
+estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
     const ativas = await Order.countDocuments({ estafetaId, estado: 'em_entrega' });
     if (ativas >= 1) {
         throw new Error('Já tens uma entrega em curso. Conclui-a antes de aceitar outra.');
     }
 
-    // Operação atómica: só atualiza se estafetaId for null E estado for 'preparacao'
     const encomenda = await Order.findOneAndUpdate(
         { _id: encomendaId, estafetaId: null, estado: 'preparacao', metodoEntrega: 'entrega_domicilio' },
         { $set: { estafetaId: estafetaId, estado: 'em_entrega' } },
@@ -87,13 +103,13 @@ estafetaService.aceitarEntrega = async (encomendaId, estafetaId) => {
     );
 
     if (!encomenda) {
-        throw new Error('Esta entrega já não está disponível ou foi aceite por outro estafeta.');
+        throw new Error('Esta entrega já não está disponível.');
     }
 
     return encomenda;
 };
 
-estafetaService.confirmarEntrega = async (encomendaId, estafetaId) => {
+estafetaService.confirmarEntrega = async function (encomendaId, estafetaId) {
     const encomenda = await Order.findById(encomendaId);
     if (!encomenda || encomenda.estafetaId?.toString() !== estafetaId.toString() || encomenda.estado !== 'em_entrega') {
         throw new Error('Operação inválida para esta entrega');
@@ -104,17 +120,16 @@ estafetaService.confirmarEntrega = async (encomendaId, estafetaId) => {
     return encomenda.save();
 };
 
-estafetaService.obterEncomendaPorId = async (id) => {
+estafetaService.obterEncomendaPorId = async function (id) {
     return Order.findById(id)
-        .populate('supermercadoId', 'nome localizacao localizacaoGeo custoEntregaPorMetodo')
+        .populate('supermercadoId', 'nome localizacao custoEntregaPorMetodo')
         .populate('clienteId', 'nome morada');
 };
 
-const obterEstatisticas = async (estafetaId) => {
-    const [entregasRealizadas, entregasEmCurso, entregasDisponiveis, avaliacaoStats] = await Promise.all([
+async function obterEstatisticas(estafetaId) {
+    const [entregasRealizadas, entregasEmCurso, avaliacaoStats] = await Promise.all([
         Order.countDocuments({ estafetaId, estado: 'entregue' }),
         Order.countDocuments({ estafetaId, estado: 'em_entrega' }),
-        Order.countDocuments({ estafetaId: null, estado: 'preparacao', metodoEntrega: 'entrega_domicilio' }),
         Avaliacao.aggregate([
             { $match: { estafetaId: new mongoose.Types.ObjectId(estafetaId), notaEstafeta: { $ne: null } } },
             { $group: { _id: null, media: { $avg: '$notaEstafeta' }, total: { $sum: 1 } } }
@@ -149,15 +164,14 @@ const obterEstatisticas = async (estafetaId) => {
         { $sort: { "_id": 1 } }
     ]);
 
-    const mesesFormatados = Array.from({ length: 12 }, (_, i) => {
-        const mesEncontrado = evolucaoMensal.find(e => e._id === (i + 1));
+    const mesesFormatados = Array.from({ length: 12 }, function (_, i) {
+        const mesEncontrado = evolucaoMensal.find(function (e) { return e._id === (i + 1); });
         return mesEncontrado ? mesEncontrado.entregas : 0;
     });
 
     return {
-        entregasRealizadas,
-        entregasEmCurso,
-        entregasDisponiveis,
+        entregasRealizadas: entregasRealizadas,
+        entregasEmCurso: entregasEmCurso,
         ganhosTotais: ganhos.length > 0 ? ganhos[0].total : 0,
         evolucaoMensal: mesesFormatados,
         mediaAvaliacao: avaliacaoStats.length > 0 ? parseFloat(avaliacaoStats[0].media.toFixed(1)) : null,

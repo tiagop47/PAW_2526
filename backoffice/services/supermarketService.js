@@ -97,8 +97,13 @@ supermarketService.getSupermercado = async function (userId) {
     return Supermarket.findOne({ userId }).populate('userId', 'nif');
 };
 
-supermarketService.obterProdutos = async function (supermercadoId) {
-    return Product.find({ supermercadoId }).populate('categoriaId');
+supermarketService.obterProdutos = async function (supermercadoId, pagina = 1, limite = 5) {
+    const skip = (pagina - 1) * limite;
+    const [produtos, total] = await Promise.all([
+        Product.find({ supermercadoId }).populate('categoriaId').sort({ criadoEm: -1 }).skip(skip).limit(limite),
+        Product.countDocuments({ supermercadoId })
+    ]);
+    return { produtos, total, totalPaginas: Math.ceil(total / limite) };
 };
 
 /**
@@ -247,10 +252,23 @@ supermarketService.getUserByIdSemPassword = async function (userId) {
     return authService.getUserByIdSemPassword(userId);
 };
 
-supermarketService.obterEncomendas = async function (supermercadoId) {
-    return Order.find({ supermercadoId })
-        .populate('clienteId', 'nome email telefone')
-        .sort({ criadoEm: -1 });
+supermarketService.obterEncomendas = async function (supermercadoId, pagina = 1, limite = 5) {
+    const contador = (pagina - 1) * limite;
+
+    const [encomendas, total] = await Promise.all([
+        Order.find({ supermercadoId })
+            .populate('clienteId', 'nome email telefone')
+            .sort({ criadoEm: -1 })
+            .skip(contador)
+            .limit(limite),
+        Order.countDocuments({ supermercadoId })
+    ]);
+
+    return {
+        encomendas,
+        paginaAtual: pagina,
+        totalPaginas: Math.ceil(total / limite) || 1
+    };
 };
 
 supermarketService.obterEncomendaPorId = async function (supermercadoId, orderId) {
