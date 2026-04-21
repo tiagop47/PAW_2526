@@ -59,6 +59,7 @@ const SupermarketSchema = new mongoose.Schema({
         enum: ['Pendente', 'Aprovado', 'Rejeitado', 'Bloqueado'],
         default: 'Pendente'
     },
+    cupoes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' }],
     criadoEm: { type: Date, default: Date.now }
 });
 

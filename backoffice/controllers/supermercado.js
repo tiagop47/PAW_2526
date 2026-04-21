@@ -1,4 +1,6 @@
 const supermarketService = require('../services/supermarketService');
+const cupaoService = require('../services/cupaoService');
+
 
 var supermarketController = {};
 
@@ -214,7 +216,7 @@ supermarketController.listarEncomendas = async function (req, res) {
         const pagina = parseInt(req.query.pagina) || 1;
         const limite = 5;
         const dados = await supermarketService.obterEncomendas(req.supermercado._id, pagina, limite);
-        
+
         res.render('supermercado/encomendas', {
             title: 'Encomendas',
             encomendas: dados.encomendas,
@@ -318,6 +320,7 @@ supermarketController.registarVenda = async function (req, res) {
         const { emailCliente, nomeCliente, nifCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, itens, metodoEntrega } = req.body;
 
         let listaItens;
+
         try {
             listaItens = JSON.parse(itens || '[]');
         } catch (e) {
@@ -363,6 +366,73 @@ supermarketController.registarVenda = async function (req, res) {
             detalheErro: err.message,
             error: { status: 400 }
         });
+    }
+};
+
+/**
+ * Exibe a página de gestão de cupões do supermercado.
+ */
+supermarketController.exibirCupoes = async function (req, res) {
+    try {
+        const cupoes = await cupaoService.listarCupoes(req.supermercado._id);
+        res.render('supermercado/cupoes', {
+            title: 'Gestão de Cupões',
+            cupoes,
+            supermercado: req.supermercado
+        });
+    } catch (err) {
+        res.status(500).send('Erro ao carregar cupões.');
+    }
+};
+
+/**
+ * Cria um novo cupão para o supermercado.
+ */
+supermarketController.criarCupao = async function (req, res) {
+    try {
+        await cupaoService.criarCupao(req.supermercado._id, req.body);
+        res.redirect('/supermercado/cupoes?success=Cupão criado com sucesso');
+    } catch (err) {
+        const msg = err.code === 11000
+            ? 'Já existe um cupão com esse código neste supermercado.'
+            : (err.message || 'Erro ao criar cupão.');
+        res.redirect('/supermercado/cupoes?error=' + encodeURIComponent(msg));
+    }
+};
+
+/**
+ * Desativa um cupão do supermercado.
+ */
+supermarketController.desativarCupao = async function (req, res) {
+    try {
+        await cupaoService.desativarCupao(req.supermercado._id, req.params.cupaoId);
+        res.redirect('/supermercado/cupoes');
+    } catch (err) {
+        res.redirect('/supermercado/cupoes?error=' + encodeURIComponent('Erro ao desativar cupão.'));
+    }
+};
+
+/**
+ * Ativa um cupão do supermercado.
+ */
+supermarketController.ativarCupao = async function (req, res) {
+    try {
+        await cupaoService.ativarCupao(req.supermercado._id, req.params.cupaoId);
+        res.redirect('/supermercado/cupoes');
+    } catch (err) {
+        res.redirect('/supermercado/cupoes?error=' + encodeURIComponent('Erro ao ativar cupão.'));
+    }
+};
+
+/**
+ * Elimina um cupão do supermercado.
+ */
+supermarketController.eliminarCupao = async function (req, res) {
+    try {
+        await cupaoService.eliminarCupao(req.supermercado._id, req.params.cupaoId);
+        res.redirect('/supermercado/cupoes');
+    } catch (err) {
+        res.redirect('/supermercado/cupoes?error=' + encodeURIComponent('Erro ao eliminar cupão.'));
     }
 };
 

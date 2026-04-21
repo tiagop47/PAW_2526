@@ -31,13 +31,6 @@ router.get('/categorias', adminController.exibirCategorias);
 router.post('/categorias', adminController.criarCategoria);
 router.post('/categorias/eliminar/:categoriaId', adminController.eliminarCategoria);
 
-//Gestão de Cupões
-router.get('/cupoes', adminController.exibirCupoes);
-router.post('/cupoes', adminController.criarCupao);
-router.post('/cupoes/desativar/:cupaoId', adminController.desativarCupao);
-router.post('/cupoes/ativar/:cupaoId', adminController.ativarCupao);
-router.post('/cupoes/eliminar/:cupaoId', adminController.eliminarCupao);
-
 router.param('userId', async (req, res, next, id) => {
     try {
         const user = await adminService.getUserByIdSemPassword(id);

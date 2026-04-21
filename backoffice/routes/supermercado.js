@@ -68,6 +68,13 @@ router.post('/encomendas/:orderId/estado', supermarketController.atualizarEstado
 router.get('/vendas/nova', supermarketController.exibirVendaCaixa);
 router.post('/vendas', supermarketController.registarVenda);
 
+// Cupões
+router.get('/cupoes', supermarketController.exibirCupoes);
+router.post('/cupoes', supermarketController.criarCupao);
+router.post('/cupoes/desativar/:cupaoId', supermarketController.desativarCupao);
+router.post('/cupoes/ativar/:cupaoId', supermarketController.ativarCupao);
+router.post('/cupoes/eliminar/:cupaoId', supermarketController.eliminarCupao);
+
 /**
  * Middleware de Parâmetro: Carrega o produto se :productId estiver presente no URL.
  */
