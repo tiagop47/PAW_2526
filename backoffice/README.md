@@ -56,7 +56,16 @@ Ao não configurar uma conta email pessoal o sistema possui um mecanismo de *fal
 1. Variáveis `EMAIL_USER` e `EMAIL_PASS` vazias no ficheiro `.env`.
 2. Ao solicitar a recuperação de password, o sistema usará o **Ethereal Email**.
 3. O link para visualizar o email gerado será impresso diretamente no **terminal do servidor**.
+### Notas para Simulação e Avaliação
 
+Ao testar a plataforma, é importante notar a separação de responsabilidades entre o Backoffice e o Frontoffice:
+
+1.  **Conclusão de Fluxo (Domicílio)**: No Backoffice, o fluxo de entrega ao domicílio termina quando o estafeta marca a encomenda como `aguarda validação`. A transição final para `entregue` é realizada pelo **Cliente no Frontoffice**, após confirmar que recebeu os produtos.
+2.  **Venda em Caixa (POS)**: É a única forma de atingir o estado final `entregue` diretamente dentro do Backoffice, simulando uma venda presencial imediata.
+3.  **Avaliações**: O sistema de avaliação do supermercado e do estafeta apenas fica disponível para o cliente após a encomenda passar ao estado `entregue`.
+4.  **Faturação**: As faturas são geradas automaticamente e podem ser consultadas no Backoffice assim que a encomenda é confirmada.
+
+---
 
 ## Zonas de Operação e Geolocalização
 
