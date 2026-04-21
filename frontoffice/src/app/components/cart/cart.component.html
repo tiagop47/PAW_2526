@@ -1,0 +1,114 @@
+<div class="cart-page">
+  <h1>O Meu Carrinho</h1>
+
+  <!-- Mensagem de sucesso -->
+  @if (sucesso) {
+    <div class="alert alert-success">
+      <span class="alert-icon"></span>
+      {{ sucesso }}
+    </div>
+  }
+
+  <!-- Mensagem de erro -->
+  @if (erro) {
+    <div class="alert alert-error">
+      <span class="alert-icon"></span>
+      {{ erro }}
+      <button class="alert-close" (click)="erro = null">✕</button>
+    </div>
+  }
+
+  @if (cartService.items().length === 0) {
+    <div class="empty-cart">
+      <div class="empty-icon"></div>
+      <h2>O teu carrinho está vazio</h2>
+      <p>Explora os nossos supermercados e adiciona produtos.</p>
+      <a routerLink="/" class="btn-primary">Ver Supermercados</a>
+    </div>
+  } @else {
+    <div class="cart-layout">
+      <!-- Lista de produtos -->
+      <div class="cart-items">
+        @for (item of cartService.items(); track item.produtoId) {
+          <div class="cart-item">
+            <img [src]="item.imagem" [alt]="item.nome" class="item-image" />
+            <div class="item-details">
+              <h3 class="item-name">{{ item.nome }}</h3>
+              <p class="item-price">{{ item.preco.toFixed(2) }} €</p>
+            </div>
+            <div class="item-quantity">
+              <button class="qty-btn" (click)="decrementar(item.produtoId)" [disabled]="item.quantidade <= 1">−</button>
+              <span class="qty-value">{{ item.quantidade }}</span>
+              <button class="qty-btn" (click)="incrementar(item.produtoId)" [disabled]="item.quantidade >= item.stockDisponivel">+</button>
+            </div>
+            <div class="item-subtotal">
+              {{ (item.preco * item.quantidade).toFixed(2) }} €
+            </div>
+            <button class="btn-remove" (click)="removerItem(item.produtoId)" title="Remover">Remover</button>
+          </div>
+        }
+
+        <button class="btn-clear" (click)="limparCarrinho()">Limpar Carrinho</button>
+      </div>
+
+      <!-- Resumo e checkout -->
+      <div class="cart-summary">
+        <h2>Resumo da Encomenda</h2>
+
+        <div class="summary-row">
+          <span>Itens ({{ cartService.totalItems() }})</span>
+          <span>{{ cartService.totalPrice().toFixed(2) }} €</span>
+        </div>
+
+        <div class="delivery-method">
+          <label class="delivery-label">Método de Entrega</label>
+          <div class="delivery-options">
+            <label class="radio-option" [class.selected]="metodoEntrega === 'levantamento_loja'">
+              <input type="radio" name="metodoEntrega" value="levantamento_loja" [(ngModel)]="metodoEntrega" />
+<!-- Icon removed -->
+              <span>Levantamento em Loja</span>
+            </label>
+            <label class="radio-option" [class.selected]="metodoEntrega === 'entrega_domicilio'">
+              <input type="radio" name="metodoEntrega" value="entrega_domicilio" [(ngModel)]="metodoEntrega" />
+<!-- Icon removed -->
+              <span>Entrega ao Domicílio</span>
+            </label>
+          </div>
+        </div>
+
+        @if (metodoEntrega === 'entrega_domicilio') {
+          <div class="address-input">
+            <label for="moradaEntrega">Morada de Entrega</label>
+            <textarea
+              id="moradaEntrega"
+              [(ngModel)]="moradaEntrega"
+              placeholder="Insira a sua morada completa..."
+              rows="3"
+            ></textarea>
+          </div>
+        }
+
+        <div class="summary-total">
+          <span>Total</span>
+          <span class="total-value">{{ cartService.totalPrice().toFixed(2) }} €</span>
+        </div>
+
+        @if (!isLoggedIn) {
+          <a routerLink="/login" class="btn-checkout">Iniciar Sessão para Encomendar</a>
+        } @else {
+          <button
+            class="btn-checkout"
+            (click)="finalizarEncomenda()"
+            [disabled]="processando"
+          >
+            @if (processando) {
+              <span class="spinner"></span> A processar...
+            } @else {
+              Finalizar Encomenda
+            }
+          </button>
+        }
+      </div>
+    </div>
+  }
+</div>

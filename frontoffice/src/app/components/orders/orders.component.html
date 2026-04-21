@@ -1,0 +1,111 @@
+<div class="orders-page">
+  <h1>As Minhas Encomendas</h1>
+
+  @if (mensagem()) {
+    <div class="alert alert-success">
+      <span class="alert-icon"></span>
+      {{ mensagem() }}
+      <button class="alert-close" (click)="mensagem.set(null)">✕</button>
+    </div>
+  }
+
+  @if (erro()) {
+    <div class="alert alert-error">
+      <span class="alert-icon"></span>
+      {{ erro() }}
+      <button class="alert-close" (click)="erro.set(null)">✕</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      <p>A carregar encomendas...</p>
+    </div>
+  } @else if (orders().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon"></div>
+      <h2>Ainda não tens encomendas</h2>
+      <p>Explora os nossos supermercados e faz a tua primeira encomenda!</p>
+      <a routerLink="/" class="btn-primary">Ver Supermercados</a>
+    </div>
+  } @else {
+    <div class="orders-list">
+      @for (order of orders(); track order._id) {
+        <div class="order-card">
+          <div class="order-header">
+            <div class="order-info">
+              <span class="order-id">#{{ order._id.slice(-6).toUpperCase() }}</span>
+              <span class="order-date">{{ order.criadoEm | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <span class="badge" [ngClass]="estadoClasses[order.estado]">
+              {{ order.estado === 'em_entrega' && !order.estafetaId ? 'Aguarda Estafeta' : estadoLabels[order.estado] }}
+            </span>
+          </div>
+
+          <div class="order-body">
+            <div class="order-supermarket">
+              <span class="supermarket-icon"></span>
+              <span>{{ order.supermercadoId?.nome || 'Supermercado' }}</span>
+            </div>
+
+            <div class="order-products">
+              @for (item of order.produtos; track item.produtoId._id) {
+                <div class="product-row">
+                  <img
+                    [src]="item.produtoId?.imagem || '/assets/placeholder.png'"
+                    [alt]="item.produtoId?.nome"
+                    class="product-thumb"
+                  />
+                  <span class="product-name">{{ item.produtoId?.nome || 'Produto' }}</span>
+                  <span class="product-qty">x{{ item.quantidade }}</span>
+                  <span class="product-price">{{ (item.precoUnitario * item.quantidade).toFixed(2) }} €</span>
+                </div>
+              }
+            </div>
+
+            <div class="order-footer">
+              <div class="order-meta">
+                <span class="delivery-method">
+                  {{ getMetodoEntregaLabel(order.metodoEntrega) }}
+                </span>
+                @if (order.moradaEntrega) {
+                  <span class="delivery-address">Morada: {{ order.moradaEntrega }}</span>
+                }
+              </div>
+
+              <div class="order-total">
+                Total: <strong>{{ order.valorTotal.toFixed(2) }} €</strong>
+              </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="order-actions">
+              @if (podeCancelar(order)) {
+                <button class="btn-cancel" (click)="cancelarEncomenda(order._id)">
+                  Cancelar Encomenda
+                </button>
+                @if (tempoRestanteCancelamento(order); as tempo) {
+                  <span class="cancel-timer">Pode cancelar nos próximos {{ tempo }}</span>
+                }
+              }
+
+              @if (podeConfirmarRececao(order)) {
+                <button class="btn-confirm" (click)="confirmarRececao(order._id)">
+                  Confirmar Receção
+                </button>
+              }
+
+              @if (order.estado === 'em_entrega' && order.estafetaId) {
+                <div class="estafeta-info">
+                  <span>Estafeta: <strong>{{ order.estafetaId.nome }}</strong></span>
+                  <span>Telefone: {{ order.estafetaId.telefone }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

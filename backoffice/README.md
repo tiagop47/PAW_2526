@@ -86,12 +86,13 @@ pendente → confirmada → preparacao → em_entrega → aguarda_confirmacao �
 
 | Transição | Responsável |
 | :--- | :--- |
-| `pendente` → `confirmada` | Supermercado (backoffice) |
-| `confirmada` → `preparacao` | Supermercado (backoffice) |
-| `preparacao` → `em_entrega` | Supermercado (backoffice) |
-| `em_entrega` → `aguarda_confirmacao` | Estafeta (ao confirmar a entrega) |
-| `aguarda_confirmacao` → `entregue` | Cliente (ao confirmar a receção) |
-| qualquer estado → `cancelada` | Supermercado (backoffice) |
+| `pendente` → `confirmada` | Supermercado |
+| `confirmada` → `preparacao` | Supermercado |
+| `preparacao` → `em_entrega` | Supermercado (informa que está pronta a recolher) |
+| `preparacao` → `entregue` | Supermercado (se levantamento em loja) |
+| `em_entrega` → `aguarda_confirmacao` | Estafeta (ao chegar ao domicílio) |
+| `aguarda_confirmacao` → `entregue` | Cliente (via Frontoffice) |
+| qualquer estado → `cancelada` | Supermercado / Cliente (se nos primeiros 5 min) |
 
 ### Pontos de entrada
 
@@ -105,7 +106,10 @@ pendente → confirmada → preparacao → em_entrega → aguarda_confirmacao �
 ### Regras de negócio
 - **Estados finais** (`entregue`, `cancelada`): não permitem mais alterações.
 - **Sem recuos**: um estado só pode avançar para o próximo, nunca voltar atrás.
-- **Stock**: é decrementado atomicamente no momento da criação da venda e reposto caso a encomenda seja cancelada.
+- **Cancelamento pelo Cliente**: o cliente pode cancelar a encomenda a qualquer momento enquanto estiver `pendente`. Após ser `confirmada`, o cancelamento apenas é permitido nos primeiros **5 minutos**.
+- **Um Supermercado por Encomenda**: cada encomenda apenas pode conter produtos de um único supermercado.
+- **Uma Entrega por Estafeta**: cada estafeta apenas pode ter uma entrega ativa (`em_entrega`) de cada vez.
+- **Stock**: produtos sem stock não podem ser adicionados ao carrinho. O stock é decrementado atomicamente no momento da criação da venda e reposto caso a encomenda seja cancelada.
 - **Fatura**: é gerada automaticamente na primeira transição para `confirmada` ou superior.
 - **Avaliação**: o cliente só pode avaliar após o estado `entregue`.
 

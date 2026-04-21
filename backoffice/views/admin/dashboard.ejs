@@ -45,11 +45,22 @@
                     </div>
                     <div class="col-md-6 mt-2">
                         <div class="card card-body bg-white border">
-                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Encomendas</small>
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Encomendas Totais</small>
                             <div class="h4 mb-0"><%= stats.totalEncomendas %></div>
                         </div>
                     </div>
                     <div class="col-md-6 mt-2">
+                        <div class="card card-body bg-white border">
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Pico de Entregas Disponíveis (por zona)</small>
+                            <% if (stats.mercadoComMaisEntregas) { %>
+                                <small class="text-muted"><%= stats.mercadoComMaisEntregas.localizacao %> (<%= stats.mercadoComMaisEntregas.total %>)</small>
+                            <% } else { %>
+                                <div class="h5 mb-0">Nenhum</div>
+                                <small class="text-muted">Sem encomendas para entrega</small>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="col-12 mt-2">
                         <div class="card card-body bg-white border">
                             <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Total Faturado</small>
                             <div class="h4 mb-0"><%= stats.valorTotal.toFixed(2) %>€</div>

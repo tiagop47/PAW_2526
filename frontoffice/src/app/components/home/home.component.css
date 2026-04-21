@@ -129,8 +129,14 @@
   color: #0d6efd;
   border: 1px solid #0d6efd;
   border-radius: 4px;
-  font-weight: 500;
+  font-weight: 400;
   cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-enter:hover {
+  background-color: #0d6efd;
+  color: #ffffff;
 }
 
 .empty-state {

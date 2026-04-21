@@ -5,6 +5,7 @@ const Order = require('../models/OrderModel');
 const Category = require('../models/CategoryModel');
 const Coupon = require('../models/CupomModel');
 const emailService = require('./emailService');
+const authService = require('./authService');
 
 const adminService = {};
 
@@ -57,7 +58,7 @@ adminService.eliminarCategoria = async function (id) {
 };
 
 adminService.getDashboardStats = async function () {
-    const [totalUsers, totalEstafetas, pendentes, ativos, bloqueados, totalProdutos, totalEncomendas, totalFaturadoAgg] = await Promise.all([
+    const [totalUsers, totalEstafetas, pendentes, ativos, bloqueados, totalProdutos, totalEncomendas, totalFaturadoAgg, backlogEntregas] = await Promise.all([
         User.countDocuments(),
         User.countDocuments({ role: 'estafetas' }),
         Supermarket.countDocuments({ estadoAprovacao: 'Pendente' }),
@@ -72,10 +73,30 @@ adminService.getDashboardStats = async function () {
                     total: { $sum: '$valorTotal' }
                 }
             }
+        ]),
+        Order.aggregate([
+            { $match: { estafetaId: null, estado: 'preparacao', metodoEntrega: 'entrega_domicilio' } },
+            { $group: { _id: '$supermercadoId', total: { $sum: 1 } } },
+            { $sort: { total: -1 } },
+            { $limit: 1 },
+            {
+                $lookup: {
+                    from: 'supermarkets',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'supermercado'
+                }
+            },
+            { $unwind: '$supermercado' }
         ])
     ]);
 
     const valorTotal = totalFaturadoAgg[0]?.total || 0;
+    const mercadoComMaisEntregas = backlogEntregas.length > 0 ? {
+        nome: backlogEntregas[0].supermercado.nome,
+        localizacao: backlogEntregas[0].supermercado.localizacao,
+        total: backlogEntregas[0].total
+    } : null;
 
     return {
         totalUsers,
@@ -86,6 +107,7 @@ adminService.getDashboardStats = async function () {
         totalProdutos,
         totalEncomendas,
         valorTotal,
+        mercadoComMaisEntregas
     };
 };
 
@@ -164,7 +186,7 @@ adminService.getEstafetasDocumentos = async function (pagina, limite) {
 };
 
 adminService.getUserByIdSemPassword = async function (id) {
-    return User.findById(id).select('-password');
+    return authService.getUserByIdSemPassword(id);
 };
 
 adminService.atualizarUserById = async function (id, dados) {

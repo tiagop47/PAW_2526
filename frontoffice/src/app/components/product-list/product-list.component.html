@@ -1,19 +1,40 @@
 <div class="product-container">
   <h2>Produtos Disponíveis ({{ products().length }})</h2>
 
+  <!-- Toast notification -->
+  @if (toast()) {
+    <div class="toast" [class.toast-success]="toast()!.type === 'success'" [class.toast-error]="toast()!.type === 'error'">
+      {{ toast()!.message }}
+    </div>
+  }
+
   <div *ngIf="loading()" class="info">A carregar produtos...</div>
   <div *ngIf="error()" class="error">{{ error() }}</div>
 
   <div *ngIf="!loading() && !error()" class="product-grid">
-    <div *ngFor="let product of products()" class="product-card">
+    <div *ngFor="let product of products()" class="product-card" [class.out-of-stock]="isOutOfStock(product)">
       <div class="image-placeholder">
         <img [src]="'http://localhost:3000' + product.imagem" [alt]="product.nome" *ngIf="product.imagem" />
+        <span *ngIf="isOutOfStock(product)" class="stock-badge stock-out">Esgotado</span>
+        <span *ngIf="!isOutOfStock(product) && product.stockDisponivel <= 5" class="stock-badge stock-low">
+          Últimas {{ product.stockDisponivel }} unidades
+        </span>
       </div>
       <div class="product-details">
         <h3>{{ product.nome }}</h3>
         <p class="category">{{ product.categoriaId.nome }}</p>
         <p class="price">{{ product.preco | currency:'EUR' }}</p>
-        <button [routerLink]="['/product', product._id]" class="view-btn">Ver Detalhes</button>
+        <div class="product-actions">
+          <button [routerLink]="['/product', product._id]" class="view-btn">Ver Detalhes</button>
+          <button
+            class="cart-btn"
+            (click)="addToCart(product)"
+            [disabled]="isOutOfStock(product)"
+            [title]="isOutOfStock(product) ? 'Sem stock disponível' : 'Adicionar ao carrinho'"
+          >
+            Adicionar ao Carrinho
+          </button>
+        </div>
       </div>
     </div>
   </div>

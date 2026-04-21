@@ -23,13 +23,24 @@ authMiddleware.getDashboardUrl = function (role) {
  * Helper interno — descodifica o token JWT do cookie.
  */
 authMiddleware.descodificarToken = function (req, res) {
-    const token = req.cookies.token;
+    // Tentar primeiro o cookie (backoffice), depois o header Authorization (frontoffice/API)
+    let token = req.cookies.token;
+
+    if (!token) {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            token = authHeader.split(' ')[1];
+        }
+    }
+
     if (!token) return null;
 
     try {
         return jwt.verify(token, JWT_SECRET);
     } catch (err) {
-        res.clearCookie('token');
+        if (req.cookies.token) {
+            res.clearCookie('token');
+        }
         return null;
     }
 };
@@ -47,6 +58,10 @@ authMiddleware.injetarUserNasViews = function (req, res, next) {
  */
 authMiddleware.verificarAutenticacao = function (req, res, next) {
     if (!res.locals.user) {
+        // Se for uma chamada API, responder com JSON em vez de redirecionar
+        if (req.originalUrl.startsWith('/api')) {
+            return res.status(401).json({ sucesso: false, erro: 'Autenticação necessária.' });
+        }
         return res.redirect('/auth/login');
     }
     req.user = res.locals.user;
@@ -69,6 +84,10 @@ authMiddleware.redirecionarLogged = function (req, res, next) {
 authMiddleware.verificarRole = function (rolesPermitidas) {
     return function (req, res, next) {
         if (!req.user || !rolesPermitidas.includes(req.user.role)) {
+            // Se for uma chamada API, responder com JSON
+            if (req.originalUrl.startsWith('/api')) {
+                return res.status(403).json({ sucesso: false, erro: 'Acesso restrito.' });
+            }
             const err = new Error('Acesso Restrito');
             err.status = 403;
             err.tituloErro = 'Acesso Negado';

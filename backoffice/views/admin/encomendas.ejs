@@ -14,7 +14,6 @@
         confirmada: 'Confirmada',
         preparacao: 'Em Preparação',
         em_entrega: 'Em Entrega',
-        aguarda_confirmacao: 'Aguarda Confirmação',
         entregue: 'Entregue',
         cancelada: 'Cancelada'
     };
@@ -68,7 +67,7 @@
                                         </td>
                                         <td>
                                             <span class="badge bg-dark">
-                                                <%= labelEstado[e.estado] || e.estado %>
+                                                <%= (e.estado === 'em_entrega' && !e.estafetaId) ? 'Aguarda Estafeta' : (labelEstado[e.estado] || e.estado) %>
                                             </span>
                                         </td>
                                         <td>

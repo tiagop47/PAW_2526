@@ -34,7 +34,8 @@ supermarketController.exibirDashboard = async function (req, res) {
         encomendas: dashboardData.encomendas,
         top5Produtos: dashboardData.top5Produtos,
         mediaAvaliacao: dashboardData.mediaAvaliacao,
-        totalAvaliacoes: dashboardData.totalAvaliacoes
+        totalAvaliacoes: dashboardData.totalAvaliacoes,
+        stockBaixo: dashboardData.stockBaixo
     });
 };
 

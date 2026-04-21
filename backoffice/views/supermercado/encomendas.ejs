@@ -15,15 +15,13 @@
         confirmada: 'Confirmada',
         preparacao: 'Em Preparação',
         em_entrega: 'Em Entrega',
-        aguarda_confirmacao: 'Aguarda Confirmação',
         entregue: 'Entregue',
         cancelada: 'Cancelada'
     };
     const labelAcao = {
         confirmada: 'Confirmar',
         preparacao: 'Iniciar Preparação',
-        em_entrega: 'Enviar para Entrega',
-        aguarda_confirmacao: 'Aguardar Confirmação',
+        em_entrega: 'Aguarda Estafeta',
         entregue: 'Marcar como Entregue',
         cancelada: 'Cancelar'
     };
@@ -60,7 +58,7 @@
                                         <%= encomenda.metodoEntrega === 'entrega_domicilio' ? 'Entrega ao domicílio' : 'Levantamento em loja' %>
                                     </div>
                                     <span class="badge bg-dark">
-                                        <%= labelEstado[encomenda.estado] || encomenda.estado %>
+                                        <%= (encomenda.estado === 'em_entrega' && !encomenda.estafetaId) ? 'Aguarda Estafeta' : (labelEstado[encomenda.estado] || encomenda.estado) %>
                                     </span>
                                 </div>
 

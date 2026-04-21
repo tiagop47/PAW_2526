@@ -166,6 +166,14 @@ authService.redefinirPassword = async function (token, novaPassword) {
     await user.save();
 };
 
+/**
+ * Procura um utilizador pelo ID e remove a password do resultado.
+ * Útil para perfis e dashboards.
+ */
+authService.getUserByIdSemPassword = async function (id) {
+    return User.findById(id).select('-password');
+};
+
 async function atribuirCupoesCliente(novoUser, morada) {
 
     const condicoes = [

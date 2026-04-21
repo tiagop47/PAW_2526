@@ -8,64 +8,46 @@ const estafetaService = {};
 /**
  * Obtém todos os dados necessários para o dashboard do estafeta.
  */
-estafetaService.obterDadosDashboard = async function (estafetaId) {
-    const [stats, zonasBrutas, entregas] = await Promise.all([
+estafetaService.obterDadosDashboard = async (estafetaId) => {
+    const [stats, locaisDistintos, entregas] = await Promise.all([
         obterEstatisticas(estafetaId),
         Supermarket.distinct("localizacao", { estadoAprovacao: 'Aprovado' }),
         estafetaService.obterEntregasDisponiveis()
     ]);
 
-    const zonasObjeto = {};
-    zonasBrutas.forEach(function (z) {
-        var zona = (z || '').trim();
-        if (zona) {
-            zonasObjeto[zona.toLowerCase()] = zona;
-        }
-    });
+    const zonasTrabalho = locaisDistintos
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, 'pt'))
+        .map(local => ({ value: local.toLowerCase(), label: local }));
 
-    var zonasTrabalho = Object.keys(zonasObjeto)
-        .sort(function (a, b) { return zonasObjeto[a].localeCompare(zonasObjeto[b], 'pt'); })
-        .map(function (key) { return { value: key, label: zonasObjeto[key] }; });
+    let mercadoLider = null;
+    let max = 0;
+    const contagem = {};
 
-    var contagem = {};
-    var zonaMaisPopular = null;
-    var totalZonaPopular = 0;
-
-    entregas.forEach(function (e) {
-        var zona = e.supermercadoId && e.supermercadoId.localizacao;
-        if (zona) {
-            contagem[zona] = (contagem[zona] || 0) + 1;
-            if (contagem[zona] > totalZonaPopular) {
-                totalZonaPopular = contagem[zona];
-                zonaMaisPopular = zona;
-            }
+    entregas.forEach(e => {
+        const m = e.supermercadoId;
+        if (!m) return;
+        contagem[m._id] = (contagem[m._id] || 0) + 1;
+        if (contagem[m._id] > max) {
+            max = contagem[m._id];
+            mercadoLider = { nome: m.nome, localizacao: m.localizacao, total: max };
         }
     });
 
     return {
-        stats: {
-            entregasRealizadas: stats.entregasRealizadas,
-            entregasEmCurso: stats.entregasEmCurso,
-            entregasDisponiveis: stats.entregasDisponiveis,
-            ganhosTotais: stats.ganhosTotais,
-            evolucaoMensal: stats.evolucaoMensal,
-            zonaMaisPopular: zonaMaisPopular,
-            totalZonaPopular: totalZonaPopular,
-            mediaAvaliacao: stats.mediaAvaliacao,
-            totalAvaliacoes: stats.totalAvaliacoes
-        },
-        zonasTrabalho: zonasTrabalho
+        stats: { ...stats, mercadoLider },
+        zonasTrabalho
     };
 };
 
-estafetaService.obterEntregasDisponiveis = async function () {
+estafetaService.obterEntregasDisponiveis = async () => {
     return Order.find({ estafetaId: null, estado: 'preparacao', metodoEntrega: 'entrega_domicilio' })
         .populate('supermercadoId', 'nome localizacao localizacaoGeo custoEntregaPorMetodo')
         .populate('clienteId', 'nome morada')
         .sort({ criadoEm: -1 });
 };
 
-estafetaService.obterEntregasPorConcelho = async function (concelho) {
+estafetaService.obterEntregasPorConcelho = async (concelho) => {
     if (!concelho) return estafetaService.obterEntregasDisponiveis();
 
     const mercados = await Supermarket.find({ 
@@ -84,20 +66,20 @@ estafetaService.obterEntregasPorConcelho = async function (concelho) {
         .sort({ criadoEm: -1 });
 };
 
-estafetaService.obterMinhasEntregas = async function (estafetaId) {
-    return Order.find({ estafetaId, estado: { $in: ['em_entrega', 'aguarda_confirmacao', 'entregue'] } })
+estafetaService.obterMinhasEntregas = async (estafetaId) => {
+    return Order.find({ estafetaId, estado: { $in: ['em_entrega', 'entregue'] } })
         .populate('supermercadoId', 'nome localizacao localizacaoGeo')
         .populate('clienteId', 'nome morada')
         .sort({ criadoEm: -1 });
 };
 
-estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
+estafetaService.aceitarEntrega = async (encomendaId, estafetaId) => {
     const ativas = await Order.countDocuments({ estafetaId, estado: 'em_entrega' });
     if (ativas >= 1) {
         throw new Error('Já tens uma entrega em curso. Conclui-a antes de aceitar outra.');
     }
 
-    // Operação atómica: só atualiza se estafetaId for null E estado for 'confirmada'
+    // Operação atómica: só atualiza se estafetaId for null E estado for 'preparacao'
     const encomenda = await Order.findOneAndUpdate(
         { _id: encomendaId, estafetaId: null, estado: 'preparacao', metodoEntrega: 'entrega_domicilio' },
         { $set: { estafetaId: estafetaId, estado: 'em_entrega' } },
@@ -111,7 +93,7 @@ estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
     return encomenda;
 };
 
-estafetaService.confirmarEntrega = async function (encomendaId, estafetaId) {
+estafetaService.confirmarEntrega = async (encomendaId, estafetaId) => {
     const encomenda = await Order.findById(encomendaId);
     if (!encomenda || encomenda.estafetaId?.toString() !== estafetaId.toString() || encomenda.estado !== 'em_entrega') {
         throw new Error('Operação inválida para esta entrega');
@@ -122,13 +104,13 @@ estafetaService.confirmarEntrega = async function (encomendaId, estafetaId) {
     return encomenda.save();
 };
 
-estafetaService.obterEncomendaPorId = async function (id) {
+estafetaService.obterEncomendaPorId = async (id) => {
     return Order.findById(id)
         .populate('supermercadoId', 'nome localizacao localizacaoGeo custoEntregaPorMetodo')
         .populate('clienteId', 'nome morada');
 };
 
-async function obterEstatisticas(estafetaId) {
+const obterEstatisticas = async (estafetaId) => {
     const [entregasRealizadas, entregasEmCurso, entregasDisponiveis, avaliacaoStats] = await Promise.all([
         Order.countDocuments({ estafetaId, estado: 'entregue' }),
         Order.countDocuments({ estafetaId, estado: 'em_entrega' }),

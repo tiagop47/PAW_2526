@@ -6,13 +6,14 @@ const Avaliacao = require('../models/AvaliacaoModel');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const config = require('../config/config');
+const authService = require('./authService');
 
 const Category = require('../models/CategoryModel');
 
 const supermarketService = {};
 
 supermarketService.obterDadosDashboard = async function (supermercadoId) {
-    const [totalProdutos, totalEncomendas, encomendas, vendasStats, top5Produtos, avaliacaoStats, encomendasPendentes] = await Promise.all([
+    const [totalProdutos, totalEncomendas, encomendas, vendasStats, top5Produtos, avaliacaoStats, encomendasPendentes, stockBaixo] = await Promise.all([
         Product.countDocuments({ supermercadoId }),
         Order.countDocuments({ supermercadoId, estado: { $ne: 'cancelada' } }),
         Order.find({ supermercadoId })
@@ -66,7 +67,8 @@ supermarketService.obterDadosDashboard = async function (supermercadoId) {
             { $match: { supermercadoId: new mongoose.Types.ObjectId(supermercadoId) } },
             { $group: { _id: null, media: { $avg: '$notaSupermercado' }, total: { $sum: 1 } } }
         ]),
-        Order.countDocuments({ supermercadoId, estado: { $in: ['pendente', 'aguarda_confirmacao'] } })
+        Order.countDocuments({ supermercadoId, estado: { $in: ['pendente', 'aguarda_confirmacao'] } }),
+        Product.countDocuments({ supermercadoId, stockDisponivel: { $lt: 5 } })
     ]);
 
     const vendasTotais = vendasStats.length > 0 ? vendasStats[0].total : 0;
@@ -81,7 +83,8 @@ supermarketService.obterDadosDashboard = async function (supermercadoId) {
         encomendas,
         top5Produtos,
         mediaAvaliacao: avaliacaoStats.length > 0 ? parseFloat(avaliacaoStats[0].media.toFixed(1)) : null,
-        totalAvaliacoes: avaliacaoStats.length > 0 ? avaliacaoStats[0].total : 0
+        totalAvaliacoes: avaliacaoStats.length > 0 ? avaliacaoStats[0].total : 0,
+        stockBaixo
     };
 };
 
@@ -241,7 +244,7 @@ supermarketService.atualizarSupermercado = async function (supermercadoId, dados
 };
 
 supermarketService.getUserByIdSemPassword = async function (userId) {
-    return User.findById(userId).select('-password');
+    return authService.getUserByIdSemPassword(userId);
 };
 
 supermarketService.obterEncomendas = async function (supermercadoId) {
@@ -261,8 +264,7 @@ function transicoesPermitidasParaEncomenda(encomenda) {
         pendente:               ['confirmada', 'cancelada'],
         confirmada:             ['preparacao', 'cancelada'],
         preparacao:             eLoja ? ['entregue', 'cancelada'] : ['em_entrega', 'cancelada'],
-        em_entrega:             ['aguarda_confirmacao', 'cancelada'],
-        aguarda_confirmacao:    ['entregue', 'cancelada'],
+        em_entrega:             ['cancelada'], // Supermercado só a pode cancelar, confirmação é do estafeta/cliente
         entregue:               [],
         cancelada:              [],
     };
@@ -329,6 +331,11 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
                 telefone: cliente.telefone
             };
         }
+    }
+
+    // Registar timestamp de confirmação para a regra de cancelamento de 5 minutos
+    if (estado === 'confirmada') {
+        order.confirmadaEm = new Date();
     }
 
     order.estado = estado;
