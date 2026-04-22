@@ -261,6 +261,28 @@ adminService.getProdutosPaginados = async function (pagina, limite, supermercado
 };
 
 /**
+ * Obtém os dados necessários para a página de moderação de produtos.
+ */
+adminService.obterDadosModeracaoProdutos = async function (pagina, limite, supermercadoId) {
+    const dadosPagina = await adminService.getProdutosPaginados(pagina, limite, supermercadoId);
+    const supermercados = await adminService.getTodosMercadosAtivos();
+
+    let paginaUrl = '/admin/produtos';
+    if (supermercadoId) {
+        paginaUrl += `?supermercadoId=${supermercadoId}`;
+    }
+
+    return {
+        produtos: dadosPagina.produtos,
+        supermercados,
+        supermercadoSelecionado: supermercadoId,
+        paginaAtual: pagina,
+        totalPaginas: dadosPagina.totalPaginas,
+        paginaUrl
+    };
+};
+
+/**
  * Obtém um produto por ID.
  */
 adminService.getProdutoById = async function (id) {

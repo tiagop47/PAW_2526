@@ -299,22 +299,16 @@ adminController.listarProdutos = async function (req, res) {
         const limite = 5;
         const supermercadoId = req.query.supermercadoId || null;
         
-        const dadosPagina = await adminService.getProdutosPaginados(pagina, limite, supermercadoId);
-        const supermercados = await adminService.getTodosMercadosAtivos();
-
-        let paginaUrl = '/admin/produtos';
-        if (supermercadoId) {
-            paginaUrl += `?supermercadoId=${supermercadoId}`;
-        }
+        const dados = await adminService.obterDadosModeracaoProdutos(pagina, limite, supermercadoId);
 
         res.render('admin/produtos', {
             title: 'Moderação de Produtos',
-            produtos: dadosPagina.produtos,
-            supermercados,
-            supermercadoSelecionado: supermercadoId,
-            paginaAtual: pagina,
-            totalPaginas: dadosPagina.totalPaginas,
-            paginaUrl: paginaUrl
+            produtos: dados.produtos,
+            supermercados: dados.supermercados,
+            supermercadoSelecionado: dados.supermercadoSelecionado,
+            paginaAtual: dados.paginaAtual,
+            totalPaginas: dados.totalPaginas,
+            paginaUrl: dados.paginaUrl
         });
     } catch (err) {
         res.status(500).send('Erro ao carregar lista de produtos.');
