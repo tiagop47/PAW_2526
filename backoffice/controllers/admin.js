@@ -291,6 +291,67 @@ adminController.eliminarCategoria = async function (req, res) {
 };
 
 /**
+ * Lista todos os produtos do sistema para moderação.
+ */
+adminController.listarProdutos = async function (req, res) {
+    try {
+        const pagina = parseInt(req.query.pagina) || 1;
+        const limite = 5;
+        const supermercadoId = req.query.supermercadoId || null;
+        
+        const dadosPagina = await adminService.getProdutosPaginados(pagina, limite, supermercadoId);
+        const supermercados = await adminService.getTodosMercadosAtivos();
+
+        let paginaUrl = '/admin/produtos';
+        if (supermercadoId) {
+            paginaUrl += `?supermercadoId=${supermercadoId}`;
+        }
+
+        res.render('admin/produtos', {
+            title: 'Moderação de Produtos',
+            produtos: dadosPagina.produtos,
+            supermercados,
+            supermercadoSelecionado: supermercadoId,
+            paginaAtual: pagina,
+            totalPaginas: dadosPagina.totalPaginas,
+            paginaUrl: paginaUrl
+        });
+    } catch (err) {
+        res.status(500).send('Erro ao carregar lista de produtos.');
+    }
+};
+
+/**
+ * Elimina um produto do sistema.
+ */
+adminController.eliminarProduto = async function (req, res) {
+    try {
+        await adminService.eliminarProduto(req.params.productId);
+        res.redirect('/admin/produtos?success=Produto eliminado com sucesso');
+    } catch (err) {
+        res.status(500).send('Erro ao eliminar produto.');
+    }
+};
+
+/**
+ * Exibe os detalhes de um produto para o administrador.
+ */
+adminController.exibirDetalhesProduto = async function (req, res) {
+    try {
+        const produto = await adminService.getProdutoById(req.params.productId);
+        if (!produto) return res.status(404).send('Produto não encontrado.');
+
+        res.render('supermercado/detalhesProduto', {
+            title: 'Detalhes do Produto: ' + produto.nome,
+            produto,
+            voltarUrl: '/admin/produtos'
+        });
+    } catch (err) {
+        res.status(500).send('Erro ao carregar detalhes do produto.');
+    }
+};
+
+/**
  * Monitorizar todas as encomendas do sistema.
  */
 adminController.monitorizarEncomendas = async function (req, res) {

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="bg-light">
+    <%- include('../partials/navbar') %>
+
+    <main class="container py-5">
+        <div class="mx-auto" style="max-width: 600px;">
+            <% if (locals.success) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <%= success %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+
+            <% if (locals.error) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+
+            <div class="card p-4 border-0 shadow-sm">
+                <h2 class="h4 fw-bold mb-4 text-center">Meu Perfil (Estafeta)</h2>
+
+                <form action="/estafeta/perfil" method="POST">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label fw-bold small text-muted">Nome Completo</label>
+                        <input type="text" class="form-control" id="nome" name="nome" value="<%= utilizador.nome %>" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="telefone" class="form-label fw-bold small text-muted">Telefone</label>
+                        <input type="text" class="form-control" id="telefone" name="telefone" value="<%= utilizador.telefone %>" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="morada" class="form-label fw-bold small text-muted">Morada</label>
+                        <input type="text" class="form-control" id="morada" name="morada" value="<%= utilizador.morada %>" required>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-bold small text-muted mb-0">Email</label>
+                        <p class="form-control-plaintext py-0"><%= utilizador.email %></p>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-bold small text-muted mb-0">NIF</label>
+                        <p class="form-control-plaintext py-0"><%= utilizador.nif %></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Função</label>
+                        <p class="form-control-plaintext text-capitalize"><%= utilizador.role %></p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted">Membro desde</label>
+                        <p class="form-control-plaintext"><%= new Date(utilizador.criadoEm).toLocaleDateString('pt-PT') %></p>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Guardar Alterações</button>
+                        <a href="/estafeta/dashboard" class="btn btn-outline-secondary">Voltar ao Painel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

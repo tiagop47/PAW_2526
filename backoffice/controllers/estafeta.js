@@ -76,6 +76,33 @@ estafetaController.obterEntregasAPI = async function (req, res) {
     }
 };
 
+/**
+ * Exibe a página de perfil do estafeta.
+ */
+estafetaController.exibirPerfil = async function (req, res) {
+    try {
+        const utilizador = await estafetaService.getUserByIdSemPassword(req.user.id);
+        res.render('estafeta/perfil', {
+            title: 'Meu Perfil',
+            utilizador,
+            success: req.query.success,
+            error: req.query.error
+        });
+    } catch (err) {
+        res.status(500).send('Erro ao carregar perfil.');
+    }
+};
 
+/**
+ * Processa a atualização do perfil do estafeta.
+ */
+estafetaController.atualizarPerfil = async function (req, res) {
+    try {
+        await estafetaService.atualizarPerfil(req.user.id, req.body);
+        res.redirect('/estafeta/perfil?success=Perfil atualizado com sucesso');
+    } catch (err) {
+        res.redirect(`/estafeta/perfil?error=${encodeURIComponent(err.message)}`);
+    }
+};
 
 module.exports = estafetaController;

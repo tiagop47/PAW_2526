@@ -181,7 +181,7 @@ supermarketService.listarProdutosGeral = async function (supermercadoId) {
         .populate('categoriaId', 'nome');
 };
 
-supermarketService.pesquisarProdutos = async function (supermercadoId, { q, categoriaId }) {
+supermarketService.pesquisarProdutos = async function (supermercadoId, { q, categoriaId, pagina = 1, limite = 5 }) {
     const filtro = { supermercadoId };
 
     if (q) {
@@ -194,7 +194,23 @@ supermarketService.pesquisarProdutos = async function (supermercadoId, { q, cate
     if (categoriaId) {
         filtro.categoriaId = categoriaId;
     }
-    return Product.find(filtro).sort({ nome: 1 }).populate('categoriaId');
+
+    const skip = (pagina - 1) * limite;
+    const [produtos, total] = await Promise.all([
+        Product.find(filtro)
+            .sort({ nome: 1 })
+            .populate('categoriaId')
+            .skip(Number(skip))
+            .limit(Number(limite)),
+        Product.countDocuments(filtro)
+    ]);
+
+    return {
+        produtos,
+        totalPaginas: Math.ceil(total / limite),
+        paginaAtual: Number(pagina),
+        totalResultados: total
+    };
 };
 
 supermarketService.verificarStock = async function (supermercadoId, itens) {

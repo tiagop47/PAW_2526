@@ -22,16 +22,7 @@ const ACOES_BOTOES_ENTREGA = {
 
 let zonaTrabalhoAtiva = '';
 
-const atualizarEstadoBotao = (btn, disabled, texto) => {
-    btn.disabled = disabled;
-    if (texto) btn.textContent = texto;
-};
-
-const submeterAcaoEntrega = async ({ id, btn, endpoint, textoAProcessar, mensagemSucesso, mensagemErro }) => {
-    btn.disabled = true;
-    const textoOriginal = btn.textContent;
-    atualizarEstadoBotao(btn, true, textoAProcessar || 'A processar...');
-
+const submeterAcaoEntrega = async ({ id, btn, endpoint, mensagemSucesso, mensagemErro }) => {
     try {
         const response = await fetch(`/api/estafeta/entregas/${id}/${endpoint}`, {
             method: 'POST',
@@ -46,10 +37,8 @@ const submeterAcaoEntrega = async ({ id, btn, endpoint, textoAProcessar, mensage
         }
 
         alert('Erro: ' + (data.erro || mensagemErro));
-        atualizarEstadoBotao(btn, false, textoOriginal);
     } catch (error) {
         alert('Erro de comunicação com o servidor');
-        atualizarEstadoBotao(btn, false, textoOriginal);
     }
 };
 

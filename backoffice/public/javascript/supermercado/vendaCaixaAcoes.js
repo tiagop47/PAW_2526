@@ -58,9 +58,12 @@ function limparCoordenadasEntrega() {
     }
 }
 
-function renderizarResultadosModal(produtos, tabelaBody) {
+function renderizarResultadosModal(dados, tabelaBody) {
+    const produtos = dados.produtos || [];
+    
     if (!Array.isArray(produtos) || produtos.length === 0) {
         tabelaBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Nenhum produto encontrado.</td></tr>';
+        if (typeof renderizarPaginacao === 'function') renderizarPaginacao(0, 0);
         return;
     }
 
@@ -123,6 +126,10 @@ function renderizarResultadosModal(produtos, tabelaBody) {
             });
         }
     });
+
+    if (typeof renderizarPaginacao === 'function') {
+        renderizarPaginacao(dados.paginaAtual, dados.totalPaginas);
+    }
 }
 
 function adicionarUmAoCarrinho(id, nome, preco, stock) {

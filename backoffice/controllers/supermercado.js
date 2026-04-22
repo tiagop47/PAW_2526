@@ -157,9 +157,14 @@ supermarketController.eliminarProduto = async function (req, res) {
  */
 supermarketController.pesquisarProdutos = async function (req, res) {
     try {
-        const { q, categoriaId } = req.query;
-        const produtos = await supermarketService.pesquisarProdutos(req.supermercado._id, { q, categoriaId });
-        res.json(produtos);
+        const { q, categoriaId, pagina, limite } = req.query;
+        const resultado = await supermarketService.pesquisarProdutos(req.supermercado._id, { 
+            q, 
+            categoriaId, 
+            pagina: parseInt(pagina) || 1, 
+            limite: parseInt(limite) || 5 
+        });
+        res.json(resultado);
     } catch (err) {
         res.status(500).json({ erro: 'Erro ao pesquisar produtos.' });
     }
@@ -312,9 +317,6 @@ supermarketController.exibirVendaCaixa = async function (req, res) {
     }
 };
 
-/**
- * Processa uma venda em caixa.
- */
 supermarketController.registarVenda = async function (req, res) {
     try {
         const { emailCliente, nomeCliente, nifCliente, telefoneCliente, moradaCliente, latitudeEntrega, longitudeEntrega, itens, metodoEntrega } = req.body;

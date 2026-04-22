@@ -9,6 +9,10 @@ router.use(authMiddleware.verificarAutenticacao, authMiddleware.verificarRole(['
 // Dashboard do Estafeta
 router.get('/dashboard', estafetaController.exibirDashboard);
 
+// Perfil do Estafeta
+router.get('/perfil', estafetaController.exibirPerfil);
+router.post('/perfil', estafetaController.atualizarPerfil);
+
 // Páginas de entregas
 router.get('/entregas', estafetaController.listarEntregasDisponiveis);
 router.get('/minhas-entregas', estafetaController.listarMinhasEntregas);

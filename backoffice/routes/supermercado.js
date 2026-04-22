@@ -64,7 +64,7 @@ router.get('/encomendas/ajuda', supermarketController.exibirAjudaEncomendas);
 router.get('/encomendas/:orderId/fatura', supermarketController.exibirFatura);
 router.post('/encomendas/:orderId/estado', supermarketController.atualizarEstadoEncomenda);
 
-// Venda em Caixa
+// Venda
 router.get('/vendas/nova', supermarketController.exibirVendaCaixa);
 router.post('/vendas', supermarketController.registarVenda);
 

@@ -31,6 +31,11 @@ router.get('/categorias', adminController.exibirCategorias);
 router.post('/categorias', adminController.criarCategoria);
 router.post('/categorias/eliminar/:categoriaId', adminController.eliminarCategoria);
 
+// Moderação de Produtos
+router.get('/produtos', adminController.listarProdutos);
+router.get('/produtos/detalhes/:productId', adminController.exibirDetalhesProduto);
+router.post('/produtos/eliminar/:productId', adminController.eliminarProduto);
+
 router.param('userId', async (req, res, next, id) => {
     try {
         const user = await adminService.getUserByIdSemPassword(id);

@@ -236,6 +236,46 @@ adminService.transferirPropriedade = async function (supermercadoId, novoUserId)
     }, { new: true });
 };
 
+/**
+ * Obtém todos os produtos do sistema com paginação e filtro opcional por supermercado.
+ */
+adminService.getProdutosPaginados = async function (pagina, limite, supermercadoId = null) {
+    const contador = (pagina - 1) * limite;
+    const filtro = {};
+    if (supermercadoId) {
+        filtro.supermercadoId = supermercadoId;
+    }
+
+    const total = await Product.countDocuments(filtro);
+    const produtos = await Product.find(filtro)
+        .populate('supermercadoId', 'nome')
+        .populate('categoriaId', 'nome')
+        .sort({ criadoEm: -1 })
+        .skip(Number(contador))
+        .limit(Number(limite));
+
+    return {
+        produtos,
+        totalPaginas: Math.ceil(total / limite)
+    };
+};
+
+/**
+ * Obtém um produto por ID.
+ */
+adminService.getProdutoById = async function (id) {
+    return Product.findById(id)
+        .populate('supermercadoId', 'nome')
+        .populate('categoriaId', 'nome');
+};
+
+/**
+ * Elimina um produto do sistema.
+ */
+adminService.eliminarProduto = async function (id) {
+    return Product.findByIdAndDelete(id);
+};
+
 adminService.getSupermercadoById = async function (id) {
     return Supermarket.findById(id);
 };

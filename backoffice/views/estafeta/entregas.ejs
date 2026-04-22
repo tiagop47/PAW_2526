@@ -24,14 +24,13 @@
                                     <div class="card-body py-2">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <p class="mb-1"><strong>Encomenda:</strong> #<%= entrega._id.toString().slice(-6).toUpperCase() %></p>
-                                            <span class="badge bg-dark">confirmada</span>
                                         </div>
                                         <p class="mb-1"><strong>Supermercado:</strong> <%= entrega.supermercadoId?.nome %></p>
                                         <p class="mb-1"><strong>Destino:</strong> <%= entrega.moradaEntrega || (entrega.clienteId ? entrega.clienteId.morada : 'Morada não especificada' ) %></p>
                                         <p class="mb-2"><strong>Total:</strong> <%= (entrega.valorTotal || 0).toFixed(2) %>€</p>
 
                                         <div class="d-flex gap-2">
-                                            <button class="btn btn-sm btn-primary btn-aceitar-entrega" data-id="<%= entrega._id %>">aceitar</button>
+                                            <button class="btn btn-sm btn-light border text-dark btn-aceitar-entrega" data-id="<%= entrega._id %>">aceitar</button>
                                             <% if (entrega.coordenadasEntrega && entrega.coordenadasEntrega.lat && entrega.coordenadasEntrega.lng) { %>
                                                 <button class="btn btn-sm btn-outline-dark link-focar-destino" 
                                                     data-lat="<%= entrega.coordenadasEntrega.lat %>" 

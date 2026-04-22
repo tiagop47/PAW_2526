@@ -122,6 +122,23 @@ estafetaService.obterEncomendaPorId = async function (id) {
         .populate('clienteId', 'nome morada');
 };
 
+/**
+ * Obtém os dados de um utilizador por ID sem a password.
+ */
+estafetaService.getUserByIdSemPassword = async function (userId) {
+    const User = require('../models/UserModel');
+    return User.findById(userId).select('-password');
+};
+
+/**
+ * Atualiza os dados de perfil do utilizador.
+ */
+estafetaService.atualizarPerfil = async function (userId, dados) {
+    const User = require('../models/UserModel');
+    const { nome, telefone, morada } = dados;
+    return User.findByIdAndUpdate(userId, { nome, telefone, morada }, { new: true, runValidators: true });
+};
+
 async function obterEstatisticas(estafetaId) {
     const [entregasRealizadas, entregasEmCurso, avaliacaoStats] = await Promise.all([
         Order.countDocuments({ estafetaId, estado: 'entregue' }),
