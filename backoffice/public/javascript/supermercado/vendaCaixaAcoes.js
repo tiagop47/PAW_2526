@@ -12,6 +12,7 @@ const inputLatitudeEntrega = document.getElementById('latitudeEntrega');
 const inputLongitudeEntrega = document.getElementById('longitudeEntrega');
 const textoCoordsSelecionadas = document.getElementById('coordsSelecionadas');
 const mapaEntregaElemento = document.getElementById('mapaEscolherEntrega');
+const inputEntradaRapida = document.getElementById('entrada-rapida-barcode');
 
 const tabelaPesquisaModalBody = document.querySelector('[data-pesquisa="tabela"]');
 let carrinhoDeCompras = [];
@@ -39,8 +40,6 @@ let mapaInstancia;
 let marcadorEntregaInstancia = null;
 let ultimosDadosPesquisa = null; // Armazena o objeto completo (produtos + metadados de paginação)
 let motorPesquisaAtivo = null;
-
-// ── Helpers ──
 
 function isEntregaDomicilio() {
     return selectMetodoEntrega.value === ENTREGA_DOMICILIO;
@@ -151,10 +150,6 @@ function renderizarResultadosModal(dados, tabelaBody) {
         desenharPaginacao(dados.paginaAtual, dados.totalPaginas);
     }
 }
-
-const inputEntradaRapida = document.getElementById('entrada-rapida-barcode');
-
-// ── Funções de Ação ──
 
 async function adicionarPorBarcode(barcode) {
     if (!barcode) return;
