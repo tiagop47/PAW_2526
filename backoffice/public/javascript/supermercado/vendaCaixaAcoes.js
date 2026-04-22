@@ -14,7 +14,26 @@ const textoCoordsSelecionadas = document.getElementById('coordsSelecionadas');
 const mapaEntregaElemento = document.getElementById('mapaEscolherEntrega');
 
 const tabelaPesquisaModalBody = document.querySelector('[data-pesquisa="tabela"]');
-const carrinhoDeCompras = [];
+let carrinhoDeCompras = [];
+
+const STORAGE_CARRINHO_KEY = 'venda_caixa_carrinho';
+
+function guardarCarrinhoNaSessao() {
+    sessionStorage.setItem(STORAGE_CARRINHO_KEY, JSON.stringify(carrinhoDeCompras));
+}
+
+function carregarCarrinhoDaSessao() {
+    const dados = sessionStorage.getItem(STORAGE_CARRINHO_KEY);
+    if (dados) {
+        try {
+            carrinhoDeCompras = JSON.parse(dados);
+            sincronizarCarrinhoEModal();
+        } catch (e) {
+            console.error('Erro ao carregar carrinho:', e);
+            carrinhoDeCompras = [];
+        }
+    }
+}
 
 let mapaInstancia;
 let marcadorEntregaInstancia = null;
@@ -178,6 +197,7 @@ function adicionarUmAoCarrinho(id, nome, preco, stock) {
         carrinhoDeCompras.push({ id, nome, preco, stock, qtd: 1 });
     }
 
+    guardarCarrinhoNaSessao();
     sincronizarCarrinhoEModal();
 }
 
@@ -191,6 +211,7 @@ function removerUmDoCarrinho(id) {
         }
     }
 
+    guardarCarrinhoNaSessao();
     sincronizarCarrinhoEModal();
 }
 
@@ -201,6 +222,7 @@ function removerDoCarrinho(id) {
         carrinhoDeCompras.splice(index, 1);
     }
 
+    guardarCarrinhoNaSessao();
     atualizarCarrinhoDOM();
 }
 
@@ -234,7 +256,6 @@ function atualizarCarrinhoDOM() {
             <tr>
                 <td colspan="5" class="text-center text-muted py-5">
                     Ainda não adicionaste produtos.<br>
-                    <small>Clica em "Adicionar Produtos" para começares a venda.</small>
                 </td>
             </tr>`;
         return;
@@ -429,6 +450,7 @@ async function submeterVendaComValidacoes(event) {
         }
 
         hiddenItensVenda.value = JSON.stringify(itensParaEnviar);
+        sessionStorage.removeItem(STORAGE_CARRINHO_KEY);
         formVendaCaixa.submit();
 
     } catch (err) {
@@ -440,6 +462,7 @@ async function submeterVendaComValidacoes(event) {
 document.addEventListener('DOMContentLoaded', function () {
     inicializarPesquisa();
     inicializarMapaEntrega();
+    carregarCarrinhoDaSessao();
 
     if (inputEntradaRapida) {
         inputEntradaRapida.addEventListener('keypress', function(e) {
