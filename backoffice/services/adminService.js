@@ -134,7 +134,9 @@ adminService.aprovarSupermercadoById = async function (id) {
 adminService.rejeitarSupermercadoById = async function (id) {
     return Supermarket.findByIdAndUpdate(id, { estadoAprovacao: 'Rejeitado' });
 };
-
+/**
+ * Este alternarBloqueio é para os supermercados, no Gerir Supermercados
+ * */
 adminService.alternarBloqueio = async function (id) {
     const desbloqueado = await Supermarket.findOneAndUpdate(
         { _id: id, estadoAprovacao: 'Bloqueado' },
@@ -152,6 +154,24 @@ adminService.alternarBloqueio = async function (id) {
         { new: true }
     );
 };
+
+/**
+ * Este é para bloquear qualquer user, no Gerir Utilizadores
+ */
+
+adminService.alternarBloqueioUser = async function (id){
+    const user = await User.findById(id);
+
+    if(!user){
+        throw new Error("Utilizador não encontrado");
+    }
+
+    user.bloqueado = !user.bloqueado;
+    await user.save();
+
+    return user;
+}
+
 
 adminService.getUsersDocumentos = async function (pagina, limite) {
     const contador = (pagina - 1) * limite;
@@ -464,13 +484,6 @@ adminService.getRegistosMensais = async function () {
     }));
 };
 
-/**
- * Gestão de cupons de desconto
- */
-
-adminService.eliminarUser = async function (id) {
-    return User.findByIdAndDelete(id);
-};
 
 /**
  * Evolução da Faturação por Zona ao longo dos meses

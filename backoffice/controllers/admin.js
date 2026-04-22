@@ -120,6 +120,21 @@ adminController.bloquearSupermercado = async function (req, res) {
 };
 
 /**
+ * Bloquear/Desbloquear Utilizador
+ */
+adminController.bloquearUser = async function (req, res) {
+    try {
+        if (req.targetUser.role === 'administrador') {
+            return res.status(403).send('Não é permitido bloquear o administrador.');
+        }
+        await adminService.alternarBloqueioUser(req.targetUser._id);
+        res.redirect('/admin/exibirUtilizadores');
+    } catch (err) {
+        res.status(500).send("Erro a tentar bloquear o utilizador.");
+    }
+};
+
+/**
  * Exibe formulário para transferir propriedade de um supermercado.
  */
 adminController.exibirTransferirPropriedade = async function (req, res) {

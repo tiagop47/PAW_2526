@@ -21,6 +21,8 @@ router.post('/supermercados/editar/:supermarketId', adminController.editarSuperm
 router.post('/utilizadores/:userId/eliminar', adminController.eliminarUser);
 router.get('/utilizadores/:userId/editar', adminController.exibirEditarUser);
 router.post('/utilizadores/:userId/editar', adminController.editarUser);
+router.post('/utilizadores/:userId/bloquear', adminController.bloquearUser);
+
 
 // Monitorização Global
 router.get('/encomendas', adminController.monitorizarEncomendas);

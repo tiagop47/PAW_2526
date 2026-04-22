@@ -21,6 +21,7 @@
                             <th>Localização</th>
                             <th>NIF</th>
                             <th>Cargo/Função</th>
+                            <th>Estado</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -52,12 +53,24 @@
                                             <%= utilizador.role %>
                                         </span>
                                     </td>
+                                    <td>
+                                        <% if (utilizador.bloqueado) { %>
+                                            <span class="badge bg-secondary">Bloqueado</span>
+                                        <% } else { %>
+                                            <span class="badge bg-secondary">Ativo</span>
+                                        <% } %>
+                                    </td>
                                     <td class="fw-bold">
                                         <% if (utilizador.role !== 'administrador') { %>
                                         <div class="d-flex gap-1">
                                             <a href="/admin/utilizadores/<%= utilizador._id %>/editar" class="btn btn-sm btn-light border text-dark">Editar</a>
                                             <form action="/admin/utilizadores/<%= utilizador._id %>/eliminar" method="POST" style="display:inline;">
                                                 <button type="submit" class="btn btn-sm btn-light border text-dark">Eliminar</button>
+                                            </form>
+                                            <form action="/admin/utilizadores/<%= utilizador._id %>/bloquear" method="POST" style="display:inline;">
+                                                <button type="submit" class="btn btn-sm btn-light border text-dark">
+                                                    <%= utilizador.bloqueado ? 'Desbloquear' : 'Bloquear' %>
+                                                </button>
                                             </form>
                                         </div>
                                         <% } else { %>

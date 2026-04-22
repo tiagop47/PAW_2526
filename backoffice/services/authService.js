@@ -84,6 +84,10 @@ authService.autenticarUtilizador = async function (email, password) {
         throw new Error("Credenciais inválidas.");
     }
 
+    if(user.bloqueado){
+        throw new Error("A sua conta está bloqueada");
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
         throw new Error("Credenciais inválidas.");
