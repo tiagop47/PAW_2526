@@ -13,7 +13,7 @@ const inputLongitudeEntrega = document.getElementById('longitudeEntrega');
 const textoCoordsSelecionadas = document.getElementById('coordsSelecionadas');
 const mapaEntregaElemento = document.getElementById('mapaEscolherEntrega');
 
-const tabelaPesquisaModalBody = document.querySelector('[data-produto-pesquisa="tabela"]');
+const tabelaPesquisaModalBody = document.querySelector('[data-pesquisa="tabela"]');
 const carrinhoDeCompras = [];
 
 let mapaInstancia;
@@ -37,7 +37,8 @@ function obterQtdNoCarrinho(produtoId) {
 function sincronizarCarrinhoEModal() {
     atualizarCarrinhoDOM();
     if (ultimosProdutosPesquisa.length > 0) {
-        renderizarResultadosModal(ultimosProdutosPesquisa, tabelaPesquisaModalBody);
+        // Simula o formato de dados esperado pelo renderizador
+        renderizarResultadosModal({ produtos: ultimosProdutosPesquisa }, tabelaPesquisaModalBody);
     }
 }
 
@@ -63,7 +64,7 @@ function renderizarResultadosModal(dados, tabelaBody) {
     
     if (!Array.isArray(produtos) || produtos.length === 0) {
         tabelaBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Nenhum produto encontrado.</td></tr>';
-        if (typeof renderizarPaginacao === 'function') renderizarPaginacao(0, 0);
+        if (typeof desenharPaginacao === 'function') desenharPaginacao(0, 0);
         return;
     }
 
@@ -71,7 +72,7 @@ function renderizarResultadosModal(dados, tabelaBody) {
 
     tabelaBody.innerHTML = produtos.map(function (produto) {
         const qtdAtual = obterQtdNoCarrinho(produto._id);
-        const valorCodigo = produto.codigoBarras || produto._id;
+        const valorCodigo = produto.codigoBarras;
 
         if (produto.stockDisponivel <= 0) {
             return `
@@ -117,7 +118,7 @@ function renderizarResultadosModal(dados, tabelaBody) {
         const barcodeValue = svg.getAttribute('data-barcode-id');
         if (barcodeValue && typeof JsBarcode !== 'undefined') {
             JsBarcode(svg, barcodeValue, {
-                format: 'CODE128',
+                format: "EAN13",
                 width: 1.2,
                 height: 30,
                 displayValue: true, 
@@ -127,8 +128,42 @@ function renderizarResultadosModal(dados, tabelaBody) {
         }
     });
 
-    if (typeof renderizarPaginacao === 'function') {
-        renderizarPaginacao(dados.paginaAtual, dados.totalPaginas);
+    if (typeof desenharPaginacao === 'function') {
+        desenharPaginacao(dados.paginaAtual, dados.totalPaginas);
+    }
+}
+
+const inputEntradaRapida = document.getElementById('entrada-rapida-barcode');
+
+// ── Funções de Ação ──
+
+async function adicionarPorBarcode(barcode) {
+    if (!barcode) return;
+
+    try {
+        const query = `?q=${encodeURIComponent(barcode)}&limite=1`;
+        const resposta = await fetch('/supermercado/produtos/pesquisar' + query);
+        const dados = await resposta.json();
+
+        if (dados.produtos && dados.produtos.length > 0) {
+            const p = dados.produtos[0];
+            
+            // Verifica se o código de barras coincide exatamente
+            if (p.codigoBarras === barcode) {
+                if (p.stockDisponivel > 0) {
+                    adicionarUmAoCarrinho(p._id, p.nome, p.preco, p.stockDisponivel);
+                    inputEntradaRapida.value = ''; // Limpa para o próximo scan
+                } else {
+                    alert('Produto sem stock!');
+                }
+            } else {
+                alert('Produto não encontrado com este código exato.');
+            }
+        } else {
+            alert('Código de barras não reconhecido.');
+        }
+    } catch (erro) {
+        console.error('Erro na entrada rápida:', erro);
     }
 }
 
@@ -322,13 +357,11 @@ function inicializarMapaEntrega() {
 }
 
 function inicializarPesquisa() {
-    const filtroPesquisa = inicializarPesquisaProdutos({
-        debounceMs: 250,
-        renderTabela: renderizarResultadosModal
-    });
+    const filtroPesquisa = inicializarPesquisaProdutos(renderizarResultadosModal);
 
     if (filtroPesquisa && typeof filtroPesquisa.executarPesquisa === 'function') {
-        filtroPesquisa.executarPesquisa();
+        motorPesquisaAtivo = filtroPesquisa.executarPesquisa;
+        motorPesquisaAtivo();
     }
 }
 
@@ -407,6 +440,15 @@ async function submeterVendaComValidacoes(event) {
 document.addEventListener('DOMContentLoaded', function () {
     inicializarPesquisa();
     inicializarMapaEntrega();
+
+    if (inputEntradaRapida) {
+        inputEntradaRapida.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                adicionarPorBarcode(this.value.trim());
+            }
+        });
+    }
 
     if (selectMetodoEntrega) {
         selectMetodoEntrega.addEventListener('change', atualizarUIEntrega);

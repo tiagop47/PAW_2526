@@ -1,27 +1,26 @@
-const inputPesquisa = document.querySelector('[data-produto-pesquisa="input"]');
-const selectCategoria = document.querySelector('[data-produto-pesquisa="categoria"]');
-const tabelaBody = document.querySelector('[data-produto-pesquisa="tabela"]');
+// Configurações Globais
+const API_URL = '/supermercado/produtos/pesquisar';
 
-let paginaAtualGlobal = 1;
+// Seleção de elementos do DOM
+const campoPesquisa = document.querySelector('[data-pesquisa="input"]');
+const filtroCategoria = document.querySelector('[data-pesquisa="categoria"]');
+const tabelaProdutos = document.querySelector('[data-pesquisa="tabela"]');
 
-function tabelaDefault(dados) {
-    if (!tabelaBody) return;
-    const produtos = dados.produtos || [];
+// Função para desenhar a tabela padrão (Gestão de Produtos)
+function desenharTabelaPadrao(dados) {
+    if (!tabelaProdutos) return;
+    const lista = dados.produtos || [];
 
-    if (produtos.length === 0) {
-        tabelaBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Nenhum produto encontrado.</td></tr>';
-        renderizarPaginacao(0, 0);
+    if (lista.length === 0) {
+        tabelaProdutos.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Nenhum produto encontrado.</td></tr>';
+        desenharPaginacao(0, 0);
         return;
     }
 
-    tabelaBody.innerHTML = produtos.map(p => `
+    tabelaProdutos.innerHTML = lista.map(p => `
         <tr>
-            <td>
-                <div class="fw-bold">${p.nome}</div>
-            </td>
-            <td>
-                <span class="badge border text-dark fw-normal">${p.categoriaId ? p.categoriaId.nome : '—'}</span>
-            </td>
+            <td class="fw-bold">${p.nome}</td>
+            <td><span class="badge border text-dark fw-normal">${p.categoriaId ? p.categoriaId.nome : '—'}</span></td>
             <td>${Number(p.preco).toFixed(2)}€</td>
             <td>${p.stockDisponivel}</td>
             <td class="text-end">
@@ -36,76 +35,74 @@ function tabelaDefault(dados) {
         </tr>
     `).join('');
 
-    renderizarPaginacao(dados.paginaAtual, dados.totalPaginas);
+    desenharPaginacao(dados.paginaAtual, dados.totalPaginas);
 }
 
-function renderizarPaginacao(atual, total) {
-    let paginacaoContainer = document.getElementById('paginacaoPesquisa');
-    if (!paginacaoContainer) {
-        paginacaoContainer = document.createElement('div');
-        paginacaoContainer.id = 'paginacaoPesquisa';
-        paginacaoContainer.className = 'd-flex justify-content-center align-items-center mt-3 gap-2';
-        tabelaBody.closest('.table-responsive').after(paginacaoContainer);
+// Função para gerir os botões de página
+function desenharPaginacao(atual, total) {
+    let blocoPaginacao = document.getElementById('bloco-paginacao-pesquisa');
+    
+    if (!blocoPaginacao) {
+        blocoPaginacao = document.createElement('div');
+        blocoPaginacao.id = 'bloco-paginacao-pesquisa';
+        blocoPaginacao.className = 'd-flex justify-content-center align-items-center mt-3 gap-2';
+        tabelaProdutos.closest('.table-responsive').after(blocoPaginacao);
     }
 
     if (total <= 1) {
-        paginacaoContainer.innerHTML = '';
+        blocoPaginacao.innerHTML = '';
         return;
     }
 
-    paginacaoContainer.innerHTML = `
-        <button class="btn btn-sm btn-light border" ${atual === 1 ? 'disabled' : ''} onclick="mudarPaginaPesquisa(${atual - 1})">Anterior</button>
+    blocoPaginacao.innerHTML = `
+        <button class="btn btn-sm btn-light border" ${atual === 1 ? 'disabled' : ''} data-pagina="${atual - 1}">Anterior</button>
         <span class="small text-muted">Página ${atual} de ${total}</span>
-        <button class="btn btn-sm btn-light border" ${atual === total ? 'disabled' : ''} onclick="mudarPaginaPesquisa(${atual + 1})">Próximo</button>
+        <button class="btn btn-sm btn-light border" ${atual === total ? 'disabled' : ''} data-pagina="${atual + 1}">Próximo</button>
     `;
 }
 
-// Tornar global para acesso nos botões dinâmicos
-window.mudarPaginaPesquisa = function(novaPagina) {
-    paginaAtualGlobal = novaPagina;
-    const { executarPesquisa } = window.pesquisaInstancia || {};
-    if (executarPesquisa) executarPesquisa(novaPagina);
-};
+// Variável para armazenar a função de busca e permitir chamadas externas (como no modal)
+let funcaoBuscarDados;
 
-function inicializarPesquisaProdutos(config = {}) {
-    if (!inputPesquisa || !selectCategoria) return;
+// Inicialização do motor de pesquisa
+function inicializarPesquisaProdutos(renderPersonalizado) {
+    if (!campoPesquisa || !filtroCategoria) return;
 
-    const {
-        renderTabela = tabelaDefault,
-        debounceMs = 300,
-        apiUrl = '/supermercado/produtos/pesquisar'
-    } = config;
+    const renderizar = renderPersonalizado || desenharTabelaPadrao;
 
-    async function executarPesquisa(pagina = 1) {
-        paginaAtualGlobal = pagina;
-        const params = new URLSearchParams();
-        const texto = inputPesquisa.value.trim();
-        const categoriaId = selectCategoria.value;
-
-        if (texto) params.set('q', texto);
-        if (categoriaId) params.set('categoriaId', categoriaId);
-        params.set('pagina', pagina);
+    async function buscarDados(pagina = 1) {
+        const texto = campoPesquisa.value.trim();
+        const categoria = filtroCategoria.value;
+        const query = `?q=${encodeURIComponent(texto)}&categoriaId=${categoria}&pagina=${pagina}`;
 
         try {
-            const resposta = await fetch(`${apiUrl}?${params.toString()}`);
+            const resposta = await fetch(API_URL + query);
             if (!resposta.ok) return;
 
             const dados = await resposta.json();
-            renderTabela(dados, tabelaBody);
-        } catch (err) {
-            console.error('Erro na pesquisa:', err);
+            renderizar(dados, tabelaProdutos);
+        } catch (erro) {
+            console.error('Erro na pesquisa:', erro);
         }
     }
 
-    let timer;
-    inputPesquisa.addEventListener('input', () => {
-        clearTimeout(timer);
-        timer = setTimeout(() => executarPesquisa(1), debounceMs);
+    funcaoBuscarDados = buscarDados;
+
+    // Delegação de eventos para a paginação
+    document.addEventListener('click', (evento) => {
+        const botao = evento.target.closest('[data-pagina]');
+        if (botao && !botao.disabled) {
+            buscarDados(parseInt(botao.dataset.pagina));
+        }
     });
 
-    selectCategoria.addEventListener('change', () => executarPesquisa(1));
+    let tempoEspera;
+    campoPesquisa.addEventListener('input', () => {
+        clearTimeout(tempoEspera);
+        tempoEspera = setTimeout(() => buscarDados(1), 300);
+    });
 
-    window.pesquisaInstancia = { executarPesquisa };
-    return { executarPesquisa };
+    filtroCategoria.addEventListener('change', () => buscarDados(1));
+
+    return { executarPesquisa: buscarDados };
 }
-

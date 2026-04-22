@@ -57,8 +57,11 @@
                     <div class="col-lg-8" id="colProdutosVenda">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h2 class="h6 fw-bold mb-0">Produtos no Carrinho</h2>
-                            <button type="button" class="btn btn-sm btn-primary px-3" data-bs-toggle="modal"
-                                data-bs-target="#modalPesquisaProduto">+ Adicionar Produtos</button>
+                            <div class="d-flex gap-2">
+                                <input type="text" id="entrada-rapida-barcode" class="form-control form-control-sm" placeholder="Código de Barras..." style="width: 200px;">
+                                <button type="button" class="btn btn-sm btn-primary px-3" data-bs-toggle="modal"
+                                    data-bs-target="#modalPesquisaProduto">Adicionar Manualmente</button>
+                            </div>
                         </div>
 
                         <!-- Tabela principal do Carrinho -->
@@ -67,7 +70,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>Produto</th>
-                                        <th>Preço Unit.</th>
+                                        <th>Preço Unit.</th>g
                                         <th style="width: 120px;">Quantidade</th>
                                         <th class="text-end">Total</th>
                                         <th style="width: 50px;"></th>
@@ -122,11 +125,11 @@
                         <div class="card border-0 bg-light p-2 mb-3">
                             <div class="row g-2">
                                 <div class="col-md-7">
-                                    <input type="text" id="produtoPesquisaInput" data-produto-pesquisa="input"
+                                    <input type="text" id="campo-pesquisa" data-pesquisa="input"
                                         class="form-control" placeholder="Escreve o nome do produto...">
                                 </div>
                                 <div class="col-md-5">
-                                    <select id="produtoPesquisaCategoria" data-produto-pesquisa="categoria"
+                                    <select id="filtro-categoria" data-pesquisa="categoria"
                                         class="form-select">
                                         <option value="">Todas as categorias</option>
                                         <% if (categorias && categorias.length> 0) { %>
@@ -151,7 +154,7 @@
                                         <th style="min-width: 140px;">Qtd.</th>
                                     </tr>
                                 </thead>
-                                <tbody id="produtoPesquisaTabelaBody" data-produto-pesquisa="tabela">
+                                <tbody id="corpo-tabela-produtos" data-pesquisa="tabela">
                                     <tr>
                                         <td colspan="4" class="text-center text-muted py-4">Utiliza a barra de pesquisa
                                             para carregar produtos.</td>

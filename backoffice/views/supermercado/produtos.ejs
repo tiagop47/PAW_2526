@@ -20,11 +20,11 @@
             <div class="card border-0 shadow-sm mb-3 p-3">
                 <div class="row g-2">
                     <div class="col-md-8">
-                        <input id="produtoPesquisaInput" data-produto-pesquisa="input" type="text" class="form-control"
+                        <input id="campo-pesquisa" data-pesquisa="input" type="text" class="form-control"
                             placeholder="Pesquisar por nome...">
                     </div>
                     <div class="col-md-4">
-                        <select id="produtoPesquisaCategoria" data-produto-pesquisa="categoria" class="form-select">
+                        <select id="filtro-categoria" data-pesquisa="categoria" class="form-select">
                             <option value="">Todas as categorias</option>
                             <% categorias.forEach(function(cat) { %>
                                 <option value="<%= cat._id %>">
@@ -49,7 +49,7 @@
                             </tr>
                         </thead>
 
-                        <tbody id="produtoPesquisaTabelaBody" data-produto-pesquisa="tabela">
+                        <tbody id="corpo-tabela-produtos" data-pesquisa="tabela">
                             <% if (locals.produtos && produtos.length> 0) { %>
                                 <% produtos.forEach(function(p) { %>
                                     <tr>

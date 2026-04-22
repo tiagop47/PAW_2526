@@ -118,6 +118,19 @@ supermarketService.obterProdutoPorId = async function (id, supermercadoId = null
     return Product.findOne(filtro).populate('categoriaId');
 };
 
+/**
+ * Garante que o código de barras é um EAN-13 válido (12 ou 13 dígitos).
+ * Se não for, gera um aleatório.
+ */
+function validarOuGerarEAN(codigo) {
+    const eanRegex = /^\d{12,13}$/;
+    if (codigo && eanRegex.test(codigo.trim())) {
+        return codigo.trim();
+    }
+    // Gera 12 dígitos aleatórios (o 13º será o checksum no JSBarcode)
+    return Math.floor(100000000000 + Math.random() * 900000000000).toString();
+}
+
 supermarketService.criarProduto = async function (supermercadoId, productData) {
     const novoProduto = new Product({
         supermercadoId: supermercadoId,
@@ -130,9 +143,7 @@ supermarketService.criarProduto = async function (supermercadoId, productData) {
         imagem: productData.imagem
     });
 
-    novoProduto.codigoBarras = productData.codigoBarras && productData.codigoBarras.trim() !== ''
-        ? productData.codigoBarras
-        : novoProduto._id.toString();
+    novoProduto.codigoBarras = validarOuGerarEAN(productData.codigoBarras);
 
     return novoProduto.save();
 };
@@ -145,7 +156,7 @@ supermarketService.atualizarProduto = async function (supermercadoId, productId,
         preco: updateData.preco,
         precoAntigo: updateData.precoAntigo || 0,
         stockDisponivel: updateData.stockDisponivel,
-        codigoBarras: updateData.codigoBarras && updateData.codigoBarras.trim() !== '' ? updateData.codigoBarras : productId.toString()
+        codigoBarras: validarOuGerarEAN(updateData.codigoBarras)
     };
 
 

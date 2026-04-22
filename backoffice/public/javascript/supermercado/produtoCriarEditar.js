@@ -50,9 +50,13 @@ function validarFormularioProduto(form) {
         erro = true;
     }
 
-    if (codigoBarrasInput && codigoBarrasInput.value.trim().length > 0 && codigoBarrasInput.value.trim().length < 9) {
-        alert('O código de barras deve ter pelo menos 9 caracteres.');
-        erro = true;
+    if (codigoBarrasInput && codigoBarrasInput.value.trim().length > 0) {
+        const codigo = codigoBarrasInput.value.trim();
+        const eValido = /^\d{12,13}$/.test(codigo);
+        if (!eValido) {
+            alert('O código de barras deve conter apenas números (12 ou 13 dígitos) para o padrão profissional EAN-13.');
+            erro = true;
+        }
     }
 
     const p = parseFloat(precoInput?.value);

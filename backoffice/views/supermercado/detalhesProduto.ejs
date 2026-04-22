@@ -87,14 +87,16 @@
     <script src="/javascript/supermercado/produtoCriarEditar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
     <script>
-        JsBarcode("#barcodeProduto", "<%= produto._id %>", {
-            format: "CODE128",
-            width: 1.5,
-            height: 50,
-            displayValue: true,
-            fontSize: 12,
-            margin: 5
-        });
+        (function() {
+            JsBarcode("#barcodeProduto", "<%= produto.codigoBarras %>", {
+                format: "EAN13",
+                width: 2,
+                height: 60,
+                displayValue: true,
+                fontSize: 14,
+                margin: 10
+            });
+        })();
     </script>
 
 </body>

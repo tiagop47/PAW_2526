@@ -19,7 +19,12 @@ const ProductSchema = new mongoose.Schema({
         unique: true,
         sparse: true,
         trim: true,
-        minlength: [9, "O código de barras deve ter pelo menos 9 caracteres"]
+        validate: {
+            validator: function(v) {
+                return /^\d{12,13}$/.test(v);
+            },
+            message: "O código de barras deve conter 12 ou 13 dígitos numéricos."
+        }
     },
     preco: {
         type: Number,
