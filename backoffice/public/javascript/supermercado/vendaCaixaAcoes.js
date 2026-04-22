@@ -18,7 +18,8 @@ const carrinhoDeCompras = [];
 
 let mapaInstancia;
 let marcadorEntregaInstancia = null;
-let ultimosProdutosPesquisa = [];
+let ultimosDadosPesquisa = null; // Armazena o objeto completo (produtos + metadados de paginação)
+let motorPesquisaAtivo = null;
 
 // ── Helpers ──
 
@@ -36,9 +37,8 @@ function obterQtdNoCarrinho(produtoId) {
  */
 function sincronizarCarrinhoEModal() {
     atualizarCarrinhoDOM();
-    if (ultimosProdutosPesquisa.length > 0) {
-        // Simula o formato de dados esperado pelo renderizador
-        renderizarResultadosModal({ produtos: ultimosProdutosPesquisa }, tabelaPesquisaModalBody);
+    if (ultimosDadosPesquisa) {
+        renderizarResultadosModal(ultimosDadosPesquisa, tabelaPesquisaModalBody);
     }
 }
 
@@ -68,7 +68,7 @@ function renderizarResultadosModal(dados, tabelaBody) {
         return;
     }
 
-    ultimosProdutosPesquisa = produtos;
+    ultimosDadosPesquisa = dados;
 
     tabelaBody.innerHTML = produtos.map(function (produto) {
         const qtdAtual = obterQtdNoCarrinho(produto._id);

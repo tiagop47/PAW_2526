@@ -8,7 +8,9 @@ const tabelaProdutos = document.querySelector('[data-pesquisa="tabela"]');
 
 // Função para desenhar a tabela padrão (Gestão de Produtos)
 function desenharTabelaPadrao(dados) {
-    if (!tabelaProdutos) return;
+    if (!tabelaProdutos) {
+        return;
+    }
     const lista = dados.produtos || [];
 
     if (lista.length === 0) {
