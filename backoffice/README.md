@@ -19,7 +19,7 @@ Para vendas sem cliente identificado, o sistema utiliza fallback o seguinte user
 
 O módulo de **Venda em Caixa** foi desenhado para ser resiliente a erros operacionais e facilitar a navegação:
 
-1.  **Persistência com `sessionStorage`**: O estado do carrinho de compras é guardado localmente no browser em tempo real. Isto permite que o funcionário:
+1.  **Persistência com `sessionStorage`**: O estado do carrinho de compras é guardado localmente no browser. Isto permite que o funcionário:
     *   Navegue para a página de detalhes de um produto ou configurações da loja sem perder a venda em curso.
     *   Recupere os dados automaticamente após um recarregamento acidental da página (F5).
 2.  **Sincronização Automática**: Qualquer alteração na quantidade ou remoção de itens atualiza instantaneamente o armazenamento da sessão.
@@ -30,30 +30,43 @@ O módulo de **Venda em Caixa** foi desenhado para ser resiliente a erros operac
 
 O sistema utiliza 6 estados oficiais conforme os requisitos do projeto:
 
-| Estado | Descrição |
-| :--- | :--- |
-| `pendente` | Criada online (Frontoffice) — aguarda confirmação da loja. |
-| `confirmada` | Confirmada pela loja (Online) ou registada na caixa. Pronta para preparação ou entrega. |
-| `em preparação` | A loja está a separar os produtos (apenas Levantamento em Loja). |
-| `em entrega` | Estafeta aceitou e está a caminho do destino (apenas Entrega ao Domicílio). |
-| `entregue` | Encomenda concluída (cliente recebeu ou levantou). **Estado Final**. |
-| `entregue` | Encomenda concluída. **Estado Final**. |
+### Fluxo de Encomendas Inteligente
+
+O sistema distingue a origem das encomendas para otimizar a operação do supermercado, utilizando o campo `origem` (`online` ou `caixa`):
+
+| Origem | Estado Inicial | Fluxo de Estados (Levantamento) |
+| :--- | :--- | :--- |
+| **Venda em Caixa (POS)** | `confirmada` | `confirmada` → `entregue` |
+| **Online (Frontoffice)** | `pendente` | `pendente` → `confirmada` → `em_preparacao` → `entregue` |
+
+#### Regras de Negócio por Origem:
+1.  **Vendas em Caixa (POS)**: Como são validadas no momento pelo lojista, entram diretamente no estado **`confirmada`**. O fluxo é simplificado para levantamento imediato, saltando a fase de preparação em sistema.
+2.  **Encomendas Online**: Criadas pelo cliente no Frontoffice, entram como **`pendente`**. Após a confirmação da loja, seguem um fluxo detalhado que inclui a fase de **`em_preparacao`**, permitindo ao cliente acompanhar o estado do pedido.
 
 ### Responsabilidade das Transições
 - **`pendente` → `confirmada`**: Supermercado (validar pedido online).
-- **`confirmada` → `em preparação`**: Supermercado (apenas Levantamento em Loja).
-- **`confirmada` → `em entrega`**: Estafeta (ao aceitar a recolha no supermercado).
-- **`em entrega` → `entregue`**: **Cliente** (confirmação de receção no Frontoffice).
-- **`em preparação` → `entregue`**: **Supermercado** (no ato da entrega em mão ao cliente).
+- **`confirmada` → `em_preparacao`**: Supermercado (apenas encomendas com origem `online`).
+- **`confirmada` → `em_entrega`**: Estafeta (ao aceitar a recolha no supermercado).
+- **`em_preparacao` → `entregue`**: Supermercado (no ato da entrega em mão ao cliente).
+- **`confirmada` → `entregue`**: Supermercado (apenas encomendas com origem `caixa` — salto direto para finalização).
+- **`em_entrega` → `aguarda_validacao`**: Estafeta (ao entregar os produtos na morada do cliente).
+- **`aguarda_validacao` → `entregue`**: Cliente (confirmação final no Frontoffice).
+
 
 ## Sistema de Cupões e Fidelização
 
-O sistema de cupões é gerido exclusivamente pelos supermercados para os seus clientes:
+O sistema de cupões é gerido pelos supermercados para os seus clientes, utilizando uma arquitetura que permite alta personalização:
 
 1.  **Vínculo Local**: Cada cupão pertence a um único supermercado. Um cupão criado pelo "Supermercado A" não pode ser utilizado em compras no "Supermercado B".
 2.  **Boas-Vindas**: Ao registar-se, se o cliente escolher um supermercado favorito, recebe automaticamente um cupão de 10% de desconto (`WELCOME` + ID) exclusivo para essa loja.
 3.  **Gestão de Cupões**: Os supermercados podem criar, ativar, desativar ou eliminar cupões. Ao criar um novo cupão, todos os clientes que têm esse supermercado como favorito são notificados por email.
 4.  **Consumo**: Os cupões são de utilização única e são removidos da conta do utilizador após a finalização da encomenda.
+
+### Arquitetura de Fidelização Dinâmica
+O sistema utiliza um modelo de **Associação Híbrida** (referências cruzadas entre Cupão, Supermercado e Utilizador), o que permite estratégias de marketing altamente segmentadas:
+- **Segmentação por Comportamento**: Ao ter o cupão associado diretamente ao perfil do cliente, o sistema está preparado para atribuições automáticas baseadas em regras de negócio.
+    - *Exemplo:* É possível configurar o sistema para que, sempre que um cliente atinja um volume de compras superior a **100€**, um cupão de "Cliente Frequente" seja injetado automaticamente na sua carteira.
+- **Segurança de Dados**: Através de **Discriminadores de Schema**, garantimos que estes benefícios de fidelização (campo `cupoes` e `supermercadoFavorito`) existam apenas em perfis do tipo `clientes`, mantendo a base de dados limpa e livre de campos irrelevantes para administradores ou estafetas.
 
 ---
 

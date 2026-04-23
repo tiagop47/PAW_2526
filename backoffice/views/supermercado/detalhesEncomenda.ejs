@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+
+    <%- include('../partials/navbar') %>
+
+    <main class="container py-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">Detalhes da Encomenda</h1>
+                <p class="text-muted small mb-0">ID: <%= encomenda._id %></p>
+            </div>
+            <a href="/supermercado/encomendas" class="btn btn-sm btn-light border">Voltar</a>
+        </div>
+
+        <div class="row g-4">
+            
+            <div class="col-md-4">
+                
+                <!-- Cliente -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0 h6 fw-bold">Dados do Cliente</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="fw-bold"><%= encomenda.clienteSnapshot ? encomenda.clienteSnapshot.nome : 'N/A' %></div>
+                        <div class="text-muted small"><%= encomenda.clienteSnapshot ? encomenda.clienteSnapshot.email : 'N/A' %></div>
+                        <div class="text-muted small">Telefone: <%= encomenda.clienteSnapshot ? encomenda.clienteSnapshot.telefone : 'N/A' %></div>
+                        <div class="text-muted small">NIF: <%= encomenda.clienteSnapshot ? encomenda.clienteSnapshot.nif : 'N/A' %></div>
+                    </div>
+                </div>
+
+                <!-- Entrega -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0 h6 fw-bold">Logística e Entrega</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="fw-bold mb-2">
+                            <%= encomenda.metodoEntrega === 'entrega_domicilio' ? 'Entrega ao domicílio' : 'Levantamento em loja' %>
+                        </div>
+                        <% if (encomenda.metodoEntrega === 'entrega_domicilio') { %>
+                            <div class="small text-muted mb-3"><%= encomenda.moradaEntrega %></div>
+                            
+                            <div class="alert alert-light border small p-2 mb-3">
+                                <% if (encomenda.estado === 'confirmada' && !encomenda.estafetaId) { %>
+                                    Aguarda levantamento por um estafeta.
+                                <% } else if (encomenda.estado === 'em_entrega') { %>
+                                    A encomenda está em trânsito com o estafeta.
+                                <% } else if (encomenda.estado === 'aguarda_validacao') { %>
+                                    Entregue pelo estafeta. Aguarda confirmação do cliente.
+                                <% } else if (encomenda.estado === 'entregue') { %>
+                                    Processo de entrega concluído.
+                                <% } %>
+                            </div>
+                        <% } %>
+                        <div>
+                            <span class="badge bg-secondary py-2 px-3">Estado: <%= encomenda.estado.replace('_', ' ') %></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estafeta -->
+                <% if (encomenda.estafetaId) { %>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0 h6 fw-bold">Estafeta Atribuído</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="fw-bold"><%= encomenda.estafetaId.nome %></div>
+                        <div class="text-muted small font-monospace">TEL: <%= encomenda.estafetaId.telefone %></div>
+                    </div>
+                </div>
+                <% } %>
+
+            </div>
+
+            <!-- Tabela de Produtos -->
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 h6 fw-bold">Produtos na Encomenda</h5>
+                        <% if (encomenda.faturaNumero) { %>
+                            <span class="badge bg-light text-dark border"><%= encomenda.faturaNumero %></span>
+                        <% } %>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Item</th>
+                                    <th class="text-center">Quantidade</th>
+                                    <th class="text-end pe-4">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% encomenda.produtos.forEach(function(item) { %>
+                                <tr>
+                                    <td class="ps-3">
+                                        <div class="fw-bold small"><%= item.produtoId ? item.produtoId.nome : 'Produto Removido' %></div>
+                                        <div class="text-muted small"><%= Number(item.precoUnitario).toFixed(2) %>€ / un</div>
+                                    </td>
+                                    <td class="text-center small">x<%= item.quantidade %></td>
+                                    <td class="text-end pe-4 small fw-bold"><%= (item.precoUnitario * item.quantidade).toFixed(2) %>€</td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="2" class="text-end small">Subtotal</td>
+                                    <td class="text-end pe-4 small"><%= (encomenda.valorTotal + (encomenda.descontoValor || 0)).toFixed(2) %>€</td>
+                                </tr>
+                                <% if (encomenda.descontoValor > 0) { %>
+                                <tr class="text-danger">
+                                    <td colspan="2" class="text-end small">Desconto Aplicado</td>
+                                    <td class="text-end pe-4 small">-<%= Number(encomenda.descontoValor).toFixed(2) %>€</td>
+                                </tr>
+                                <% } %>
+                                <tr class="h5">
+                                    <td colspan="2" class="text-end fw-bold">Total Final</td>
+                                    <td class="text-end pe-4 fw-bold"><%= Number(encomenda.valorTotal).toFixed(2) %>€</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação na Página de Detalhes -->
+                <div class="mt-4 pt-3 border-top d-flex gap-2 justify-content-end">
+
+                    <% 
+                    const permitidos = transicoesPermitidasParaEncomenda(encomenda)[encomenda.estado] || [];
+                    const labelsAcoes = {
+                        confirmada: { label: 'Confirmar pedido', classe: 'btn-light border' },
+                        em_preparacao: { label: 'Iniciar preparação', classe: 'btn-light border' },
+                        entregue: { label: 'Marcar como entregue', classe: 'btn-light border' },
+                        cancelada: { label: 'Cancelar encomenda', classe: 'btn-outline-danger' }
+                    };
+
+
+
+                    permitidos.forEach(function(proximoEstado) { 
+                        const config = labelsAcoes[proximoEstado] || { label: 'Mudar para ' + proximoEstado, classe: 'btn-light border' };
+                    %>
+                        <form action="/supermercado/encomendas/<%= encomenda._id %>/estado" method="POST" onsubmit="return confirm('Tem a certeza que deseja mudar para <%= proximoEstado.replace('_', ' ') %>?')">
+                            <input type="hidden" name="estado" value="<%= proximoEstado %>">
+                            <button type="submit" class="btn btn-sm <%= config.classe %> px-3">
+                                <%= config.label %>
+                            </button>
+                        </form>
+                    <% }) %>
+
+                    <% if (encomenda.faturaNumero) { %>
+                        <a href="/supermercado/encomendas/<%= encomenda._id %>/fatura" target="_blank" class="btn btn-sm btn-light border px-3">
+                            Ver fatura
+                        </a>
+                    <% } %>
+                </div>
+
+
+            </div>
+        </div>
+
+    </main>
+
+</body>
+
+</html>

@@ -219,18 +219,22 @@ supermarketController.exibirPerfil = async function (req, res) {
 supermarketController.listarEncomendas = async function (req, res) {
     try {
         const pagina = parseInt(req.query.pagina) || 1;
-        const limite = 5;
-        const dados = await supermarketService.obterEncomendas(req.supermercado._id, pagina, limite);
+        const estadoFiltro = req.query.estado || null;
+        const limite = 10; // Aumentei um pouco o limite por página
+        
+        const dados = await supermarketService.obterEncomendas(req.supermercado._id, pagina, limite, estadoFiltro);
 
         res.render('supermercado/encomendas', {
             title: 'Encomendas',
             encomendas: dados.encomendas,
             paginaAtual: dados.paginaAtual,
             totalPaginas: dados.totalPaginas,
+            estadoFiltro, // Passamos o filtro atual para a view
             transicoesPermitidasParaEncomenda: supermarketService.transicoesPermitidasParaEncomenda,
             success: req.query.success
         });
     } catch (err) {
+        console.error(err);
         res.status(500).send('Erro ao carregar encomendas.');
     }
 };
@@ -257,6 +261,29 @@ supermarketController.atualizarEstadoEncomenda = async function (req, res, next)
         err.tituloErro = 'Erro ao atualizar encomenda';
         err.detalheErro = err.message;
         next(err);
+    }
+};
+
+/**
+ * Exibe os detalhes de uma encomenda.
+ * A encomenda é carregada pelo middleware router.param('orderId').
+ */
+supermarketController.exibirDetalhesEncomenda = async function (req, res) {
+    try {
+        const encomenda = await req.encomenda.populate([
+            { path: 'produtos.produtoId' },
+            { path: 'estafetaId', select: 'nome telefone email' }
+        ]);
+
+        res.render('supermercado/detalhesEncomenda', {
+            title: 'Detalhes da Encomenda',
+            encomenda,
+            supermercado: req.supermercado,
+            transicoesPermitidasParaEncomenda: supermarketService.transicoesPermitidasParaEncomenda
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Erro ao carregar detalhes da encomenda.');
     }
 };
 

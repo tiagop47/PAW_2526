@@ -80,21 +80,21 @@ estafetaService.obterEntregasDisponiveis = async function (concelho = null) {
 };
 
 estafetaService.obterMinhasEntregas = async function (estafetaId) {
-    return Order.find({ estafetaId, estado: { $in: ['em entrega', 'aguarda validação', 'entregue'] } })
+    return Order.find({ estafetaId, estado: { $in: ['em_entrega', 'aguarda_validacao', 'entregue'] } })
         .populate('supermercadoId', 'nome localizacao')
         .populate('clienteId', 'nome morada')
         .sort({ criadoEm: -1 });
 };
 
 estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
-    const ativas = await Order.countDocuments({ estafetaId, estado: 'em entrega' });
+    const ativas = await Order.countDocuments({ estafetaId, estado: 'em_entrega' });
     if (ativas >= 1) {
         throw new Error('Já tens uma entrega em curso. Conclui-a antes de aceitar outra.');
     }
 
     const encomenda = await Order.findOneAndUpdate(
         { _id: encomendaId, estafetaId: null, estado: 'confirmada', metodoEntrega: 'entrega_domicilio' },
-        { $set: { estafetaId: estafetaId, estado: 'em entrega' } },
+        { $set: { estafetaId: estafetaId, estado: 'em_entrega' } },
         { new: true }
     );
 
@@ -107,11 +107,11 @@ estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
 
 estafetaService.confirmarEntrega = async function (encomendaId, estafetaId) {
     const encomenda = await Order.findById(encomendaId);
-    if (!encomenda || encomenda.estafetaId?.toString() !== estafetaId.toString() || encomenda.estado !== 'em entrega') {
+    if (!encomenda || encomenda.estafetaId?.toString() !== estafetaId.toString() || encomenda.estado !== 'em_entrega') {
         throw new Error('Operação inválida para esta entrega');
     }
 
-    encomenda.estado = 'entregue';
+    encomenda.estado = 'aguarda_validacao';
 
     return encomenda.save();
 };
@@ -142,7 +142,7 @@ estafetaService.atualizarPerfil = async function (userId, dados) {
 async function obterEstatisticas(estafetaId) {
     const [entregasRealizadas, entregasEmCurso, avaliacaoStats] = await Promise.all([
         Order.countDocuments({ estafetaId, estado: 'entregue' }),
-        Order.countDocuments({ estafetaId, estado: 'em entrega' }),
+        Order.countDocuments({ estafetaId, estado: 'em_entrega' }),
         Avaliacao.aggregate([
             { $match: { estafetaId: new mongoose.Types.ObjectId(estafetaId), notaEstafeta: { $ne: null } } },
             { $group: { _id: null, media: { $avg: '$notaEstafeta' }, total: { $sum: 1 } } }

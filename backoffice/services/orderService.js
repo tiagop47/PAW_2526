@@ -107,6 +107,7 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
         cupaoId: cupaoAplicado ? cupaoAplicado._id : undefined,
         descontoValor: descontoValor,
         estado: 'pendente',
+        origem: 'online',
         metodoEntrega: metodoEntrega || 'levantamento_loja',
         moradaEntrega: metodoEntrega === 'entrega_domicilio' ? (moradaEntrega || cliente.morada) : undefined,
         coordenadasEntrega: coordenadasEntrega || undefined,
@@ -172,8 +173,8 @@ orderService.confirmarRececaoCliente = async function (clienteId, encomendaId) {
         throw new Error('Encomenda não encontrada.');
     }
 
-    if (encomenda.estado !== 'em entrega') {
-        throw new Error('Apenas encomendas em entrega podem ser confirmadas.');
+    if (encomenda.estado !== 'aguarda_validacao') {
+        throw new Error('Apenas encomendas entregues pelo estafeta e a aguardar validação podem ser confirmadas pelo cliente.');
     }
 
     encomenda.estado = 'entregue';

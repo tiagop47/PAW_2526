@@ -61,6 +61,7 @@ router.get('/perfil', supermarketController.exibirPerfil);
 // Encomendas
 router.get('/encomendas', supermarketController.listarEncomendas);
 router.get('/encomendas/ajuda', supermarketController.exibirAjudaEncomendas);
+router.get('/encomendas/:orderId', supermarketController.exibirDetalhesEncomenda);
 router.get('/encomendas/:orderId/fatura', supermarketController.exibirFatura);
 router.post('/encomendas/:orderId/estado', supermarketController.atualizarEstadoEncomenda);
 

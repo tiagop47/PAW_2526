@@ -3,6 +3,11 @@ const bcrypt = require('bcrypt');
 const { validarEmail, validarPassword, validarTelefone, validarNif } = require('../public/javascript/userValidator');
 const config = require('../config/config');
 
+const baseOptions = {
+    discriminatorKey: 'role', // O campo 'role' determinará o tipo de utilizador
+    collection: 'users',      // Todos partilham a mesma coleção 'users'
+};
+
 const UserSchema = new mongoose.Schema({
     nome: {
         type: String,
@@ -50,14 +55,6 @@ const UserSchema = new mongoose.Schema({
         required: [true, "A morada é obrigatória"],
         minlength: [5, "Por favor, introduza uma morada válida"]
     },
-    cupoes: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Coupon'
-    }],
-    supermercadoFavorito: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Supermarket'
-    },
     role: {
         type: String,
         enum: ['clientes', 'supermercados', 'estafetas', 'administrador'],
@@ -69,16 +66,15 @@ const UserSchema = new mongoose.Schema({
     resetPasswordToken: {
         type: String
     },
-    resetPasswordExpires:{ 
+    resetPasswordExpires: {
         type: Date
-    }, 
+    },
     bloqueado: {
         type: Boolean,
         default: false
     }
-});
+}, baseOptions);
 
-//Se alguém tentar "save" via outros caminhos que não o nosso frontend garantimos o hashing à mesma!
 UserSchema.pre('save', async function () {
     if (this.nif === "") {
         this.nif = undefined;
@@ -91,4 +87,18 @@ UserSchema.pre('save', async function () {
     this.password = await bcrypt.hash(this.password, config.SALT_ROUNDS);
 });
 
-module.exports = mongoose.model('User', UserSchema);
+const User = mongoose.model('User', UserSchema);
+
+// O modelo 'clientes' herda de User mas adiciona campos específicos
+User.discriminator('clientes', new mongoose.Schema({
+    cupoes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Coupon'
+    }],
+    supermercadoFavorito: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Supermarket'
+    }
+}));
+
+module.exports = User;

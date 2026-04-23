@@ -22,8 +22,13 @@ const OrderSchema = new mongoose.Schema({
     descontoValor: { type: Number, default: 0 },
     estado: {
         type: String,
-        enum: ['pendente', 'confirmada', 'em preparação', 'em entrega', 'entregue', 'cancelada'],
+        enum: ['pendente', 'confirmada', 'em_preparacao', 'em_entrega', 'aguarda_validacao', 'entregue', 'cancelada'],
         default: 'pendente'
+    },
+    origem: {
+        type: String,
+        enum: ['online', 'caixa'],
+        default: 'online'
     },
     metodoEntrega: {
         type: String,

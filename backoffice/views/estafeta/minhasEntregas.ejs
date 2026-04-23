@@ -13,7 +13,7 @@
                 <h4 class="fw-bold">Gestão de Entregas</h4>
             </div>
 
-            <% const emCurso = entregas.filter(e => e.estado === 'em entrega'); %>
+            <% const emCurso = entregas.filter(e => e.estado === 'em_entrega'); %>
             <% if (emCurso.length > 0) { %>
                 <h5 class="fw-bold mb-3">Em Curso</h5>
                 <div class="row mb-4">
@@ -26,8 +26,8 @@
                                         <strong>De:</strong> <%= entrega.supermercadoId?.nome || 'N/A' %><br>
                                         <strong>Para:</strong> <%= entrega.moradaEntrega || entrega.clienteId?.morada || 'N/A' %>
                                     </p>
-                                    <button class="btn btn-sm btn-dark btn-confirmar-entrega" data-id="<%= entrega._id %>">
-                                        entregar
+                                    <button class="btn btn-sm btn-light border btn-confirmar-entrega" data-id="<%= entrega._id %>">
+                                        Entregar ao cliente
                                     </button>
                                 </div>
                             </div>
@@ -36,21 +36,21 @@
                 </div>
             <% } %>
 
-            <% const aguardando = entregas.filter(e => e.estado === 'aguarda validação'); %>
+            <% const aguardando = entregas.filter(e => e.estado === 'aguarda_validacao'); %>
             <% if (aguardando.length > 0) { %>
                 <h5 class="fw-bold mb-3">A aguardar confirmação do cliente</h5>
                 <div class="row mb-4">
                     <% aguardando.forEach(entrega => { %>
                         <div class="col-md-6 mb-3">
-                            <div class="card border bg-light">
+                            <div class="card border-dark shadow-none bg-white">
                                 <div class="card-body">
                                     <h6 class="fw-bold">#<%= entrega._id.toString().slice(-6).toUpperCase() %></h6>
-                                    <p class="small mb-0">
-                                        <strong>Supermercado:</strong> <%= entrega.supermercadoId?.nome || 'N/A' %><br>
+                                    <p class="small mb-0 text-muted">
+                                        <strong>Loja:</strong> <%= entrega.supermercadoId?.nome || 'N/A' %><br>
                                         <strong>Destino:</strong> <%= entrega.moradaEntrega || entrega.clienteId?.morada || 'N/A' %>
                                     </p>
                                     <div class="mt-2">
-                                        <span class="badge bg-dark">Entregue - Aguarda validação</span>
+                                        <span class="badge border border-dark text-dark py-2 px-3">AGUARDA VALIDAÇÃO</span>
                                     </div>
                                 </div>
                             </div>

@@ -279,16 +279,21 @@ supermarketService.getUserByIdSemPassword = async function (userId) {
     return authService.getUserByIdSemPassword(userId);
 };
 
-supermarketService.obterEncomendas = async function (supermercadoId, pagina = 1, limite = 5) {
+supermarketService.obterEncomendas = async function (supermercadoId, pagina = 1, limite = 5, filtroEstado = null) {
     const contador = (pagina - 1) * limite;
 
+    const query = { supermercadoId };
+    if (filtroEstado) {
+        query.estado = filtroEstado;
+    }
+
     const [encomendas, total] = await Promise.all([
-        Order.find({ supermercadoId })
+        Order.find(query)
             .populate('clienteId', 'nome email telefone')
             .sort({ criadoEm: -1 })
             .skip(contador)
             .limit(limite),
-        Order.countDocuments({ supermercadoId })
+        Order.countDocuments(query)
     ]);
 
     return {
@@ -302,14 +307,18 @@ supermarketService.obterEncomendaPorId = async function (supermercadoId, orderId
     return Order.findOne({ _id: orderId, supermercadoId })
         .populate('clienteId', 'nome email telefone');
 };
-
 function transicoesPermitidasParaEncomenda(encomenda) {
     const eLoja = encomenda.metodoEntrega === 'levantamento_loja';
+    const isOnline = encomenda.origem === 'online';
+
     return {
         pendente:               ['confirmada', 'cancelada'],
-        confirmada:             eLoja ? ['em preparação', 'cancelada'] : ['em entrega', 'cancelada'],
-        'em preparação':        ['entregue', 'cancelada'],
-        'em entrega':           ['entregue', 'cancelada'],
+        confirmada:             eLoja 
+                                    ? (isOnline ? ['em_preparacao', 'entregue', 'cancelada'] : ['entregue', 'cancelada']) 
+                                    : ['cancelada'],
+        em_preparacao:          eLoja ? ['entregue', 'cancelada'] : [],
+        em_entrega:             [], // Supermercado não tem autoridade após a saída para entrega
+        aguarda_validacao:      [],
         entregue:               [],
         cancelada:              [],
     };
@@ -333,7 +342,7 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
         throw new Error(`Transição de estado inválida: ${estadoAnterior} → ${estado}`);
     }
 
-    const estadosComStockOcupado = ['pendente', 'confirmada', 'em preparação', 'em entrega', 'entregue'];
+    const estadosComStockOcupado = ['pendente', 'confirmada', 'em_preparacao', 'em_entrega', 'aguarda_validacao', 'entregue'];
     const eraOcupado = estadosComStockOcupado.includes(estadoAnterior);
     const vaiSerOcupado = estadosComStockOcupado.includes(estado);
 
@@ -361,7 +370,7 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
     }
 
     //Lógica de fatura: Gerar apenas se entrar num estado "avançado" e ainda não tiver
-    const estadosComFatura = ['confirmada', 'em preparação', 'em entrega', 'entregue'];
+    const estadosComFatura = ['confirmada', 'em_preparacao', 'em_entrega', 'aguarda_validacao', 'entregue'];
     if (estadosComFatura.includes(estado) && !order.faturaNumero) {
         order.faturaNumero = await gerarNumeroFatura(supermercadoId);
         order.faturaData = new Date();
@@ -460,7 +469,7 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
     }
 
     const eDomicilio = metodoEntrega === 'entrega_domicilio';
-    // Todas as vendas em caixa (Levantamento ou Entrega) começam em 'confirmada' para preparação.
+    // Todas as vendas em caixa entram como confirmada (já pagas/validadas), aguardando levantamento ou estafeta.
     const estadoFinal = 'confirmada';
 
     const lat = Number(latitudeEntrega);
@@ -474,7 +483,8 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
         valorTotal,
         metodoPagamento: 'dinheiro',
         estado: estadoFinal,
-        confirmadaEm: new Date(),
+        origem: 'caixa',
+        confirmadaEm: new Date(), // Já nasce validada
         metodoEntrega: eDomicilio ? 'entrega_domicilio' : 'levantamento_loja',
         moradaEntrega: eDomicilio ? (moradaCliente || 'Entrega ao Domicílio') : 'Levantamento em Loja',
         coordenadasEntrega: temCoordenadasValidas ? { lat, lng } : undefined,

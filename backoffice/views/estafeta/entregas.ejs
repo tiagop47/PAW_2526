@@ -30,11 +30,11 @@
                                         <p class="mb-2"><strong>Total:</strong> <%= (entrega.valorTotal || 0).toFixed(2) %>€</p>
 
                                         <div class="d-flex gap-2">
-                                            <button class="btn btn-sm btn-light border text-dark btn-aceitar-entrega" data-id="<%= entrega._id %>">aceitar</button>
+                                            <button class="btn btn-sm btn-light border btn-aceitar-entrega" data-id="<%= entrega._id %>">Aceitar</button>
                                             <% if (entrega.coordenadasEntrega && entrega.coordenadasEntrega.lat && entrega.coordenadasEntrega.lng) { %>
-                                                <button class="btn btn-sm btn-outline-dark link-focar-destino" 
+                                                <button class="btn btn-sm btn-light border link-focar-destino" 
                                                     data-lat="<%= entrega.coordenadasEntrega.lat %>" 
-                                                    data-lng="<%= entrega.coordenadasEntrega.lng %>">ver destino</button>
+                                                    data-lng="<%= entrega.coordenadasEntrega.lng %>">Ver destino</button>
                                             <% } %>
                                         </div>
                                     </div>

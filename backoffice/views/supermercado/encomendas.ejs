@@ -9,92 +9,104 @@
 
     <%- include('../partials/navbar') %>
 
-    <%
-    const labelEstado = {
-        pendente: 'pendente',
-        confirmada: 'confirmada',
-        'em preparação': 'em preparação',
-        'em entrega': 'em entrega',
-        'aguarda validação': 'aguarda validação',
-        entregue: 'entregue',
-        cancelada: 'cancelada'
-    };
-    %>
-
     <main class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">Gestão de Encomendas</h1>
+            <div class="d-flex gap-2">
+                
+                <!-- Dropdown de Filtro -->
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-light border dropdown-toggle px-3 fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <% 
+                        const labelsEstados = {
+                            pendente: 'Pendentes',
+                            confirmada: 'Confirmadas',
+                            em_preparacao: 'Em Preparação',
+                            em_entrega: 'Em Entrega',
+                            aguarda_validacao: 'Aguarda Validação Cliente',
+                            entregue: 'Concluídas',
+                            cancelada: 'Canceladas'
+                        };
+                        %>
+                        <%= estadoFiltro ? 'FILTRO: ' + labelsEstados[estadoFiltro].toUpperCase() : 'TODAS AS ENCOMENDAS' %>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li><a class="dropdown-item small <%= !estadoFiltro ? 'active bg-dark' : '' %>" href="/supermercado/encomendas">Todas as Encomendas</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <% Object.keys(labelsEstados).forEach(id => { %>
+                            <li>
+                                <a class="dropdown-item small <%= estadoFiltro === id ? 'active bg-dark' : '' %>" 
+                                   href="/supermercado/encomendas?estado=<%= id %>">
+                                    <%= labelsEstados[id] %>
+                                </a>
+                            </li>
+                        <% }) %>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
 
         <% if (encomendas && encomendas.length > 0) { %>
-            <div class="d-flex flex-column gap-3">
-                <% encomendas.forEach(function(encomenda) { %>
-                    <% const permitidos = transicoesPermitidasParaEncomenda(encomenda)[encomenda.estado] || []; %>
-                    <div class="card border shadow-sm">
-                        <div class="card-body">
-                            <div class="row align-items-center g-3">
-
-                                <div class="col-sm-4">
-                                    <div class="fw-semibold">
-                                        <%= encomenda.clienteId ? encomenda.clienteId.nome : 'Cliente Desconhecido' %>
-                                    </div>
-                                    <div class="small text-muted">
-                                        <%= encomenda.clienteId ? encomenda.clienteId.email : '' %>
-                                    </div>
-                                    <div class="small text-muted">
-                                        <%= new Date(encomenda.criadoEm).toLocaleDateString('pt-PT') %>
-                                    </div>
-                                </div>
-
-                                <div class="col-sm-3">
-                                    <div class="small text-muted mb-1">
-                                        <%= encomenda.metodoEntrega === 'entrega_domicilio' ? 'Entrega ao domicílio' : 'Levantamento em loja' %>
-                                    </div>
-                                    <span class="badge bg-dark">
-                                        <%= labelEstado[encomenda.estado] || encomenda.estado %>
-                                    </span>
-                                </div>
-
-                                <div class="col-sm-2">
-                                    <span class="fw-bold"><%= Number(encomenda.valorTotal || 0).toFixed(2) %> EUR</span>
-                                </div>
-
-                                <div class="col-sm-3 d-flex flex-wrap gap-2 justify-content-sm-end">
-                                    <% if (permitidos.length > 0) { %>
-                                        <form action="/supermercado/encomendas/<%= encomenda._id %>/estado" method="POST" class="d-flex gap-2">
-                                            <select name="estado" class="form-select form-select-sm" style="width: auto;">
-                                                <% permitidos.forEach(function(estado) { %>
-                                                    <option value="<%= estado %>"><%= estado %></option>
-                                                <% }) %>
-                                            </select>
-                                            <button type="submit" class="btn btn-sm btn-dark">atualizar</button>
-                                        </form>
-                                    <% } else { %>
-                                        <span class="text-muted small">Estado final</span>
-                                    <% } %>
-
-                                    <% if (encomenda.faturaNumero) { %>
-                                        <a href="/supermercado/encomendas/<%= encomenda._id %>/fatura"
-                                            class="btn btn-sm btn-outline-dark" target="_blank">Fatura</a>
-                                    <% } %>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                <% }) %>
+            <div class="card shadow-sm border-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-uppercase small">
+                            <tr>
+                                <th class="ps-3" style="width: 15%;">Data</th>
+                                <th style="width: 25%;">Cliente</th>
+                                <th style="width: 15%;">Entrega</th>
+                                <th style="width: 15%;">Estado</th>
+                                <th style="width: 10%;">Total</th>
+                                <th class="text-end pe-3" style="width: 20%;">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% encomendas.forEach(function(encomenda) { %>
+                                <tr>
+                                    <td class="ps-3">
+                                        <div class="small fw-bold"><%= new Date(encomenda.criadoEm).toLocaleDateString('pt-PT') %></div>
+                                        <div class="text-muted small"><%= new Date(encomenda.criadoEm).toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'}) %></div>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-bold"><%= encomenda.clienteId ? encomenda.clienteId.nome : 'Consumidor Final' %></div>
+                                        <div class="text-muted small"><%= encomenda.clienteId ? encomenda.clienteId.email : '' %></div>
+                                    </td>
+                                    <td class="small text-uppercase">
+                                        <%= encomenda.metodoEntrega === 'entrega_domicilio' ? 'Domicílio' : 'Loja' %>
+                                    </td>
+                                    <td>
+                                        <span class="small fw-bold text-uppercase">
+                                            <%= encomenda.estado.replace('_', ' ') %>
+                                        </span>
+                                    </td>
+                                    <td class="small fw-bold">
+                                        <%= Number(encomenda.valorTotal || 0).toFixed(2) %>€
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <a href="/supermercado/encomendas/<%= encomenda._id %>" class="btn btn-sm btn-light border">Gerir encomenda</a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         <% } else { %>
-            <div class="text-center py-5 text-muted">
-                Ainda não existem encomendas.
+            <div class="card p-5 text-center text-muted border-0 shadow-sm">
+                Nenhuma encomenda encontrada com o estado <%= estadoFiltro ? labelsEstados[estadoFiltro] : 'selecionado' %>.
             </div>
         <% } %>
 
-        <%- include('../partials/paginacao', { paginaUrl: '/supermercado/encomendas' }) %>
+        <div class="mt-4">
+            <%- include('../partials/paginacao', { paginaUrl: '/supermercado/encomendas' + (estadoFiltro ? '?estado=' + estadoFiltro : '') }) %>
+        </div>
 
     </main>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('success')) {
-            alert('Ação concluída');
             window.history.replaceState({}, document.title, window.location.pathname);
         }
     </script>
