@@ -190,21 +190,27 @@ adminController.editarSupermercado = async function (req, res) {
 };
 
 /**
- * Lista todos os utilizadores (Limite 3).
+ * Lista todos os utilizadores.
  */
 adminController.listarUtilizadores = async function (req, res) {
     try {
         const pagina = parseInt(req.query.pagina) || 1;
-        const limite = 3;
-        const dadosPagina = await adminService.getUsersDocumentos(pagina, limite);
+        const roleFiltro = req.query.role || null;
+        const bloqueadoFiltro = req.query.bloqueado || null;
+        const limite = 5;
+        
+        const dadosPagina = await adminService.getUsersDocumentos(pagina, limite, roleFiltro, bloqueadoFiltro);
 
         res.render('admin/exibirUtilizadores', {
             title: 'Gestão de Utilizadores',
             users: dadosPagina.users,
             paginaAtual: pagina,
-            totalPaginas: dadosPagina.totalPaginas
+            totalPaginas: dadosPagina.totalPaginas,
+            roleFiltro,
+            bloqueadoFiltro
         });
     } catch (err) {
+        console.error(err);
         res.status(500).send('Erro ao carregar lista de utilizadores.');
     }
 };
@@ -366,12 +372,19 @@ adminController.exibirDetalhesProduto = async function (req, res) {
 adminController.monitorizarEncomendas = async function (req, res) {
     try {
         const pagina = parseInt(req.query.pagina) || 1;
-        const limite = 5;
-        const dadosPagina = await adminService.getEncomendasPaginadas(pagina, limite);
+        const limite = 10;
+        const supermercadoId = req.query.supermercadoId || null;
+
+        const [dadosPagina, supermercados] = await Promise.all([
+            adminService.getEncomendasPaginadas(pagina, limite, supermercadoId),
+            adminService.getTodosMercadosAtivos()
+        ]);
 
         res.render('admin/encomendas', {
             title: 'Monitorização de Encomendas',
             encomendas: dadosPagina.encomendas,
+            supermercados,
+            supermercadoSelecionado: supermercadoId,
             paginaAtual: pagina,
             totalPaginas: dadosPagina.totalPaginas
         });
@@ -379,6 +392,17 @@ adminController.monitorizarEncomendas = async function (req, res) {
         console.error(err);
         res.status(500).send('Erro ao monitorizar encomendas.');
     }
+};
+
+/**
+ * Exibe os detalhes de uma encomenda para o administrador.
+ * Reutiliza a view do supermercado.
+ */
+adminController.exibirDetalhesEncomenda = async function (req, res) {
+    res.render('supermercado/detalhesEncomenda', {
+        title: 'Detalhes da Encomenda',
+        encomenda: req.targetEncomenda
+    });
 };
 
 /**

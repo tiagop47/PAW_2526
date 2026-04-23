@@ -6,89 +6,102 @@
 </head>
 
 <body class="bg-light">
-
     <%- include('../partials/navbar') %>
 
-        <main class="container py-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-            </div>
-            <div class="card border-0 shadow-sm">
-                <table class="tabela-limpa mb-0">
-                    <thead>
+    <main class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">Gestão de Utilizadores</h1>
+        </div>
+
+        <!-- Barra de Filtros Grande -->
+        <div class="card border-0 shadow-sm mb-3 p-3">
+            <form action="/admin/exibirUtilizadores" method="GET" class="row g-2 align-items-center">
+                <div class="col-md-5">
+                    <label class="small fw-bold text-uppercase text-muted mb-1">Filtrar por Função</label>
+                    <select name="role" class="form-select border-dark-subtle" onchange="this.form.submit()">
+                        <option value="">Todas as funções</option>
+                        <option value="clientes" <%= roleFiltro === 'clientes' ? 'selected' : '' %>>Clientes</option>
+                        <option value="supermercados" <%= roleFiltro === 'supermercados' ? 'selected' : '' %>>Supermercados</option>
+                        <option value="estafetas" <%= roleFiltro === 'estafetas' ? 'selected' : '' %>>Estafetas</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="small fw-bold text-uppercase text-muted mb-1">Filtrar por Estado</label>
+                    <select name="bloqueado" class="form-select border-dark-subtle" onchange="this.form.submit()">
+                        <option value="">Todos os estados</option>
+                        <option value="true" <%= bloqueadoFiltro === 'true' ? 'selected' : '' %>>Apenas Bloqueados</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-uppercase small">
                         <tr>
-                            <th>Utilizador</th>
-                            <th>Telefone</th>
-                            <th>Localização</th>
-                            <th>NIF</th>
-                            <th>Cargo/Função</th>
+                            <th class="ps-3">Utilizador</th>
+                            <th>Função</th>
                             <th>Estado</th>
-                            <th>Ações</th>
+                            <th class="text-end pe-3">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% if (locals.users && users.length> 0) { %>
-                            <% users.forEach(function(utilizador) { %>
-                                <tr id="user-<%= utilizador._id %>">
-                                    <td class="fw-bold">
-                                        <%= utilizador.nome %><br>
-                                            <small class="text-muted fw-normal">
-                                                <%= utilizador.email %>
-                                            </small>
+                        <% if (users && users.length > 0) { %>
+                            <% users.forEach(function(u) { %>
+                                <tr>
+                                    <td class="ps-3">
+                                        <div class="fw-bold small text-uppercase"><%= u.nome %></div>
+                                        <div class="text-muted small"><%= u.email %></div>
                                     </td>
-
-                                    <td class="fw-bold">
-                                        <%= utilizador.telefone %>
-                                    </td>
-
-                                    <td class="fw-bold">
-                                        <%= utilizador.morada %>
-                                    </td>
-
-                                    <td class="fw-bold">
-                                        <%= utilizador.nif%>
-                                    </td>
-
                                     <td>
-                                        <span class="badge bg-secondary">
-                                            <%= utilizador.role %>
+                                        <span class="small text-uppercase fw-bold"><%= u.role %></span>
+                                    </td>
+                                    <td>
+                                        <span class="small text-uppercase fw-bold">
+                                            <%= u.bloqueado ? 'BLOQUEADO' : 'ATIVO' %>
                                         </span>
                                     </td>
-                                    <td>
-                                        <% if (utilizador.bloqueado) { %>
-                                            <span class="badge bg-secondary">Bloqueado</span>
-                                        <% } else { %>
-                                            <span class="badge bg-secondary">Ativo</span>
-                                        <% } %>
-                                    </td>
-                                    <td class="fw-bold">
-                                        <% if (utilizador.role !== 'administrador') { %>
-                                        <div class="d-flex gap-1">
-                                            <a href="/admin/utilizadores/<%= utilizador._id %>/editar" class="btn btn-sm btn-light border text-dark">Editar</a>
-                                            <form action="/admin/utilizadores/<%= utilizador._id %>/eliminar" method="POST" style="display:inline;">
-                                                <button type="submit" class="btn btn-sm btn-light border text-dark">Eliminar</button>
-                                            </form>
-                                            <form action="/admin/utilizadores/<%= utilizador._id %>/bloquear" method="POST" style="display:inline;">
-                                                <button type="submit" class="btn btn-sm btn-light border text-dark">
-                                                    <%= utilizador.bloqueado ? 'Desbloquear' : 'Bloquear' %>
-                                                </button>
-                                            </form>
+                                    <td class="text-end pe-3">
+                                        <div class="d-flex justify-content-end gap-1">
+                                            <a href="/admin/utilizadores/<%= u._id %>/editar" class="btn btn-xs btn-light border">Editar</a>
+                                            
+                                            <% if (u.role !== 'administrador') { %>
+                                                <form action="/admin/utilizadores/<%= u._id %>/bloquear" method="POST" class="d-inline">
+                                                    <button type="submit" class="btn btn-xs btn-light border">
+                                                        <%= u.bloqueado ? 'Desbloquear' : 'Bloquear' %>
+                                                    </button>
+                                                </form>
+                                                <form action="/admin/utilizadores/<%= u._id %>/eliminar" method="POST" class="d-inline" onsubmit="return confirm('Tem a certeza?')">
+                                                    <button type="submit" class="btn btn-xs btn-light border">Eliminar</button>
+                                                </form>
+                                            <% } %>
                                         </div>
-                                        <% } else { %>
-                                            <span class="text-muted small">—</span>
-                                        <% } %>
                                     </td>
-
                                 </tr>
-                                <% }); %>
-                                    <% } %>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted small fw-bold text-uppercase">
+                                    Nenhum utilizador encontrado.
+                                </td>
+                            </tr>
+                        <% } %>
                     </tbody>
                 </table>
             </div>
+        </div>
 
-            <%- include('../partials/paginacao', { paginaUrl: '/admin/exibirUtilizadores' }) %>
-        </main>
-
-
+        <div class="mt-4">
+            <% 
+                let params = [];
+                if (roleFiltro) params.push('role=' + roleFiltro);
+                if (bloqueadoFiltro) params.push('bloqueado=' + bloqueadoFiltro);
+                let paginaUrl = '/admin/exibirUtilizadores' + (params.length > 0 ? '?' + params.join('&') : '');
+            %>
+            <%- include('../partials/paginacao', { paginaUrl }) %>
+        </div>
+    </main>
 </body>
 
 </html>

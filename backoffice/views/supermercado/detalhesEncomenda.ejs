@@ -11,18 +11,36 @@
 
     <main class="container py-4">
 
+        <% 
+            const isAdmin = user && user.role === 'administrador';
+            const linkVoltar = isAdmin ? '/admin/encomendas' : '/supermercado/encomendas';
+        %>
+
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h1 class="h3 mb-0">Detalhes da Encomenda</h1>
                 <p class="text-muted small mb-0">ID: <%= encomenda._id %></p>
             </div>
-            <a href="/supermercado/encomendas" class="btn btn-sm btn-light border">Voltar</a>
+            <a href="<%= linkVoltar %>" class="btn btn-sm btn-light border">Voltar</a>
         </div>
 
         <div class="row g-4">
             
             <div class="col-md-4">
                 
+                <!-- Info Supermercado (Apenas visível para Admin) -->
+                <% if (isAdmin && encomenda.supermercadoId) { %>
+                <div class="card shadow-sm border-0 mb-4 border-start border-dark border-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0 h6 fw-bold">Supermercado</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="fw-bold"><%= encomenda.supermercadoId.nome %></div>
+                        <div class="text-muted small">Localização: <%= encomenda.supermercadoId.localizacao %></div>
+                    </div>
+                </div>
+                <% } %>
+
                 <!-- Cliente -->
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-white py-3">
@@ -50,7 +68,7 @@
                             
                             <div class="alert alert-light border small p-2 mb-3">
                                 <% if (encomenda.estado === 'confirmada' && !encomenda.estafetaId) { %>
-                                    Aguarda levantamento por um estafeta.
+                                    Aguarda aceitação por um estafeta.
                                 <% } else if (encomenda.estado === 'em_entrega') { %>
                                     A encomenda está em trânsito com o estafeta.
                                 <% } else if (encomenda.estado === 'aguarda_validacao') { %>
@@ -131,33 +149,34 @@
                     </div>
                 </div>
 
-                <!-- Botões de Ação na Página de Detalhes -->
+                <!-- Botões de Ação (Apenas para Supermercado) -->
                 <div class="mt-4 pt-3 border-top d-flex gap-2 justify-content-end">
 
                     <% 
-                    const permitidos = transicoesPermitidasParaEncomenda(encomenda)[encomenda.estado] || [];
-                    const labelsAcoes = {
-                        confirmada: { label: 'Confirmar pedido', classe: 'btn-light border' },
-                        em_preparacao: { label: 'Iniciar preparação', classe: 'btn-light border' },
-                        entregue: { label: 'Marcar como entregue', classe: 'btn-light border' },
-                        cancelada: { label: 'Cancelar encomenda', classe: 'btn-outline-danger' }
-                    };
-
-
-
-                    permitidos.forEach(function(proximoEstado) { 
-                        const config = labelsAcoes[proximoEstado] || { label: 'Mudar para ' + proximoEstado, classe: 'btn-light border' };
-                    %>
-                        <form action="/supermercado/encomendas/<%= encomenda._id %>/estado" method="POST" onsubmit="return confirm('Tem a certeza que deseja mudar para <%= proximoEstado.replace('_', ' ') %>?')">
-                            <input type="hidden" name="estado" value="<%= proximoEstado %>">
-                            <button type="submit" class="btn btn-sm <%= config.classe %> px-3">
-                                <%= config.label %>
-                            </button>
-                        </form>
-                    <% }) %>
+                    // Só mostramos transições se NÃO for admin e se houver transições definidas
+                    if (!isAdmin && typeof transicoesPermitidasParaEncomenda === 'function') {
+                        const permitidos = transicoesPermitidasParaEncomenda(encomenda)[encomenda.estado] || [];
+                        const labelsAcoes = {
+                            confirmada: { label: 'Confirmar pedido', classe: 'btn-light border' },
+                            em_preparacao: { label: 'Iniciar preparação', classe: 'btn-light border' },
+                            entregue: { label: 'Marcar como entregue', classe: 'btn-light border' },
+                            cancelada: { label: 'Cancelar encomenda', classe: 'btn-light border' }
+                        };
+                        permitidos.forEach(function(proximoEstado) { 
+                            const config = labelsAcoes[proximoEstado] || { label: 'Mudar para ' + proximoEstado, classe: 'btn-light border' };
+                        %>
+                            <form action="/supermercado/encomendas/<%= encomenda._id %>/estado" method="POST" onsubmit="return confirm('Tem a certeza que deseja mudar para <%= proximoEstado.replace('_', ' ') %>?')">
+                                <input type="hidden" name="estado" value="<%= proximoEstado %>">
+                                <button type="submit" class="btn btn-sm <%= config.classe %> px-3">
+                                    <%= config.label %>
+                                </button>
+                            </form>
+                        <% }) 
+                    } %>
 
                     <% if (encomenda.faturaNumero) { %>
-                        <a href="/supermercado/encomendas/<%= encomenda._id %>/fatura" target="_blank" class="btn btn-sm btn-light border px-3">
+                        <% const linkFatura = isAdmin ? `/admin/encomendas/${encomenda._id}/fatura` : `/supermercado/encomendas/${encomenda._id}/fatura`; %>
+                        <a href="<%= linkFatura %>" target="_blank" class="btn btn-sm btn-light border px-3">
                             Ver fatura
                         </a>
                     <% } %>

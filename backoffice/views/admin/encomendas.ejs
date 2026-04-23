@@ -8,90 +8,99 @@
 <body class="bg-light">
     <%- include('../partials/navbar') %>
 
-    <%
-    const labelEstado = {
-        pendente: 'pendente',
-        confirmada: 'confirmada',
-        'em preparação': 'em preparação',
-        'em entrega': 'em entrega',
-        'aguarda validação': 'aguarda validação',
-        entregue: 'entregue',
-        cancelada: 'cancelada'
-    };
-    %>
+    <main class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">Monitorização Global</h1>
+        </div>
 
-        <main class="container py-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h4 fw-bold m-0 text-dark">Monitorização de Encomendas</h1>
-            </div>
-
-            <div class="card border-0 shadow-sm">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>ID / Data</th>
-                                <th>Supermercado</th>
-                                <th>Cliente</th>
-                                <th>Total</th>
-                                <th>Estado</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% if (encomendas && encomendas.length > 0) { %>
-                                <% encomendas.forEach(function(e) { %>
-                                    <tr>
-                                        <td>
-                                            <div class="small fw-bold text-muted">#<%=
-                                                    e._id.toString().slice(-6).toUpperCase() %>
-                                            </div>
-                                            <div class="small text-muted">
-                                                <%= new Date(e.criadoEm).toLocaleString('pt-PT') %>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="fw-bold">
-                                                <%= e.supermercadoId ? e.supermercadoId.nome : 'N/A' %>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div>
-                                                <%= e.clienteId ? e.clienteId.nome : 'N/A' %>
-                                            </div>
-                                            <div class="small text-muted">
-                                                <%= e.clienteId ? e.clienteId.email : '' %>
-                                            </div>
-                                        </td>
-                                        <td class="fw-bold">
-                                            <%= e.valorTotal.toFixed(2) %>€
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-dark">
-                                                <%= labelEstado[e.estado] || e.estado %>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <% if (e.faturaNumero) { %>
-                                                <a href="/admin/encomendas/<%= e._id %>/fatura"
-                                                   class="btn btn-sm btn-outline-dark">Fatura</a>
-                                            <% } %>
-                                        </td>
-                                    </tr>
-                                <% }) %>
-                            <% } else { %>
-                                            <tr>
-                                                <td colspan="6" class="text-center py-4 text-muted">Não foram
-                                                    encontradas encomendas no sistema.</td>
-                                            </tr>
-                                            <% } %>
-                        </tbody>
-                    </table>
+        <!-- Barra de Filtros -->
+        <div class="card border-0 shadow-sm mb-3 p-3">
+            <form action="/admin/encomendas" method="GET" class="row g-2 align-items-center">
+                <div class="col-md-8">
+                    <select name="supermercadoId" class="form-select border-dark-subtle" onchange="this.form.submit()">
+                        <option value="">Todos os supermercados</option>
+                        <% supermercados.forEach(function(s) { %>
+                            <option value="<%= s._id %>" <%= supermercadoSelecionado == s._id.toString() ? 'selected' : '' %>>
+                                <%= s.nome %>
+                            </option>
+                        <% }) %>
+                    </select>
                 </div>
-            </div>
+                <div class="col-md-4 text-end">
+                    <% if (supermercadoSelecionado) { %>
+                        <a href="/admin/encomendas" class="btn btn-sm btn-link text-dark fw-bold text-decoration-none">LIMPAR FILTRO</a>
+                    <% } %>
+                </div>
+            </form>
+        </div>
 
-            <%- include('../partials/paginacao', { paginaUrl: '/admin/encomendas' }) %>
-        </main>
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-uppercase small">
+                        <tr>
+                            <th class="ps-3">Data / ID</th>
+                            <th>Supermercado</th>
+                            <th>Cliente</th>
+                            <th>Entrega</th>
+                            <th>Estado</th>
+                            <th>Total</th>
+                            <th class="text-end pe-3">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (encomendas && encomendas.length > 0) { %>
+                            <% encomendas.forEach(function(e) { %>
+                                <tr>
+                                    <td class="ps-3">
+                                        <div class="small fw-bold text-muted">#<%= e._id.toString().slice(-6).toUpperCase() %></div>
+                                        <div class="small text-muted">
+                                            <%= new Date(e.criadoEm).toLocaleDateString('pt-PT') %>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold small text-uppercase"><%= e.supermercadoId ? e.supermercadoId.nome : 'N/A' %></div>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-bold text-uppercase"><%= e.clienteId ? e.clienteId.nome : 'Consumidor Final' %></div>
+                                        <div class="text-muted small"><%= e.clienteId ? e.clienteId.email : '' %></div>
+                                    </td>
+                                    <td class="small text-uppercase fw-bold">
+                                        <%= e.metodoEntrega === 'entrega_domicilio' ? 'Domicílio' : 'Loja' %>
+                                    </td>
+                                    <td>
+                                        <span class="small fw-bold text-uppercase border-bottom">
+                                            <%= e.estado.replace('_', ' ') %>
+                                        </span>
+                                    </td>
+                                    <td class="small fw-bold">
+                                        <%= Number(e.valorTotal || 0).toFixed(2) %>€
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <a href="/admin/encomendas/<%= e._id %>" class="btn btn-sm btn-light border px-3">Detalhes</a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    Nenhuma encomenda encontrada no sistema.
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <% 
+                let paginaUrl = '/admin/encomendas';
+                if (supermercadoSelecionado) paginaUrl += '?supermercadoId=' + supermercadoSelecionado;
+            %>
+            <%- include('../partials/paginacao', { paginaUrl }) %>
+        </div>
+    </main>
 </body>
 
 </html>

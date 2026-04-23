@@ -26,6 +26,7 @@ router.post('/utilizadores/:userId/bloquear', adminController.bloquearUser);
 
 // Monitorização Global
 router.get('/encomendas', adminController.monitorizarEncomendas);
+router.get('/encomendas/:orderId', adminController.exibirDetalhesEncomenda);
 router.get('/encomendas/:orderId/fatura', adminController.exibirFatura);
 
 // Gestão de Categorias

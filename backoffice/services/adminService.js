@@ -173,11 +173,19 @@ adminService.alternarBloqueioUser = async function (id){
 }
 
 
-adminService.getUsersDocumentos = async function (pagina, limite) {
+adminService.getUsersDocumentos = async function (pagina, limite, filtroRole = null, filtroBloqueado = null) {
     const contador = (pagina - 1) * limite;
 
-    const total = await User.countDocuments();
-    const users = await User.find()
+    const query = {};
+    if (filtroRole) {
+        query.role = filtroRole;
+    }
+    if (filtroBloqueado !== null) {
+        query.bloqueado = filtroBloqueado === 'true';
+    }
+
+    const total = await User.countDocuments(query);
+    const users = await User.find(query)
         .select('-password')
         .sort({ criadoEm: -1 })
         .skip(Number(contador))
@@ -185,7 +193,7 @@ adminService.getUsersDocumentos = async function (pagina, limite) {
 
     return {
         users,
-        totalPaginas: Math.ceil(total / limite)
+        totalPaginas: Math.ceil(total / limite) || 1
     };
 };
 
@@ -348,11 +356,15 @@ adminService.getTodosMercadosAtivos = async function () {
 /**
  * Obtém todas as encomendas do sistema com paginação.
  */
-adminService.getEncomendasPaginadas = async function (pagina, limite) {
+adminService.getEncomendasPaginadas = async function (pagina, limite, supermercadoId = null) {
     const contador = (pagina - 1) * limite;
-    const total = await Order.countDocuments();
+    const filtro = {};
+    if (supermercadoId) {
+        filtro.supermercadoId = supermercadoId;
+    }
 
-    const encomendas = await Order.find()
+    const total = await Order.countDocuments(filtro);
+    const encomendas = await Order.find(filtro)
         .populate('clienteId', 'nome email')
         .populate('supermercadoId', 'nome')
         .sort({ criadoEm: -1 })
@@ -361,7 +373,7 @@ adminService.getEncomendasPaginadas = async function (pagina, limite) {
 
     return {
         encomendas,
-        totalPaginas: Math.ceil(total / limite)
+        totalPaginas: Math.ceil(total / limite) || 1
     };
 };
 
