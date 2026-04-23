@@ -29,6 +29,8 @@
                     <label class="small fw-bold text-uppercase text-muted mb-1">Filtrar por Estado</label>
                     <select name="bloqueado" class="form-select border-dark-subtle" onchange="this.form.submit()">
                         <option value="">Todos os estados</option>
+
+                        
                         <option value="true" <%= bloqueadoFiltro === 'true' ? 'selected' : '' %>>Apenas Bloqueados</option>
                     </select>
                 </div>
