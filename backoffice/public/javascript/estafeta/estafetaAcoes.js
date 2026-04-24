@@ -63,6 +63,11 @@ const carregarZonaDaSessao = function () {
     location.href = '/estafeta/dashboard';
 };
 
+// Execução imediata se for página de entregas
+if (paginaEntregas) {
+    carregarZonaDaSessao();
+}
+
 document.addEventListener('click', async function (e) {
     const btn = e.target.closest('button, a');
     if (!btn) return;
@@ -89,13 +94,7 @@ document.addEventListener('click', async function (e) {
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
-    if (paginaEntregas) {
-        carregarZonaDaSessao();
-
-        if (!zonaTrabalhoAtiva) {
-            return;
-        }
-
+    if (paginaEntregas && zonaTrabalhoAtiva) {
         inicializarMapa('mapa-entregas');
         await carregarMercadosDoServidor();
         aplicarFiltroZona();
