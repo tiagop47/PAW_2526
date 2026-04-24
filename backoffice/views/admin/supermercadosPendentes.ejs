@@ -9,63 +9,104 @@
 
     <%- include('../partials/navbar') %>
 
-        <main class="container py-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-            </div>
+    <main class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">Aprovações e Pendentes</h1>
+        </div>
 
-            <div class="card border-0 shadow-sm">
-                <table class="tabela-limpa mb-0">
-                    <thead>
+        <!-- Barra de Filtros (Estilo Padronizado) -->
+        <div class="card border-0 shadow-sm mb-3 p-3">
+            <form action="/admin/supermercados/pendentes" method="GET" class="row g-2 align-items-center">
+                <div class="col-md-5">
+                    <label class="small fw-bold text-uppercase text-muted mb-1">Filtrar por Tipo</label>
+                    <select name="tipo" class="form-select border-dark-subtle" onchange="this.form.submit()">
+                        <option value="">Todos (Supermercados, Estafetas e Clientes)</option>
+                        <option value="supermercados" <%= tipoFiltro === 'supermercados' ? 'selected' : '' %>>Supermercados</option>
+                        <option value="estafetas" <%= tipoFiltro === 'estafetas' ? 'selected' : '' %>>Estafetas</option>
+                        <option value="clientes" <%= tipoFiltro === 'clientes' ? 'selected' : '' %>>Clientes</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-uppercase small">
                         <tr>
-                            <th>Supermercado</th>
-                            <th>Responsável</th>
-                            <th>Localização</th>
-                            <th>Ações</th>
+                            <th class="ps-3">Entidade</th>
+                            <th>Tipo</th>
+                            <th>Contacto / Localização</th>
+                            <th>Estado</th>
+                            <th class="text-end pe-3">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% if (locals.supermercados && supermercados.length> 0) { %>
-                            <% supermercados.forEach(function(s) { %>
+                        <% if (locals.itens && itens.length > 0) { %>
+                            <% itens.forEach(function(item) { %>
                                 <tr>
-                                    <td class="fw-bold">
-                                        <%= s.nome %>
+                                    <td class="ps-3">
+                                        <div class="fw-bold"><%= item.nome %></div>
                                     </td>
                                     <td>
-                                        <%= s.userId ? s.userId.nome : 'N/A' %>
+                                        <span class="small text-uppercase fw-bold"><%= item.tipoPendente %></span>
                                     </td>
                                     <td>
-                                        <%= s.localizacao %>
+                                        <div class="small"><%= item.email || item.localizacao %></div>
                                     </td>
                                     <td>
-                                        <div class="d-flex gap-2 justify-content-center">
-                                            <form action="/admin/supermercados/aprovar/<%= s._id %>" method="POST"
-                                                class="btnConfirmar"
-                                                data-confirm-message="Deseja aprovar este supermercado?">
-                                                <button type="submit" class="btn btn-sm btn-light border text-dark">Aprovar</button>
-                                            </form>
-                                            <form action="/admin/supermercados/rejeitar/<%= s._id %>" method="POST"
-                                                class="btnConfirmar"
-                                                data-confirm-message="Deseja rejeitar este supermercado? Esta ação é irreversível.">
-                                                <button type="submit"
-                                                    class="btn btn-sm btn-light border text-dark">Rejeitar</button>
-                                            </form>
+                                        <% if (item.tipoPendente === 'Supermercado' && !item.userId) { %>
+                                            <span class="badge border border-dark text-dark fw-normal">Sem Gestor</span>
+                                        <% } else if (item.bloqueado || item.estadoAprovacao === 'Bloqueado') { %>
+                                            <span class="badge border border-dark text-dark fw-normal">Bloqueado</span>
+                                        <% } else { %>
+                                            <span class="badge border border-dark text-dark fw-normal">Pendente</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <% if (item.tipoPendente === 'Supermercado') { %>
+                                                <% if (item.userId) { %>
+                                                    <form action="/admin/supermercados/aprovar/<%= item._id %>" method="POST" class="d-inline">
+                                                        <button type="submit" class="btn btn-sm btn-light border text-dark">Ativar</button>
+                                                    </form>
+                                                    <% if (item.estadoAprovacao !== 'Bloqueado') { %>
+                                                        <form action="/admin/supermercados/rejeitar/<%= item._id %>" method="POST" class="d-inline">
+                                                            <button type="submit" class="btn btn-sm btn-light border text-dark">Rejeitar</button>
+                                                        </form>
+                                                    <% } %>
+                                                <% } else { %>
+                                                    <a href="/admin/supermercados/transferir/<%= item._id %>" class="btn btn-sm btn-light border text-dark">Associar Gestor</a>
+                                                <% } %>
+                                            <% } else { %>
+                                                <form action="/admin/utilizadores/<%= item._id %>/bloquear" method="POST" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-light border text-dark">
+                                                        <%= item.bloqueado ? 'Desbloquear' : 'Bloquear' %>
+                                                    </button>
+                                                </form>
+                                                <a href="/admin/utilizadores/<%= item._id %>/editar" class="btn btn-sm btn-light border text-dark">Editar</a>
+                                            <% } %>
                                         </div>
                                     </td>
                                 </tr>
-                                <% }); %>
-                                    <% } else { %>
-                                        <tr>
-                                            <td colspan="4" class="text-center py-5 text-muted">Não existem pedidos de
-                                                registo pendentes.</td>
-                                        </tr>
-                                        <% } %>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted small fw-bold text-uppercase">
+                                    Não existem itens pendentes de aprovação.
+                                </td>
+                            </tr>
+                        <% } %>
                     </tbody>
                 </table>
             </div>
+        </div>
 
-            <%- include('../partials/paginacao', { paginaUrl: '/admin/supermercados/pendentes' }) %>
-        </main>
-
+        <div class="mt-4">
+            <% let paginaUrl = '/admin/supermercados/pendentes' + (tipoFiltro ? '?tipo=' + tipoFiltro : ''); %>
+            <%- include('../partials/paginacao', { paginaUrl }) %>
+        </div>
+    </main>
 
 </body>
 

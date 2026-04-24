@@ -136,7 +136,23 @@ estafetaService.getUserByIdSemPassword = async function (userId) {
 estafetaService.atualizarPerfil = async function (userId, dados) {
     const User = require('../models/UserModel');
     const { nome, telefone, morada } = dados;
-    return User.findByIdAndUpdate(userId, { nome, telefone, morada }, { new: true, runValidators: true });
+
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new Error('Utilizador não encontrado');
+    }
+
+    if (nome) {
+        user.nome = nome;
+    }
+    if (telefone) {
+        user.telefone = telefone;
+    }
+    if (morada) {
+        user.morada = morada;
+    }
+
+    return user.save();
 };
 
 async function obterEstatisticas(estafetaId) {

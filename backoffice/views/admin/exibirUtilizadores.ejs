@@ -70,12 +70,12 @@
                                             
                                             <% if (u.role !== 'administrador') { %>
                                                 <form action="/admin/utilizadores/<%= u._id %>/bloquear" method="POST" class="d-inline">
-                                                    <button type="submit" class="btn btn-sm btn-light border">
+                                                    <button type="submit" class="btn btn-sm btn-light border text-dark">
                                                         <%= u.bloqueado ? 'Desbloquear' : 'Bloquear' %>
                                                     </button>
                                                 </form>
                                                 <form action="/admin/utilizadores/<%= u._id %>/eliminar" method="POST" class="d-inline" onsubmit="return confirm('Tem a certeza?')">
-                                                    <button type="submit" class="btn btn-sm btn-light border">Eliminar</button>
+                                                    <button type="submit" class="btn btn-sm btn-light border text-dark">Eliminar</button>
                                                 </form>
                                             <% } %>
                                         </div>

@@ -15,14 +15,31 @@ authController.exibirRegisto = function (req, res) {
     res.render("loginRegisto/registar", {
         errorMessage: null,
         siteKey: config.CAPTCHA_API_KEY, 
-        dados: {}
+        dados: {
+            onlyUser: req.query.onlyUser === 'true',
+            supermarketId: req.query.supermarketId || null
+        }
     });
 };
 
 authController.registar = async function (req, res) {
     try {
-        await authService.verificarCaptcha(req.body["g-recaptcha-response"]);
+        const isOnlyUser = req.body.onlyUser === 'true';
+        if (isOnlyUser) {
+            req.body.role = 'supermercados';
+        }
+
+        // Se não for o admin a criar um user, verifica o captcha
+        if (!isOnlyUser || !req.cookies.token) {
+            await authService.verificarCaptcha(req.body["g-recaptcha-response"]);
+        }
+        
         await authService.registarUtilizador(req.body);
+
+        if (isOnlyUser && req.cookies.token) {
+            // Se foi o admin a registar um novo gestor, volta para a lista de pendentes
+            return res.redirect("/admin/supermercados/pendentes");
+        }
 
         res.redirect("/auth/login");
     } catch (err) {

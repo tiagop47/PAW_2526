@@ -58,12 +58,19 @@ adminService.eliminarCategoria = async function (id) {
 };
 
 adminService.getDashboardStats = async function () {
-    const [totalUsers, totalEstafetas, pendentes, ativos, bloqueados, totalProdutos, totalEncomendas, totalFaturadoAgg, backlogEntregas] = await Promise.all([
+    const [totalUsers, totalEstafetas, pendentesSupermercados, pendentesEstafetas, ativos, bloqueados, totalProdutos, totalEncomendas, totalFaturadoAgg, backlogEntregas] = await Promise.all([
         User.countDocuments(),
         User.countDocuments({ role: 'estafetas' }),
-        Supermarket.countDocuments({ estadoAprovacao: 'Pendente' }),
-        Supermarket.countDocuments({ estadoAprovacao: 'Aprovado' }),
-        Supermarket.countDocuments({ estadoAprovacao: 'Bloqueado' }),
+        Supermarket.countDocuments({ 
+            $or: [
+                { estadoAprovacao: 'Pendente' },
+                { estadoAprovacao: 'Bloqueado' },
+                { userId: null }
+            ]
+        }),
+        User.countDocuments({ role: 'estafetas', bloqueado: true }),
+        Supermarket.countDocuments({ estadoAprovacao: 'Aprovado', userId: { $ne: null } }),
+        Supermarket.countDocuments({ estadoAprovacao: 'Bloqueado', userId: { $ne: null } }),
         Product.countDocuments(),
         Order.countDocuments(),
         Order.aggregate([
@@ -98,6 +105,8 @@ adminService.getDashboardStats = async function () {
         total: backlogEntregas[0].total
     } : null;
 
+    const pendentes = pendentesSupermercados + pendentesEstafetas;
+
     return {
         totalUsers,
         totalEstafetas,
@@ -111,19 +120,71 @@ adminService.getDashboardStats = async function () {
     };
 };
 
-adminService.getPendentesDocumentos = async function (pagina, limite) {
+adminService.getPendentesDocumentos = async function (pagina, limite, filtroTipo = null) {
     const contador = (pagina - 1) * limite;
 
-    const total = await Supermarket.countDocuments({ estadoAprovacao: 'Pendente' });
-    const supermercados = await Supermarket.find({ estadoAprovacao: 'Pendente' })
-        .populate('userId')
-        .sort({ criadoEm: -1 })
-        .skip(Number(contador))
-        .limit(Number(limite));
+    const querySupermarket = { 
+        $or: [
+            { estadoAprovacao: 'Pendente' },
+            { estadoAprovacao: 'Bloqueado' },
+            { userId: null }
+        ]
+    };
+
+    const queryEstafetas = { role: 'estafetas', bloqueado: true };
+    const queryClientes = { role: 'clientes', bloqueado: true };
+
+    let resultados = [];
+    let totalItems = 0;
+
+    if (!filtroTipo || filtroTipo === 'supermercados') {
+        const [total, items] = await Promise.all([
+            Supermarket.countDocuments(querySupermarket),
+            Supermarket.find(querySupermarket).populate('userId').sort({ criadoEm: -1 }).lean()
+        ]);
+        items.forEach(s => {
+            s.tipoPendente = 'Supermercado';
+            s.dataPendente = s.criadoEm;
+        });
+        resultados = resultados.concat(items);
+        totalItems += total;
+    }
+
+    if (!filtroTipo || filtroTipo === 'estafetas') {
+        const [total, items] = await Promise.all([
+            User.countDocuments(queryEstafetas),
+            User.find(queryEstafetas).select('-password').sort({ criadoEm: -1 }).lean()
+        ]);
+        items.forEach(e => {
+            e.tipoPendente = 'Estafeta';
+            e.dataPendente = e.criadoEm;
+        });
+        resultados = resultados.concat(items);
+        totalItems += total;
+    }
+
+    if (!filtroTipo || filtroTipo === 'clientes') {
+        const [total, items] = await Promise.all([
+            User.countDocuments(queryClientes),
+            User.find(queryClientes).select('-password').sort({ criadoEm: -1 }).lean()
+        ]);
+        items.forEach(c => {
+            c.tipoPendente = 'Cliente';
+            c.dataPendente = c.criadoEm;
+        });
+        resultados = resultados.concat(items);
+        totalItems += total;
+    }
+
+    // Ordenar por data (mais recentes primeiro)
+    resultados.sort((a, b) => new Date(b.dataPendente) - new Date(a.dataPendente));
+
+    // Paginação manual do array combinado
+    const paginados = resultados.slice(contador, contador + limite);
 
     return {
-        supermercados,
-        totalPaginas: Math.ceil(total / limite)
+        itens: paginados,
+        totalPaginas: Math.ceil(totalItems / limite) || 1
     };
 };
 
@@ -218,14 +279,28 @@ adminService.getUserByIdSemPassword = async function (id) {
 };
 
 adminService.atualizarUserById = async function (id, dados) {
-    const userAntigo = await User.findById(id);
-    const userAtualizado = await User.findByIdAndUpdate(id, dados, { new: true, runValidators: true });
+    const user = await User.findById(id);
+    if (!user) {
+        throw new Error("Utilizador não encontrado");
+    }
 
-    if (userAntigo && userAntigo.role === 'supermercados' && dados.role !== 'supermercados') {
-        // Bloqueamos o supermercado associado para garantir integridade
+    const roleAntigo = user.role;
+    
+    // Atualizar os campos permitidos
+    if (dados.nome) user.nome = dados.nome;
+    if (dados.email) user.email = dados.email;
+    if (dados.telefone) user.telefone = dados.telefone;
+    if (dados.nif !== undefined) user.nif = dados.nif;
+    if (dados.morada) user.morada = dados.morada;
+    if (dados.role) user.role = dados.role;
+
+    const userAtualizado = await user.save();
+
+    if (roleAntigo === 'supermercados' && userAtualizado.role !== 'supermercados') {
+        // Bloqueamos o supermercado associado e removemos o proprietário para garantir integridade
         await Supermarket.findOneAndUpdate(
             { userId: id },
-            { estadoAprovacao: 'Bloqueado' }
+            { $set: { userId: null, estadoAprovacao: 'Bloqueado' } }
         );
     }
 
@@ -240,7 +315,8 @@ adminService.getUtilizadoresCandidatos = async function () {
     const idsComSupermercado = await Supermarket.distinct('userId');
 
     // Filtrar utilizadores que NÃO estão na lista de IDs que já têm supermercado
-    const idsSet = new Set(idsComSupermercado.map(id => id.toString()));
+    // Filtramos o null do array de IDs antes de fazer toString()
+    const idsSet = new Set(idsComSupermercado.filter(id => id).map(id => id.toString()));
     return usersComRole.filter(u => !idsSet.has(u._id.toString()));
 };
 
@@ -423,10 +499,13 @@ adminService.eliminarUser = async function (id) {
         if (!user) throw new Error('Utilizador não encontrado');
 
         if (user.role === 'supermercados') {
-            const supermercado = await Supermarket.findOneAndDelete({ userId: id }, { session });
-            if (supermercado) {
-                await Product.deleteMany({ supermercadoId: supermercado._id }, { session });
-            }
+            // Em vez de apagar o supermercado e os produtos, deixamos o supermercado "sem dono"
+            // e bloqueado até que um novo administrador seja associado.
+            await Supermarket.findOneAndUpdate(
+                { userId: id },
+                { $set: { userId: null, estadoAprovacao: 'Bloqueado' } },
+                { session }
+            );
         }
 
         await User.findByIdAndDelete(id, { session });

@@ -76,7 +76,7 @@ const UserSchema = new mongoose.Schema({
 }, baseOptions);
 
 UserSchema.pre('save', async function () {
-    if (this.nif === "") {
+    if (this.nif === "" || this.nif === null) {
         this.nif = undefined;
     }
 
@@ -85,6 +85,21 @@ UserSchema.pre('save', async function () {
     }
 
     this.password = await bcrypt.hash(this.password, config.SALT_ROUNDS);
+});
+
+// Middleware para transformar erros de duplicidade (E11000) em mensagens amigáveis
+UserSchema.post('save', function (error, doc, next) {
+    if (error.name === 'MongoServerError' && error.code === 11000) {
+        if (error.keyPattern && error.keyPattern.email) {
+            next(new Error('Já existe uma conta registada com este endereço de email.'));
+        } else if (error.keyPattern && error.keyPattern.nif) {
+            next(new Error('Já existe uma conta registada com este NIF.'));
+        } else {
+            next(new Error('Erro de duplicidade: Alguns dados já estão em uso no sistema.'));
+        }
+    } else {
+        next(error);
+    }
 });
 
 const User = mongoose.model('User', UserSchema);

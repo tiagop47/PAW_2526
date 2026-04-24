@@ -140,6 +140,7 @@ adminController.bloquearUser = async function (req, res) {
 adminController.exibirTransferirPropriedade = async function (req, res) {
     try {
         const candidatos = await adminService.getUtilizadoresCandidatos();
+
         res.render('admin/transferirSupermercado', {
             title: 'Transferir Proprietário',
             supermercado: req.targetSupermercado,
@@ -198,7 +199,7 @@ adminController.listarUtilizadores = async function (req, res) {
         const roleFiltro = req.query.role || null;
         const bloqueadoFiltro = req.query.bloqueado || null;
         const limite = 5;
-        
+
         const dadosPagina = await adminService.getUsersDocumentos(pagina, limite, roleFiltro, bloqueadoFiltro);
 
         res.render('admin/exibirUtilizadores', {
@@ -221,16 +222,19 @@ adminController.listarUtilizadores = async function (req, res) {
 adminController.listarPendentes = async function (req, res) {
     try {
         const pagina = parseInt(req.query.pagina) || 1;
-        const limite = 3;
-        const dadosPagina = await adminService.getPendentesDocumentos(pagina, limite);
+        const tipoFiltro = req.query.tipo || null;
+        const limite = 5; // Aumentado um pouco por ser tabela única
+        const dadosPagina = await adminService.getPendentesDocumentos(pagina, limite, tipoFiltro);
 
         res.render('admin/supermercadosPendentes', {
-            title: 'Aprovações Pendentes',
-            supermercados: dadosPagina.supermercados,
+            title: 'Aprovações e Pendentes',
+            itens: dadosPagina.itens,
+            tipoFiltro,
             paginaAtual: pagina,
             totalPaginas: dadosPagina.totalPaginas
         });
     } catch (err) {
+        console.error(err);
         res.status(500).send('Erro ao carregar lista de pendentes.');
     }
 };
@@ -319,7 +323,7 @@ adminController.listarProdutos = async function (req, res) {
         const pagina = parseInt(req.query.pagina) || 1;
         const limite = 5;
         const supermercadoId = req.query.supermercadoId || null;
-        
+
         const dados = await adminService.obterDadosModeracaoProdutos(pagina, limite, supermercadoId);
 
         res.render('admin/produtos', {

@@ -48,11 +48,16 @@ async function criarSupermercado(userId, { nome, localizacao, morada, latitude, 
 }
 
 authService.registarUtilizador = async function (userData) {
-    const { nome, email, password, nif, telefone, morada, role, supermercadoFavorito } = userData;
+    const { nome, email, password, nif, telefone, morada, role, supermercadoFavorito, onlyUser, supermarketId } = userData;
     const roleFinal = rolesPublicas.includes(role) ? role : 'clientes';
 
-    if (roleFinal === 'supermercados' && (!userData.latitude || !userData.longitude)) {
-        throw new Error("É obrigatório selecionar a localização da loja no mapa.");
+    if (roleFinal === 'supermercados' && !onlyUser) {
+        if (!userData.latitude || !userData.longitude) {
+            throw new Error("É obrigatório selecionar a localização da loja no mapa.");
+        }
+        if (!userData.localizacao || userData.localizacao.trim() === "") {
+            throw new Error("É obrigatório selecionar um concelho para o supermercado.");
+        }
     }
 
     const novoUser = new User({ nome, email, password, nif, telefone, morada, role: roleFinal, supermercadoFavorito });
@@ -72,7 +77,16 @@ authService.registarUtilizador = async function (userData) {
     }
 
     if (roleFinal === 'supermercados') {
-        await criarSupermercado(userGuardado._id, userData);
+        if (onlyUser && supermarketId) {
+            // Se estamos apenas a criar o utilizador para um supermercado existente
+            await Supermarket.findByIdAndUpdate(supermarketId, { 
+                userId: userGuardado._id,
+                estadoAprovacao: 'Pendente' // Volta a pendente para aprovação do admin
+            });
+        } else {
+            // Registo normal de novo supermercado
+            await criarSupermercado(userGuardado._id, userData);
+        }
     }
 
     return userGuardado;

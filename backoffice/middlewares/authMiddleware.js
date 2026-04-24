@@ -70,9 +70,13 @@ authMiddleware.verificarAutenticacao = function (req, res, next) {
 
 /**
  * Middleware — redireciona utilizadores já logados.
+ * Exceção: Administradores podem aceder ao registo se for para criar um novo gestor (onlyUser=true).
  */
 authMiddleware.redirecionarLogged = function (req, res, next) {
     if (res.locals.user) {
+        if (res.locals.user.role === 'administrador' && req.query.onlyUser === 'true') {
+            return next();
+        }
         return res.redirect(authMiddleware.getDashboardUrl(res.locals.user.role));
     }
     next();

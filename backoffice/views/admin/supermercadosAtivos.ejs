@@ -35,32 +35,41 @@
                                                 <%= s.nome %>
                                             </td>
                                             <td class="text-truncate">
-                                                <%= s.userId ? s.userId.nome : 'N/A' %>
-                                                    <br>
-                                                    <%= s.userId.nome ? s.userId.email : 'N/A' %>
-
+                                                <% if (s.userId) { %>
+                                                    <div class="fw-bold"><%= s.userId.nome %></div>
+                                                    <div class="text-muted small"><%= s.userId.email %></div>
+                                                <% } else { %>
+                                                    <span class="badge border border-dark text-dark fw-normal">Sem Gestor</span>
+                                                <% } %>
                                             </td>
                                             <td class="text-muted small text-truncate" title="<%= s.localizacao %>">
                                                 <%= s.localizacao %>
                                             </td>
                                             <td class="text-end pe-3">
                                                 <div class="d-flex justify-content-end gap-2">
-                                                    <form action="/admin/supermercados/bloquear/<%= s._id %>"
-                                                        method="POST" style="display:inline;">
-                                                        <button type="submit"
+                                                    <% if (s.userId) { %>
+                                                        <form action="/admin/supermercados/bloquear/<%= s._id %>"
+                                                            method="POST" style="display:inline;">
+                                                            <button type="submit"
+                                                                class="btn btn-sm btn-light border text-dark">
+                                                                <%= s.estadoAprovacao==='Bloqueado' ? 'Desbloquear'
+                                                                    : 'Bloquear' %>
+                                                            </button>
+                                                        </form>
+                                                        <a href="/admin/supermercados/editar/<%= s._id %>"
+                                                            class="btn btn-sm btn-light border">
+                                                            Editar
+                                                        </a>
+                                                        <a href="/admin/supermercados/transferir/<%= s._id %>"
                                                             class="btn btn-sm btn-light border text-dark">
-                                                            <%= s.estadoAprovacao==='Bloqueado' ? 'Desbloquear'
-                                                                : 'Bloquear' %>
-                                                        </button>
-                                                    </form>
-                                                    <a href="/admin/supermercados/editar/<%= s._id %>"
-                                                        class="btn btn-sm btn-light border">
-                                                        Editar
-                                                    </a>
-                                                    <a href="/admin/supermercados/transferir/<%= s._id %>"
-                                                        class="btn btn-sm btn-light border text-dark">
-                                                        Transferir
-                                                    </a>
+                                                            Transferir
+                                                        </a>
+                                                    <% } else { %>
+                                                        <a href="/admin/supermercados/transferir/<%= s._id %>"
+                                                            class="btn btn-sm btn-light border text-dark">
+                                                            Associar Gestor
+                                                        </a>
+                                                    <% } %>
                                                 </div>
                                             </td>
                                         </tr>

@@ -9,23 +9,17 @@
     <%- include('../partials/navbar') %>
 
         <main class="container py-4" style="max-width: 600px;">
-            <div class="d-flex align-items-center gap-2 mb-4">
-                <h1 class="h4 fw-bold m-0">Transferir Proprietário</h1>
-            </div>
 
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body p-4">
+                    <h2 class="h6 fw-bold mb-3">Opção 1: Associar Gestor Existente</h2>
                     <p class="mb-4 text-muted small">
-                        Estás a transferir a propriedade de <strong>
-                            <%= supermercado.nome %>
-                        </strong>.
-                        O novo proprietário deve ter o cargo de <strong>Supermercado</strong> e não pode possuir outra
-                        loja.
+                        Escolha um utilizador que já tenha o cargo de <strong>Supermercado</strong> mas que ainda não possua uma loja associada.
                     </p>
 
                     <form action="/admin/supermercados/transferir/<%= supermercado._id %>" method="POST">
                         <div class="mb-4">
-                            <label class="form-label small fw-bold">Novo Responsável</label>
+                            <label class="form-label small fw-bold">Selecionar Utilizador</label>
                             <select name="novoUserId" class="form-select" required>
                                 <option value="" disabled selected>Escolha um utilizador...</option>
                                 <% candidatos.forEach(function(c) { %>
@@ -35,23 +29,34 @@
                                     <% }); %>
                             </select>
                             <% if (candidatos.length===0) { %>
-                                <div class="form-text ">
-                                    Não existem utilizadores disponíveis com o cargo de supermercado sem loja associada.
+                                <div class="form-text text-danger small">
+                                    Não existem gestores disponíveis no sistema.
                                 </div>
-                                <% } %>
+                            <% } %>
                         </div>
 
-                        <div class="alert-warning small">
-                            Após a transferência, o supermercado voltará ao estado <strong>Pendente</strong> para nova
-                            aprovação.
-                        </div>
-
-                        <button type="submit" class="btn btn-sm btn-light border text-dark w-100" <%=candidatos.length===0 ? 'disabled'
-                            : '' %>>
-                            Confirmar Transferência
+                        <button type="submit" class="btn btn-sm btn-light border text-dark w-100" <%=candidatos.length===0 ? 'disabled' : '' %>>
+                            Confirmar Associação
                         </button>
                     </form>
                 </div>
+            </div>
+
+            <div class="card border-0 shadow-sm bg-white">
+                <div class="card-body p-4 text-center">
+                    <h2 class="h6 fw-bold mb-2">Opção 2: Criar Novo Gestor de Raiz</h2>
+                    <p class="text-muted small mb-3">
+                        Se pretender criar um novo utilizador para gerir o <strong><%= supermercado.nome %></strong>, clique no botão abaixo.
+                    </p>
+                    <a href="/auth/registar?onlyUser=true&supermarketId=<%= supermercado._id %>" 
+                       class="btn btn-sm btn-light border text-dark px-4">
+                        Criar e Associar Novo Utilizador
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-white rounded border small text-muted">
+                Após qualquer uma das ações, o supermercado ficará em estado <strong>Pendente</strong> para aprovação final do administrador.
             </div>
         </main>
 </body>
