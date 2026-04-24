@@ -81,3 +81,80 @@ O sistema utiliza um modelo de **Associação Híbrida** (referências cruzadas 
 
 ## Emails e Notificações
 O sistema utiliza **Nodemailer** com fallback automático para **Ethereal Email** em ambiente de desenvolvimento. Os links de visualização de emails (Recuperação de Password, Boas-vindas, Novos Cupões) são impressos no terminal do servidor.
+
+# Documentação das Rotas
+
+As rotas estão divididas em duas vertentes no ficheiro `app.js`:
+- Rotas do **Backoffice** (Server-Side) - Acessíveis na raiz do domínio.
+- Rotas da **API** (JSON, Frontoffice/Angular) - Acessíveis sob `/api`.
+
+---
+
+## 1. Rotas do Backoffice
+
+Estas rotas são renderizadas do lado do servidor utilizando Express e a template engine EJS. Encontram-se mapeadas através do ficheiro `routes/backofficeIndex.js`.
+
+### Autenticação (`/auth`)
+Rotas públicas acessíveis por qualquer utilizador não autenticado e responsáveis por todo o fluxo de entrada no sistema.
+- `GET /auth/login`: Exibe a página de login.
+- `GET /auth/registar`: Exibe a página de registo de utilizadores.
+- `POST /auth/login` / `POST /auth/registar`: Processamento dos dados de entrada.
+- `GET /auth/logout`: Termina a sessão do utilizador.
+- Outras rotas incluem o fluxo de recuperação de password (`/auth/recuperarPassword` e `/auth/reset-password`).
+
+### Administrador (`/admin`)
+Rotas protegidas, exclusivas para utilizadores com a role de `administrador`. São geridas em `routes/admin.js`.
+- `GET /admin/dashboard`: Painel principal de controlo.
+- `GET /admin/exibirUtilizadores`: Listagem e gestão de utilizadores.
+- `GET /admin/estafetas`: Listagem de estafetas registados.
+- `GET /admin/supermercados/...`: Listagem de supermercados ativos, supermercados pendentes à espera de aprovação, transferência de propriedade de supermercados.
+- `POST /admin/supermercados/aprovar/:id` (ou rejeitar/bloquear): Gestão do estado das lojas.
+- `GET /admin/encomendas`: Visão global das encomendas da plataforma.
+- `GET /admin/categorias`: Gestão de categorias de produtos globais.
+- `GET /admin/produtos`: Moderação de produtos globais do catálogo.
+
+### Supermercado (`/supermercado`)
+Rotas protegidas para utilizadores com a role de `supermercados` e com a sua conta aprovada (`routes/supermercado.js`).
+- `GET /supermercado/dashboard`: Painel inicial da loja com estatísticas e overview.
+- `GET /supermercado/produtos`: Catálogo de produtos apenas daquela loja e acesso à criação/edição.
+- `POST /supermercado/produtos`: Adição de um novo produto (suporta upload de imagem).
+- `GET /supermercado/encomendas`: Listagem das encomendas recebidas (tanto online quanto fisicamente).
+- `POST /supermercado/encomendas/:id/estado`: Atualização o estado de uma encomenda.
+- **Venda**:
+  - `GET /supermercado/vendas/nova`: Exibe a interface do sistema de venda em caixa.
+  - `POST /supermercado/vendas`: Regista uma nova venda local.
+- **Fidelização**:
+  - `GET /supermercado/cupoes`: Gestão de cupões da loja.
+  - `POST /supermercado/cupoes`: Criação, ativação, desativação ou eliminação de cupões.
+- `GET /supermercado/perfil` e `/supermercado/editar`: Gestão dos dados da própria loja.
+
+### Estafeta (`/estafeta`)
+Rotas protegidas para utilizadores cuja role seja `estafetas` (`routes/estafeta.js`).
+- `GET /estafeta/dashboard`: Ecrã inicial com visão geral.
+- `GET /estafeta/entregas`: Lista de encomendas cujo estado as torna disponíveis para serem aceites (ex.: em entrega/prontas para recolha).
+- `GET /estafeta/minhas-entregas`: Histórico e detalhes das encomendas em posse do estafeta atual.
+- `GET /estafeta/perfil`: Gestão do perfil do estafeta.
+
+---
+
+## 2. Rotas da API (`/api`)
+
+O diretorio `routes/api/` devolve respostas em JSON, permitindo ser usada pela aplicação cliente Frontoffice ou por AJAX no Backoffice. São documentadas via Swagger (`GET /api-docs`).
+
+Principais agrupamentos (mapeados por `routes/api/index.js`):
+- `/api/auth`: Rotas de autenticação (Login, Registo, Validação de Token JWT, etc.) para o Frontoffice.
+- `/api/produtos`: Listagem do catálogo de produtos visível aos clientes finais, com filtros, pesquisa e destaques.
+- `/api/supermercados`: Informações públicas sobre as lojas (moradas, categorias, etc.).
+- `/api/encomendas`: Permite ao cliente final colocar um pedido online (`POST /api/encomendas/criar`), usar cupões, obter o histórico de compras e alterar o estado para entregue.
+- `/api/avaliacoes`: Submissão e listagem de reviews e ratings deixados por clientes aos produtos/supermercados.
+- `/api/estafeta`: Endpoints extra para a App/Módulo do estafeta comunicar de forma assíncrona alterações de GPS, atualizações rápidas, etc.
+
+---
+
+## Middlewares e Segurança
+
+Todas as rotas agrupadas estão protegidas por Middlewares chave (`middlewares/authMiddleware.js`):
+- **`verificarAutenticacao`**: Impede que sessões anónimas acedam a certas áreas.
+- **`verificarRole([...])`**: Garante que um user não entre nas rotas não destinadas a sua role.
+- **`verificarAprovacaoSupermercado`**: Impede que a conta seja utilizada antes de o administrador do sistema aprovar a criação do supermercado recém-registado.
+
