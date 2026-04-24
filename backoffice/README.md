@@ -32,20 +32,15 @@ O sistema utiliza 6 estados oficiais conforme os requisitos do projeto:
 
 ### Fluxo de Encomendas Inteligente
 
-O sistema distingue a origem das encomendas para otimizar a operação do supermercado, utilizando o campo `origem` (`online` ou `caixa`):
 
-| Origem | Estado Inicial | Fluxo de Estados (Levantamento) |
-| :--- | :--- | :--- |
-| **Venda em Caixa (POS)** | `confirmada` | `confirmada` → `entregue` |
-| **Online (Frontoffice)** | `pendente` | `pendente` → `confirmada` → `em_preparacao` → `entregue` |
 
 #### Regras de Negócio por Origem:
-1.  **Vendas em Caixa (POS)**: Como são validadas no momento pelo lojista, entram diretamente no estado **`confirmada`**. O fluxo é simplificado para levantamento imediato, saltando a fase de preparação em sistema.
+1.  **Vendas em Caixa (POS)**: Como são validadas no momento pelo lojista, entram diretamente no estado **`confirmada`**. O fluxo é simplificado para levantamento em loja depois, saltando a fase de preparação em sistema.
 2.  **Encomendas Online**: Criadas pelo cliente no Frontoffice, entram como **`pendente`**. Após a confirmação da loja, seguem um fluxo detalhado que inclui a fase de **`em_preparacao`**, permitindo ao cliente acompanhar o estado do pedido.
 
 ### Responsabilidade das Transições
 - **`pendente` → `confirmada`**: Supermercado (validar pedido online).
-- **`confirmada` → `em_preparacao`**: Supermercado (apenas encomendas com origem `online`).
+- **`confirmada` → `em_preparacao`**: Supermercado.
 - **`confirmada` → `em_entrega`**: Estafeta (ao aceitar a recolha no supermercado).
 - **`em_preparacao` → `entregue`**: Supermercado (no ato da entrega em mão ao cliente).
 - **`confirmada` → `entregue`**: Supermercado (apenas encomendas com origem `caixa` — salto direto para finalização).
@@ -74,7 +69,7 @@ O sistema utiliza um modelo de **Associação Híbrida** (referências cruzadas 
 - **Confirmação do Cliente**: Em entregas ao domicílio, a encomenda só passa a `entregue` quando o cliente confirma no Frontoffice que recebeu o pedido. Isto liberta o pagamento e finaliza o processo.
 - **Venda em Caixa (POS)**: Qualquer venda registada no Backoffice entra no estado **`confirmada`**.
     - Se for **Levantamento**, a loja prepara e marca como `entregue` quando o cliente aparecer.
-    - Se for **Entrega**, entra no fluxo de estafeta e aguarda confirmação final do cliente.
+    - Se for **Domicilio**, entra no fluxo de estafeta e aguarda confirmação final do cliente.
 - **Faturação**: As faturas são geradas automaticamente na transição para `confirmada`.
 
 ---
