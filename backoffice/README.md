@@ -108,7 +108,7 @@ Rotas protegidas, exclusivas para utilizadores com a role de `administrador`. S�
 - `GET /admin/exibirUtilizadores`: Listagem e gestão de utilizadores.
 - `GET /admin/estafetas`: Listagem de estafetas registados.
 - `GET /admin/supermercados/...`: Listagem de supermercados ativos, supermercados pendentes à espera de aprovação, transferência de propriedade de supermercados.
-- `POST /admin/supermercados/aprovar/:id` (ou rejeitar/bloquear): Gestão do estado das lojas.
+- `POST /admin/supermercados/aprovar/:id`: Gestão do estado das lojas.
 - `GET /admin/encomendas`: Visão global das encomendas da plataforma.
 - `GET /admin/categorias`: Gestão de categorias de produtos globais.
 - `GET /admin/produtos`: Moderação de produtos globais do catálogo.
