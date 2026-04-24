@@ -1,28 +1,28 @@
 {
-  "name": "PAW-2526",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "start": "node ./bin/www",
-    "dev": "fuser -k 3000/tcp || true && nodemon ./bin/www",
-    "kill-port": "fuser -k 3000/tcp || true"
-  },
-  "dependencies": {
-    "bcrypt": "^6.0.0",
-    "cookie-parser": "~1.4.4",
-    "cors": "^2.8.6",
-    "debug": "~2.6.9",
-    "dotenv": "^17.3.1",
-    "ejs": "^5.0.1",
-    "express": "^4.22.1",
-    "http-errors": "~1.6.3",
-    "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.3.1",
-    "morgan": "^1.10.1",
-    "multer": "^2.1.1",
-    "nodemailer": "^8.0.5",
-    "nodemon": "^3.1.14",
-    "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
-  }
+    "name": "PAW-2526",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "start": "node ./bin/www",
+        "dev": "nodemon ./bin/www",
+        "kill-port": "npx kill-port 3000"
+    },
+    "dependencies": {
+        "bcrypt": "^6.0.0",
+        "cookie-parser": "~1.4.4",
+        "cors": "^2.8.6",
+        "debug": "~2.6.9",
+        "dotenv": "^17.3.1",
+        "ejs": "^5.0.1",
+        "express": "^4.22.1",
+        "http-errors": "~1.6.3",
+        "jsonwebtoken": "^9.0.3",
+        "mongoose": "^9.3.1",
+        "morgan": "^1.10.1",
+        "multer": "^2.1.1",
+        "nodemailer": "^8.0.5",
+        "nodemon": "^3.1.14",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.1"
+    }
 }
