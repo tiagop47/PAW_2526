@@ -7,12 +7,7 @@ const authController = {};
 authController.login = async function (req, res) {
     try {
         const { email, password } = req.body;
-        const { token, role, user } = await authService.autenticarUtilizador(email, password);
-
-        if (role !== 'clientes') {
-            return res.status(403).json({ error: "Acesso reservado apenas a clientes." });
-        }
-
+        const { token, user } = await authService.autenticarCliente(email, password);
         res.json({ token, user });
     } catch (err) {
         res.status(401).json({ error: err.message });

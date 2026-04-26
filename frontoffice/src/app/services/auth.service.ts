@@ -1,30 +1,33 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, BehaviorSubject } from 'rxjs';
+import { Observable, of, tap, map, BehaviorSubject } from 'rxjs';
 import { API_URL } from '../app.config';
 import { LoginDTO } from '../models/login.dto';
 import { RegisterDTO } from '../models/register.dto';
-import { UserDTO } from '../models/user.dto';
+import { LoginResponseDTO, UserDTO, UserResponseDTO } from '../models/user.dto';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private endpoint = `${API_URL}/auth/`;
-  private currentUserSubject = new BehaviorSubject<UserDTO | null>(JSON.parse(localStorage.getItem('currentUser') || 'null'));
+  private currentUserSubject = new BehaviorSubject<UserDTO | null>(
+    JSON.parse(localStorage.getItem('currentUser') || 'null'),
+  );
+
   public isLoggedIn$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   login(email: string, password: string): Observable<UserDTO> {
     const loginData: LoginDTO = { email, password };
-    return this.http.post<UserDTO>(this.endpoint + "login", loginData).pipe(
-      tap(user => {
-        if (user && user.token) {
-          localStorage.setItem('currentUser', JSON.stringify(user));
-          this.currentUserSubject.next(user);
-        }
-      })
+
+    return this.http.post<LoginResponseDTO>(this.endpoint + 'login', loginData).pipe(
+      map((res) => Object.assign({}, res.user, { token: res.token })),
+      tap((user) => {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+      }),
     );
   }
 
@@ -34,29 +37,30 @@ export class AuthService {
   }
 
   register(data: RegisterDTO): Observable<RegisterDTO> {
-    return this.http.post<RegisterDTO>(this.endpoint + "registar", data);
+    return this.http.post<RegisterDTO>(this.endpoint + 'registar', data);
   }
 
   updateProfile(data: Partial<UserDTO>): Observable<UserDTO> {
     const userId = this.currentUserSubject.value?._id;
-    return this.http.patch<UserDTO>(`${API_URL}/users/${userId}`, data).pipe(
-      tap(updatedUser => {
+    return this.http.patch<UserResponseDTO>(`${API_URL}/users/${userId}`, data).pipe(
+      map((res) => res.user),
+      tap((updatedUser) => {
         const current = this.currentUserSubject.value;
+
         if (current) {
-          const newUser = { ...current, ...updatedUser };
+          const newUser = Object.assign({}, current, updatedUser);
           localStorage.setItem('currentUser', JSON.stringify(newUser));
           this.currentUserSubject.next(newUser);
         }
-      })
+      }),
     );
   }
 
   getCurrentUser(): Observable<UserDTO> {
-    const userId = this.currentUserSubject.value?._id;
-    return this.http.get<UserDTO>(`${API_URL}/users/${userId}`);
+    const user = this.currentUserSubject.value;
+    return of(user as UserDTO);
   }
 
-  // Método auxiliar para os guards e outros componentes
   isLoggedIn(): boolean {
     return localStorage.getItem('currentUser') !== null;
   }

@@ -3,18 +3,20 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
+import { OrderService } from '../../services/order.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css'
+  styleUrl: './navbar.component.css',
 })
 export class NavbarComponent {
   isMenuOpen = false;
   authService = inject(AuthService);
   cartService = inject(CartService);
+  orderService = inject(OrderService);
   router = inject(Router);
 
   toggleMenu() {
@@ -28,4 +30,3 @@ export class NavbarComponent {
     this.isMenuOpen = false;
   }
 }
-

@@ -42,13 +42,6 @@
   border-radius: 0.25rem;
 }
 
-.badge-pendente { background-color: var(--warning); color: #000; }
-.badge-confirmada { background-color: var(--info); }
-.badge-em_preparacao { background-color: var(--info); }
-.badge-em_entrega { background-color: var(--primary); }
-.badge-aguarda_validacao { background-color: var(--secondary); }
-.badge-entregue { background-color: var(--success); }
-.badge-cancelada { background-color: var(--danger); }
 
 .avaliacao-dialog {
   border: none;

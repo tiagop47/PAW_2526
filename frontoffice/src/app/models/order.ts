@@ -25,7 +25,6 @@ export class Order {
     cancelada: 'Cancelada',
   };
 
-
   constructor(dto: OrderDTO) {
     this.id = dto._id;
     this.supermercado = dto.supermercadoId;
@@ -45,8 +44,6 @@ export class Order {
     return Order.ESTADO_LABELS[this.estado];
   }
 
-
-
   get metodoEntregaLabel(): string {
     return this.metodoEntrega === 'entrega_domicilio'
       ? 'Entrega ao Domicílio'
@@ -54,26 +51,17 @@ export class Order {
   }
 
   podeCancelar(): boolean {
-    if (this.estado === 'pendente') return true;
-    if (this.estado === 'confirmada' && this.confirmadaEm) {
-      return Date.now() - this.confirmadaEm.getTime() < Order.CANCEL_WINDOW_MS;
-    }
-    return false;
+    const cancelavel = this.estado === 'pendente' || this.estado === 'confirmada';
+    if (!cancelavel) return false;
+    return Date.now() - this.criadoEm.getTime() < Order.CANCEL_WINDOW_MS;
   }
 
   tempoRestanteCancelamento(): string | null {
-    if (this.estado !== 'confirmada' || !this.confirmadaEm) {
-      return null;
-    }
-    
-    var restante = Order.CANCEL_WINDOW_MS - (Date.now() - this.confirmadaEm.getTime());
-    if (restante <= 0) {
-      return null;
-    }
+    const restante = Order.CANCEL_WINDOW_MS - (Date.now() - this.criadoEm.getTime());
+    if (restante <= 0) return null;
 
-    var minutos = Math.floor(restante / 60000);
-    var segundos = Math.floor((restante % 60000) / 1000);
-
+    const minutos = Math.floor(restante / 60000);
+    const segundos = Math.floor((restante % 60000) / 1000);
     return `${minutos}m ${segundos}s`;
   }
 

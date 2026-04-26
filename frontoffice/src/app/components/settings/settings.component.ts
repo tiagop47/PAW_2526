@@ -38,12 +38,10 @@ export class SettingsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // 1. Carregar lista de supermercados
     this.supermarketService.getSupermarkets().subscribe(data => {
       this.supermercados = data;
     });
 
-    // 2. Carregar perfil atual da API e injetar no formulário
     this.authService.getCurrentUser().subscribe({
       next: (user: UserDTO) => {
         this.settingsForm.patchValue({

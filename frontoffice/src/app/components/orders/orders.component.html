@@ -21,7 +21,7 @@
           <span class="fw-bold">#{{ order.id.slice(-6).toUpperCase() }}</span>
           <span class="text-secondary ms-3 small">{{ order.criadoEm | date:'dd/MM/yyyy HH:mm' }}</span>
         </div>
-        <span class="badge badge-{{ order.estado }}">{{ order.estadoLabel }}</span>
+        <span class="badge bg-secondary">{{ order.estadoLabel }}</span>
       </div>
 
       <div class="card-body p-0">
@@ -49,7 +49,7 @@
           <button *ngIf="order.podeCancelar()" class="btn btn-sm btn-danger" (click)="cancelarEncomenda(order.id)">Cancelar</button>
           <button *ngIf="order.podeConfirmarRececao()" class="btn btn-sm btn-success" (click)="confirmarRececao(order.id)">Confirmar Receção</button>
           <button *ngIf="podeAvaliar(order)" class="btn btn-sm btn-primary" (click)="abrirAvaliacao(order)">Avaliar</button>
-          <span *ngIf="jaAvaliadas.has(order.id)" class="badge btn-success">Avaliado ✓</span>
+          <span *ngIf="jaAvaliadas.has(order.id)" class="badge btn-success">Avaliado</span>
         </div>
       </div>
     </div>

@@ -29,3 +29,11 @@ export interface OrderDTO {
   confirmadaEm?: string;
   criadoEm: string;
 }
+
+export interface OrderResponseDTO {
+  encomenda: OrderDTO;
+}
+
+export interface OrdersResponseDTO {
+  encomendas: OrderDTO[];
+}

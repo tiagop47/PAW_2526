@@ -104,8 +104,7 @@ UserSchema.post('save', function (error, doc, next) {
 
 const User = mongoose.model('User', UserSchema);
 
-// O modelo 'clientes' herda de User mas adiciona campos específicos
-User.discriminator('clientes', new mongoose.Schema({
+const Cliente = User.discriminator('clientes', new mongoose.Schema({
     cupoes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Coupon'
@@ -117,3 +116,4 @@ User.discriminator('clientes', new mongoose.Schema({
 }));
 
 module.exports = User;
+module.exports.Cliente = Cliente;

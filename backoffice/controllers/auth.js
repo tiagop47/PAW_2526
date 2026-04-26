@@ -37,7 +37,6 @@ authController.registar = async function (req, res) {
         await authService.registarUtilizador(req.body);
 
         if (isOnlyUser && req.cookies.token) {
-            // Se foi o admin a registar um novo gestor, volta para a lista de pendentes
             return res.redirect("/admin/supermercados/pendentes");
         }
 

@@ -93,12 +93,12 @@ authService.registarUtilizador = async function (userData) {
 };
 
 authService.autenticarUtilizador = async function (email, password) {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).lean();
     if (!user) {
         throw new Error("Credenciais inválidas.");
     }
 
-    if(user.bloqueado){
+    if (user.bloqueado) {
         throw new Error("A sua conta está bloqueada");
     }
 
@@ -114,10 +114,19 @@ authService.autenticarUtilizador = async function (email, password) {
         { expiresIn: 86400 }
     );
 
-    const userObj = user.toObject();
-    delete userObj.password;
+    delete user.password;
 
-    return { token, role: user.role, user: userObj };
+    return { token, role: user.role, user };
+};
+
+authService.autenticarCliente = async function (email, password) {
+    const { token, role, user } = await authService.autenticarUtilizador(email, password);
+
+    if (role !== 'clientes') {
+        throw new Error('Acesso reservado apenas a clientes.');
+    }
+
+    return { token, user };
 };
 
 authService.inicializarAdmin = async function () {

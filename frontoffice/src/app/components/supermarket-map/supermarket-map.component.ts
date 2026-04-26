@@ -23,6 +23,13 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
   @ViewChild('mapContainer') mapContainer!: ElementRef;
   @Input() supermarkets: SupermarketDTO[] = [];
   @Input() favoritoId: string | null = null;
+  @Input() set focarSupermercado(id: string | null) {
+    if (!id || !this.map) return;
+    const s = this.supermarkets.find(s => s._id === id);
+    if (s?.localizacaoGeo?.coordinates) {
+      this.map.setView([s.localizacaoGeo.coordinates[1], s.localizacaoGeo.coordinates[0]], 15);
+    }
+  }
 
   private map?: L.Map;
   private mapaIniciado: boolean = false;
@@ -91,7 +98,7 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
         const d = currentLatLng.distanceTo(pFav) / 1000;
         distFavHtml = `<div style="color:#000; font-weight:bold; margin-top:5px; font-size:0.75rem;">A ${d.toFixed(1)} KM DO SEU FAVORITO</div>`;
       } else if (s._id === this.favoritoId) {
-        distFavHtml = `<div style="background:#000; color:#fff; padding:2px 5px; margin-top:5px; font-size:0.7rem; text-align:center;">O MEU FAVORITO ★</div>`;
+        distFavHtml = `<div style="background:#000; color:#fff; padding:2px 5px; margin-top:5px; font-size:0.7rem; text-align:center;">O MEU FAVORITO</div>`;
       }
 
       // Calcular distâncias para os outros vizinhos

@@ -13,7 +13,10 @@ router.post('/entregas/:orderId/confirmar', estafetaController.confirmarEntrega)
 router.param('orderId', async (req, res, next, id) => {
     try {
         const encomenda = await estafetaService.obterEncomendaPorId(id);
-        if (!encomenda) return res.status(404).json({ sucesso: false, erro: 'Encomenda não encontrada' });
+        if (!encomenda) {
+            return res.status(404).json({ sucesso: false, erro: 'Encomenda não encontrada' });
+        }
+
         req.encomenda = encomenda;
         next();
     } catch (err) {

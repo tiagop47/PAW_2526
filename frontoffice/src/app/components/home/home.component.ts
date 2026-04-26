@@ -23,6 +23,7 @@ export class HomeComponent implements OnInit {
   availableZones: string[] = [];
   selectedZone: string = '';
   loadingProducts = true;
+  supermercadoNoMapa: string | null = null;
 
   constructor(
     public authService: AuthService,
@@ -137,5 +138,13 @@ export class HomeComponent implements OnInit {
 
   navigateToProducts(id: string): void {
     this.router.navigate(['/products', id]);
+  }
+
+  verNoMapa(id: string): void {
+    this.supermercadoNoMapa = null;
+    setTimeout(() => {
+      this.supermercadoNoMapa = id;
+      document.querySelector('.map-section')?.scrollIntoView({ behavior: 'instant' });
+    });
   }
 }

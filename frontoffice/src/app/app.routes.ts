@@ -15,7 +15,7 @@ export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent, canActivate: [GuestGuard] },
   { path: 'register', component: RegisterComponent, canActivate: [GuestGuard] },
-  { path: 'products/:supermarketId', component: ProductListComponent }, // ID na URL
+  { path: 'products/:supermarketId', component: ProductListComponent },
   { path: 'product/:id', component: ProductDetailComponent },
   { path: 'cart', component: CartComponent },
   { path: 'orders', component: OrdersComponent, canActivate: [AuthGuard] },

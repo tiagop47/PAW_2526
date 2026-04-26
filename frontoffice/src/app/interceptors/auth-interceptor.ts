@@ -8,30 +8,31 @@ import {
 } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    
-    let currentUser = JSON.parse(localStorage.getItem('currentUser') || "{}");
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
-    if (currentUser && currentUser.token) {
+    if (currentUser?.token) {
       request = request.clone({
-          setHeaders: { 
-              "x-access-token": `${currentUser.token}`
-          }
+        setHeaders: {
+          'Authorization': `Bearer ${currentUser.token}`
+        }
       });
     }
 
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
-          localStorage.removeItem('currentUser');
+          this.authService.logout();
           this.router.navigate(['/login']);
         }
+
         return throwError(() => error);
       })
     );
