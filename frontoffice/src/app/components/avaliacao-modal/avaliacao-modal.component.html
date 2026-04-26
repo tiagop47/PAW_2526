@@ -1,0 +1,33 @@
+<div class="modal-overlay">
+  <div class="modal-content card">
+    <h3 class="mb-4">Avaliar Encomenda</h3>
+    
+    <div *ngIf="erro" class="alert alert-danger">{{ erro }}</div>
+
+    <div class="mb-3">
+      <label class="form-label">Supermercado: <strong>{{ order.supermercado.nome }}</strong></label>
+      <div class="estrelas">
+        <button *ngFor="let e of estrelas" class="estrela" [class.ativa]="e <= notaSupermercado" (click)="notaSupermercado = e">★</button>
+      </div>
+    </div>
+
+    <div class="mb-3" *ngIf="order.temEstafeta()">
+      <label class="form-label">Estafeta: <strong>{{ order.estafeta?.nome }}</strong></label>
+      <div class="estrelas">
+        <button *ngFor="let e of estrelas" class="estrela" [class.ativa]="e <= notaEstafeta" (click)="notaEstafeta = e">★</button>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label">Comentário (opcional)</label>
+      <textarea class="form-control" [(ngModel)]="comentario" rows="3"></textarea>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-secondary flex-grow-1" (click)="fechar()" [disabled]="a_submeter">Cancelar</button>
+      <button class="btn btn-primary flex-grow-1" (click)="submeter()" [disabled]="a_submeter">
+        {{ a_submeter ? 'A enviar...' : 'Submeter' }}
+      </button>
+    </div>
+  </div>
+</div>

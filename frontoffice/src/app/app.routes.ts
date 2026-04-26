@@ -6,6 +6,8 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { CartComponent } from './components/cart/cart.component';
 import { OrdersComponent } from './components/orders/orders.component';
+import { AvaliacoesComponent } from './components/avaliacoes/avaliacoes.component';
+import { SettingsComponent } from './components/settings/settings.component';
 import { GuestGuard } from './guards/guest.guard';
 import { AuthGuard } from './guards/auth.guard';
 
@@ -17,5 +19,7 @@ export const routes: Routes = [
   { path: 'product/:id', component: ProductDetailComponent },
   { path: 'cart', component: CartComponent },
   { path: 'orders', component: OrdersComponent, canActivate: [AuthGuard] },
+  { path: 'avaliacoes', component: AvaliacoesComponent, canActivate: [AuthGuard] },
+  { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' },
 ];

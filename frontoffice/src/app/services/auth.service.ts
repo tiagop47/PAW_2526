@@ -1,22 +1,28 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, BehaviorSubject } from 'rxjs';
 import { API_URL } from '../app.config';
-import { LoginModel } from '../models/login.model';
+import { LoginDTO } from '../models/login.dto';
+import { RegisterDTO } from '../models/register.dto';
+import { UserDTO } from '../models/user.dto';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private endpoint = `${API_URL}/auth/`;
+  private currentUserSubject = new BehaviorSubject<UserDTO | null>(JSON.parse(localStorage.getItem('currentUser') || 'null'));
+  public isLoggedIn$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient) { }
 
-  login(email: string, password: string): Observable<any> {
-    return this.http.post<any>(this.endpoint + "login", new LoginModel(email, password)).pipe(
+  login(email: string, password: string): Observable<UserDTO> {
+    const loginData: LoginDTO = { email, password };
+    return this.http.post<UserDTO>(this.endpoint + "login", loginData).pipe(
       tap(user => {
         if (user && user.token) {
           localStorage.setItem('currentUser', JSON.stringify(user));
+          this.currentUserSubject.next(user);
         }
       })
     );
@@ -24,11 +30,30 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem('currentUser');
+    this.currentUserSubject.next(null);
   }
 
-  register(username: string, password: string): Observable<any> {
-    // Note: Usei o endpoint do seu projeto, mas com o estilo do professor
-    return this.http.post<any>(this.endpoint + "registar", new LoginModel(username, password));
+  register(data: RegisterDTO): Observable<RegisterDTO> {
+    return this.http.post<RegisterDTO>(this.endpoint + "registar", data);
+  }
+
+  updateProfile(data: Partial<UserDTO>): Observable<UserDTO> {
+    const userId = this.currentUserSubject.value?._id;
+    return this.http.patch<UserDTO>(`${API_URL}/users/${userId}`, data).pipe(
+      tap(updatedUser => {
+        const current = this.currentUserSubject.value;
+        if (current) {
+          const newUser = { ...current, ...updatedUser };
+          localStorage.setItem('currentUser', JSON.stringify(newUser));
+          this.currentUserSubject.next(newUser);
+        }
+      })
+    );
+  }
+
+  getCurrentUser(): Observable<UserDTO> {
+    const userId = this.currentUserSubject.value?._id;
+    return this.http.get<UserDTO>(`${API_URL}/users/${userId}`);
   }
 
   // Método auxiliar para os guards e outros componentes

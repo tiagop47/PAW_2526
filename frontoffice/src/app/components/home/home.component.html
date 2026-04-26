@@ -1,87 +1,85 @@
 <div class="home-container">
-
-  <!-- Hero -->
-  <section class="hero">
-    <p class="hero-eyebrow">Entrega rápida · Produtos frescos · Sem filas</p>
-    <h1 class="hero-title">A sua mercearia,<br>quando precisar.</h1>
-
-    @if (!authService.isLoggedIn()) {
-      <div class="hero-cta">
-        <a routerLink="/login" class="btn-primary">Entrar</a>
-        <a routerLink="/register" class="btn-secondary">Criar conta</a>
-      </div>
-    }
+  <section class="hero text-center mb-5">
+    <h1 class="display-4 fw-bold">PAW SUPER</h1>
+    <p class="text-secondary small">QUALIDADE E PREÇO EM PRETO E BRANCO.</p>
   </section>
 
-  <!-- Mapa de supermercados -->
-  @if (allSupermarkets.length > 0) {
-    <section class="map-section">
-      <h2 class="section-title">As nossas localizações</h2>
-      <app-supermarket-map [supermarkets]="allSupermarkets" />
-    </section>
-  }
-
-  <!-- Barra de pesquisa e filtro -->
-  <div class="search-bar">
-    <div class="search-input-wrap">
-      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Pesquisar supermercado..."
-        [(ngModel)]="searchQuery"
-      />
-    </div>
-
-    <select
-      class="filter-select"
-      [(ngModel)]="selectedZone"
-    >
-      <option value="">Todas as localidades</option>
-      @for (zone of availableZones; track zone) {
-        <option [value]="zone">{{ zone }}</option>
-      }
-    </select>
-  </div>
-
-  <!-- Resultados -->
-  <div class="results-meta">
-    {{ filteredSupermarkets.length }} supermercado{{ filteredSupermarkets.length !== 1 ? 's' : '' }} disponíve{{ filteredSupermarkets.length !== 1 ? 'is' : 'l' }}
-  </div>
-
-  <!-- Grid de supermercados -->
-  @if (filteredSupermarkets.length > 0) {
-    <div class="supermarket-grid">
-      @for (s of filteredSupermarkets; track s._id) {
-        <div class="supermarket-card" (click)="navigateToProducts(s._id)">
-          <div class="card-initial">{{ initial(s.nome) }}</div>
+  <!-- Secção: Melhores Ofertas (Comparador) -->
+  <section class="mb-5" *ngIf="cheapestProducts.length > 0">
+    <h2 class="h4 fw-bold mb-4 border-bottom border-dark pb-2">MELHORES OFERTAS GLOBAIS</h2>
+    <div class="row">
+      <div *ngFor="let item of cheapestProducts" class="col-12 col-md-3 mb-3">
+        <div class="card h-100 border-dark rounded-0">
           <div class="card-body">
-            <h3 class="card-name">{{ s.nome }}</h3>
-            <span class="card-location">{{ s.localizacao }}</span>
-            @if (s.descricao) {
-              <p class="card-desc">{{ s.descricao }}</p>
-            }
-            @if (s.metodosEntrega && s.metodosEntrega.length) {
-              <div class="card-badges">
-                @for (method of s.metodosEntrega; track method) {
-                  <span class="badge">{{ method }}</span>
-                }
-              </div>
-            }
-          </div>
-          <div class="card-action">
-            Ver produtos <span class="arrow">→</span>
+            <div class="text-center mb-3">
+              <img [src]="'http://localhost:3000' + item.principal.imagem" [alt]="item.principal.nome" class="img-fluid" style="height: 100px; object-fit: contain;">
+            </div>
+            <h6 class="fw-bold mb-1 text-uppercase">{{ item.principal.nome }}</h6>
+            <div class="h5 fw-bold mb-0 text-primary">{{ item.principal.preco | currency:'EUR' }}</div>
+            <p class="text-secondary small mb-1">Vendido por: {{ item.principal.supermercadoId.nome }}</p>
+            
+            <!-- Distância no comparador -->
+            <div *ngIf="item.principal.distanciaRef !== null" class="small text-dark mb-3 italic" style="font-size: 0.7rem;">
+              A {{ item.principal.distanciaRef.toFixed(1) }} KM DO SEU FAVORITO
+            </div>
+            <div *ngIf="item.principal.distanciaRef === 0 || favoritoId === (item.principal.supermercadoId._id || item.principal.supermercadoId)" class="small text-dark mb-3 italic" style="font-size: 0.7rem;">
+              ESTÁ NO SEU SUPERMERCADO FAVORITO ★
+            </div>
+            
+            <div class="bg-light p-2 small border border-dark mb-3">
+              Poupa <strong>{{ item.poupanca | currency:'EUR' }}</strong> face à concorrência.
+            </div>
+            
+            <button [routerLink]="['/product', item.principal._id]" class="btn btn-primary w-100 btn-sm">VER PRODUTO</button>
           </div>
         </div>
-      }
+      </div>
     </div>
-  } @else {
-    <div class="empty-state">
-      <p>Nenhum supermercado encontrado.</p>
-      <button class="btn-clear" (click)="searchQuery = ''; selectedZone = ''">Limpar filtros</button>
-    </div>
-  }
+  </section>
 
+  <div class="row mb-4 align-items-center">
+    <div class="col-12 col-md-8">
+      <h2 class="h4 fw-bold border-bottom border-dark pb-2 mb-4">SUPERMERCADOS</h2>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="mb-3">
+        <label class="form-label small fw-bold">SELECIONAR ZONA</label>
+        <select class="form-control" [(ngModel)]="selectedZone">
+          <option value="">TODAS AS ZONAS</option>
+          <option *ngFor="let zone of availableZones" [value]="zone">{{ zone | uppercase }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="supermarket-grid mb-5">
+    <div 
+      *ngFor="let s of filteredSupermarkets" 
+      class="card supermarket-card border-dark rounded-0"
+      [class.favorito-card]="s.isFavorito"
+      (click)="navigateToProducts(s._id)"
+    >
+      <div class="card-body text-center">
+        <div *ngIf="s.isFavorito" class="badge bg-dark text-white mb-2 w-100 rounded-0">O MEU FAVORITO ★</div>
+        
+        <div class="supermarket-icon mx-auto border border-dark rounded-0 mb-3">{{ initial(s.nome) }}</div>
+        <h5 class="fw-bold mb-1 text-uppercase">{{ s.nome }}</h5>
+        <p class="text-secondary small mb-2">{{ s.localizacao }}</p>
+        
+        <!-- Distância relativa ao favorito -->
+        <div *ngIf="s.distanciaRef !== null" class="small text-dark mt-3 pt-2 border-top border-dark italic">
+          A <strong>{{ s.distanciaRef.toFixed(1) }} KM</strong> DO SEU FAVORITO
+        </div>
+
+        <button class="btn btn-primary w-100 btn-sm mt-4">EXPLORAR</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="map-section mt-5">
+    <h2 class="h4 fw-bold border-bottom border-dark pb-2 mb-4">MAPA DE REDE</h2>
+    <div class="border border-dark p-1">
+      <app-supermarket-map [supermarkets]="allSupermarkets" [favoritoId]="favoritoId"></app-supermarket-map>
+    </div>
+  </section>
 </div>

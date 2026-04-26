@@ -18,22 +18,13 @@ export class Order {
   private static readonly ESTADO_LABELS: Record<OrderDTO['estado'], string> = {
     pendente: 'Pendente',
     confirmada: 'Confirmada',
-    preparacao: 'Em Preparação',
+    em_preparacao: 'Em Preparação',
     em_entrega: 'Em Entrega',
-    aguarda_confirmacao: 'Aguarda Confirmação',
+    aguarda_validacao: 'Aguarda Confirmação',
     entregue: 'Entregue',
     cancelada: 'Cancelada',
   };
 
-  private static readonly ESTADO_CLASSES: Record<OrderDTO['estado'], string> = {
-    pendente: 'badge-pendente',
-    confirmada: 'badge-confirmada',
-    preparacao: 'badge-preparacao',
-    em_entrega: 'badge-entrega',
-    aguarda_confirmacao: 'badge-aguarda',
-    entregue: 'badge-entregue',
-    cancelada: 'badge-cancelada',
-  };
 
   constructor(dto: OrderDTO) {
     this.id = dto._id;
@@ -54,15 +45,14 @@ export class Order {
     return Order.ESTADO_LABELS[this.estado];
   }
 
-  get estadoCssClass(): string {
-    return Order.ESTADO_CLASSES[this.estado];
-  }
+
 
   get metodoEntregaLabel(): string {
-    return this.metodoEntrega === 'entrega_domicilio' ? 'Entrega ao Domicílio' : 'Levantamento em Loja';
+    return this.metodoEntrega === 'entrega_domicilio'
+      ? 'Entrega ao Domicílio'
+      : 'Levantamento em Loja';
   }
 
-  // Regra b): cancelar até 5 min após confirmação, ou enquanto pendente
   podeCancelar(): boolean {
     if (this.estado === 'pendente') return true;
     if (this.estado === 'confirmada' && this.confirmadaEm) {
@@ -72,15 +62,30 @@ export class Order {
   }
 
   tempoRestanteCancelamento(): string | null {
-    if (this.estado !== 'confirmada' || !this.confirmadaEm) return null;
-    const restante = Order.CANCEL_WINDOW_MS - (Date.now() - this.confirmadaEm.getTime());
-    if (restante <= 0) return null;
-    const minutos = Math.floor(restante / 60000);
-    const segundos = Math.floor((restante % 60000) / 1000);
+    if (this.estado !== 'confirmada' || !this.confirmadaEm) {
+      return null;
+    }
+    
+    var restante = Order.CANCEL_WINDOW_MS - (Date.now() - this.confirmadaEm.getTime());
+    if (restante <= 0) {
+      return null;
+    }
+
+    var minutos = Math.floor(restante / 60000);
+    var segundos = Math.floor((restante % 60000) / 1000);
+
     return `${minutos}m ${segundos}s`;
   }
 
   podeConfirmarRececao(): boolean {
-    return this.estado === 'aguarda_confirmacao';
+    return this.estado === 'aguarda_validacao';
+  }
+
+  podeAvaliar(): boolean {
+    return this.estado === 'entregue';
+  }
+
+  temEstafeta(): boolean {
+    return this.metodoEntrega === 'entrega_domicilio' && !!this.estafeta;
   }
 }

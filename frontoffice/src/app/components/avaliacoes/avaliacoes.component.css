@@ -1,0 +1,16 @@
+.avaliacoes-list {
+  max-width: 800px;
+}
+
+.estrelas {
+  color: #ccc;
+  font-size: 1.2rem;
+}
+
+.estrela.ativa {
+  color: var(--warning);
+}
+
+.italic {
+  font-style: italic;
+}

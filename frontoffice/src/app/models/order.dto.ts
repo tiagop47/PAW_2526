@@ -23,7 +23,7 @@ export interface OrderDTO {
   };
   produtos: OrderItemDTO[];
   valorTotal: number;
-  estado: 'pendente' | 'confirmada' | 'preparacao' | 'em_entrega' | 'aguarda_confirmacao' | 'entregue' | 'cancelada';
+  estado: 'pendente' | 'confirmada' | 'em_preparacao' | 'em_entrega' | 'aguarda_validacao' | 'entregue' | 'cancelada';
   metodoEntrega: 'levantamento_loja' | 'entrega_domicilio';
   moradaEntrega?: string;
   confirmadaEm?: string;

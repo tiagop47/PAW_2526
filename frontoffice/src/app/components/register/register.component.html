@@ -1,62 +1,57 @@
-<div class="auth-container">
-  <div class="auth-card">
-    <h3 class="auth-title">Criar Conta</h3>
-    
-    <div *ngIf="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </div>
+<div class="register-container">
+  <div class="card register-card">
+    <h2 class="text-center mb-4">Criar Conta</h2>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label>Nome Completo</label>
-          <input type="text" class="form-control" formControlName="nome" required>
-        </div>
-        
-        <div class="form-group full-width">
-          <label>Email</label>
-          <input type="email" class="form-control" formControlName="email" required>
-        </div>
-        
-        <div class="form-group half-width">
-          <label>Password</label>
-          <input type="password" class="form-control" formControlName="password" required>
-        </div>
-        
-        <div class="form-group half-width">
-          <label>Telemóvel</label>
-          <input type="number" class="form-control" formControlName="telefone" required>
-        </div>
-        
-        <div class="form-group full-width">
-          <label>NIF (Opcional)</label>
-          <input type="number" class="form-control" formControlName="nif">
-        </div>
-        
-        <div class="form-group full-width">
-          <label>Morada</label>
-          <input type="text" class="form-control" formControlName="morada" placeholder="Ex: Rua do Exemplo, nº 1, Porto" required>
-        </div>
+    <div *ngIf="errorMessage" class="alert alert-danger mb-4">{{ errorMessage }}</div>
 
-        <div class="form-group full-width">
-          <label>Supermercado Favorito (A sua zona)</label>
-          <select class="form-control" formControlName="supermercadoFavorito">
-            <option value="" disabled selected>Escolha o seu supermercado local</option>
-            <option *ngFor="let m of supermercados" [value]="m._id">
-              {{ m.nome }} ({{ m.localizacao }})
-            </option>
-          </select>
-          <small class="help-text">Irá receber promoções exclusivas desta localidade.</small>
+    <form [formGroup]="registerForm">
+      <div class="row">
+        <div class="col col-md-6 mb-3">
+          <label class="form-label">Nome Completo</label>
+          <input type="text" class="form-control" formControlName="nome" placeholder="João Silva">
+        </div>
+        <div class="col col-md-6 mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" formControlName="email" placeholder="exemplo@mail.com">
         </div>
       </div>
-      
-      <button type="submit" class="btn-submit" [disabled]="registerForm.invalid">
-        Registar
-      </button>
+
+      <div class="row">
+        <div class="col col-md-6 mb-3">
+          <label class="form-label">Palavra-passe</label>
+          <input type="password" class="form-control" formControlName="password">
+        </div>
+        <div class="col col-md-6 mb-3">
+          <label class="form-label">Telefone</label>
+          <input type="text" class="form-control" formControlName="telefone">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col col-md-6 mb-3">
+          <label class="form-label">NIF</label>
+          <input type="text" class="form-control" formControlName="nif">
+        </div>
+        <div class="col col-md-6 mb-3">
+          <label class="form-label">Supermercado Favorito</label>
+          <select class="form-control" formControlName="supermercadoFavorito">
+            <option value="">Selecione um supermercado</option>
+            <option *ngFor="let s of supermercados" [value]="s._id">{{ s.nome }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label">Morada</label>
+        <input type="text" class="form-control" formControlName="morada" placeholder="Rua, número, localidade...">
+      </div>
+
+      <button type="button" class="btn btn-primary w-100 mb-3" [disabled]="!registerForm.valid" (click)="onSubmit()">Criar Conta</button>
+
+      <div class="text-center">
+        <span class="text-secondary small">Já tem conta?</span><br>
+        <a routerLink="/login" class="small">Entrar aqui</a>
+      </div>
     </form>
-    
-    <p class="auth-footer">
-      Já tem conta? <a routerLink="/login">Iniciar Sessão</a>
-    </p>
   </div>
 </div>

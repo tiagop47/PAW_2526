@@ -192,6 +192,13 @@ supermarketService.listarProdutosGeral = async function (supermercadoId) {
         .populate('categoriaId', 'nome');
 };
 
+supermarketService.compararProdutosPorNome = async function (nome) {
+    return Product.find({ nome: { $regex: nome, $options: 'i' } })
+        .populate('supermercadoId', 'nome localizacao')
+        .populate('categoriaId', 'nome')
+        .sort({ preco: 1 });
+};
+
 supermarketService.pesquisarProdutos = async function (supermercadoId, { q, categoriaId, pagina = 1, limite = 5 }) {
     const filtro = { supermercadoId };
 

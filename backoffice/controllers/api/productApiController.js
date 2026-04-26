@@ -7,7 +7,12 @@ const productApiController = {};
  */
 productApiController.getAllProducts = async function (req, res) {
     try {
-        const { supermercado } = req.query;
+        const { supermercado, nome } = req.query;
+
+        if (nome) {
+            const produtos = await supermarketService.compararProdutosPorNome(nome);
+            return res.json(produtos);
+        }
 
         const produtos = await supermarketService.listarProdutosGeral(supermercado);
         res.json(produtos);

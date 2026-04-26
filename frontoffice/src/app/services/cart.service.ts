@@ -21,7 +21,6 @@ export class CartService {
 
   /**
    * Regra a): Só podem ser adicionados produtos de um supermercado.
-   * Regra d): Produtos sem stock não podem ser adicionados.
    */
   addItem(item: CartItem, supermercadoId: string): { sucesso: boolean; erro?: string } {
     // Regra d): Verificar stock
@@ -46,7 +45,6 @@ export class CartService {
       const existing = currentItems[existingIndex];
       const novaQuantidade = existing.quantidade + item.quantidade;
 
-      // Regra d): Verificar se a quantidade total não excede o stock
       if (novaQuantidade > item.stockDisponivel) {
         return {
           sucesso: false,
@@ -78,7 +76,6 @@ export class CartService {
       return;
     }
 
-    // Regra d): Não permitir exceder o stock
     if (quantidade > item.stockDisponivel) {
       return;
     }

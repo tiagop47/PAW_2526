@@ -9,7 +9,7 @@ import { API_URL } from '../app.config';
   providedIn: 'root'
 })
 export class OrderService {
-  private endpoint = `${API_URL}/orders/`;
+  private endpoint = `${API_URL}/orders`;
 
   constructor(private http: HttpClient) { }
 
@@ -20,32 +20,35 @@ export class OrderService {
     moradaEntrega?: string;
     coordenadasEntrega?: { lat: number; lng: number };
   }): Observable<Order> {
-    return this.http.post<{ sucesso: boolean; encomenda: OrderDTO }>(this.endpoint, dados).pipe(
-      map(res => new Order(res.encomenda))
+    return this.http.post<any>(this.endpoint, dados).pipe(
+      map(res => new Order(res.encomenda || res))
     );
   }
 
   listarEncomendas(): Observable<Order[]> {
-    return this.http.get<{ sucesso: boolean; encomendas: OrderDTO[] }>(this.endpoint).pipe(
-      map(res => res.encomendas.map(dto => new Order(dto)))
+    return this.http.get<any>(this.endpoint).pipe(
+      map(res => {
+        const data = res.encomendas || res;
+        return Array.isArray(data) ? data.map((dto: any) => new Order(dto)) : [];
+      })
     );
   }
 
   obterEncomenda(id: string): Observable<Order> {
-    return this.http.get<{ sucesso: boolean; encomenda: OrderDTO }>(this.endpoint + id).pipe(
-      map(res => new Order(res.encomenda))
+    return this.http.get<any>(`${this.endpoint}/${id}`).pipe(
+      map(res => new Order(res.encomenda || res))
     );
   }
 
   cancelarEncomenda(id: string): Observable<Order> {
-    return this.http.post<{ sucesso: boolean; encomenda: OrderDTO }>(this.endpoint + id + "/cancelar", {}).pipe(
-      map(res => new Order(res.encomenda))
+    return this.http.post<any>(`${this.endpoint}/${id}/cancelar`, {}).pipe(
+      map(res => new Order(res.encomenda || res))
     );
   }
 
   confirmarRececao(id: string): Observable<Order> {
-    return this.http.post<{ sucesso: boolean; encomenda: OrderDTO }>(this.endpoint + id + "/confirmar-rececao", {}).pipe(
-      map(res => new Order(res.encomenda))
+    return this.http.post<any>(`${this.endpoint}/${id}/confirmar-rececao`, {}).pipe(
+      map(res => new Order(res.encomenda || res))
     );
   }
 }

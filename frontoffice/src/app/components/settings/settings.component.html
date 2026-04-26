@@ -1,0 +1,56 @@
+<div class="settings-container">
+  <div class="card border-dark rounded-0 p-4 shadow-sm">
+    <h2 class="fw-bold mb-4 border-bottom border-dark pb-2 text-uppercase">Configuração de Perfil</h2>
+
+    <div *ngIf="initialLoading" class="text-center p-4">
+      <div class="spinner-border text-dark"></div>
+      <p class="small text-secondary mt-2">A CARREGAR DADOS...</p>
+    </div>
+
+    <div *ngIf="!initialLoading">
+      <div *ngIf="message" class="alert alert-success border-dark rounded-0 mb-4">{{ message }}</div>
+      <div *ngIf="error" class="alert alert-danger border-dark rounded-0 mb-4">{{ error }}</div>
+
+      <form [formGroup]="settingsForm" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+          <label class="form-label small fw-bold">Nome Completo</label>
+          <input type="text" class="form-control" formControlName="nome">
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+          <label class="form-label small fw-bold">Email (Não editável)</label>
+          <input type="email" class="form-control bg-light" formControlName="email">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+          <label class="form-label small fw-bold">Telefone</label>
+          <input type="text" class="form-control" formControlName="telefone">
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+          <label class="form-label small fw-bold">NIF</label>
+          <input type="text" class="form-control" formControlName="nif">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Supermercado Favorito</label>
+        <select class="form-control" formControlName="supermercadoFavorito">
+          <option value="">Selecione um supermercado</option>
+          <option *ngFor="let s of supermercados" [value]="s._id">{{ s.nome | uppercase }} - {{ s.localizacao | uppercase }}</option>
+        </select>
+        <div class="form-text small text-secondary mt-1">Este supermercado será usado como referência de distância na página inicial.</div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label small fw-bold">Morada de Entrega Padrão</label>
+        <input type="text" class="form-control" formControlName="morada">
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" [disabled]="!settingsForm.valid || loading">
+        {{ loading ? 'A GUARDAR...' : 'GUARDAR ALTERAÇÕES' }}
+      </button>
+    </form>
+  </div>
+</div>

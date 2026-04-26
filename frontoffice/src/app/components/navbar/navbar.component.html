@@ -1,50 +1,37 @@
 <nav class="navbar">
-  <div class="nav-brand">
-    <a routerLink="/" class="logo">
-      <span class="logo-text">Página Principal</span>
-    </a>
-  </div>
+  <a class="navbar-brand" routerLink="/">Página Principal</a>
   
-  <div class="nav-right">
-    <!-- Carrinho sempre visível -->
-    <a routerLink="/cart" class="cart-icon-link">
-      Carrinho
-      <span class="cart-badge" *ngIf="cartService.totalItems() > 0">
-        {{ cartService.totalItems() }}
-      </span>
-    </a>
+  <button class="navbar-toggler" (click)="toggleMenu()">
+    ☰
+  </button>
 
-    <div class="menu-toggle" (click)="toggleMenu()">
-      <span class="bar"></span>
-      <span class="bar"></span>
-      <span class="bar"></span>
-    </div>
-  </div>
-
-  <ul class="nav-links" [class.active]="isMenuOpen">
-    <li><a routerLink="/" (click)="isMenuOpen = false">Início</a></li>
-    <li><a routerLink="/sobre" (click)="isMenuOpen = false">Sobre Nós</a></li>
-
-    <!-- Encomendas (apenas logado) -->
+  <ul class="navbar-nav" [class.show]="isMenuOpen">
+    
     <li *ngIf="(authService.isLoggedIn$ | async) !== null">
-      <a routerLink="/orders" (click)="isMenuOpen = false">Encomendas</a>
+      <a class="nav-link" routerLink="/orders" routerLinkActive="active" (click)="isMenuOpen = false">Encomendas</a>
     </li>
 
-    <!-- Carrinho (desktop, dentro do menu) -->
-    <li class="cart-link cart-desktop">
-      <a routerLink="/cart" (click)="isMenuOpen = false" class="cart-icon-link">
-        Carrinho
-        <span class="cart-badge" *ngIf="cartService.totalItems() > 0">
-          {{ cartService.totalItems() }}
-        </span>
+    <li *ngIf="(authService.isLoggedIn$ | async) !== null">
+      <a class="nav-link" routerLink="/avaliacoes" routerLinkActive="active" (click)="isMenuOpen = false">Avaliações</a>
+    </li>
+
+    <li *ngIf="(authService.isLoggedIn$ | async) !== null">
+      <a class="nav-link" routerLink="/settings" routerLinkActive="active" (click)="isMenuOpen = false">Configuração</a>
+    </li>
+
+    <li class="nav-item cart-item">
+      <a class="nav-link" routerLink="/cart" routerLinkActive="active" (click)="isMenuOpen = false">
+        Carrinho ({{ cartService.totalItems() }})
       </a>
     </li>
 
-    <li class="user-actions" *ngIf="(authService.isLoggedIn$ | async) === null">
-      <button class="btn-login" routerLink="/login" (click)="isMenuOpen = false">Entrar</button>
+    <li *ngIf="(authService.isLoggedIn$ | async) === null" class="d-flex gap-2 ms-3">
+      <a class="btn btn-sm btn-outline-primary" routerLink="/login" (click)="isMenuOpen = false">Entrar</a>
+      <a class="btn btn-sm btn-primary text-white" routerLink="/register" (click)="isMenuOpen = false">Registar</a>
     </li>
-    <li class="user-actions" *ngIf="(authService.isLoggedIn$ | async) !== null">
-      <button class="btn-login" style="background-color: #dc3545;" (click)="logout()">Sair</button>
+
+    <li *ngIf="(authService.isLoggedIn$ | async) !== null">
+      <button class="btn btn-sm btn-danger" (click)="logout()">Sair</button>
     </li>
   </ul>
 </nav>

@@ -1,109 +1,64 @@
 <div class="orders-page">
-  <h1>As Minhas Encomendas</h1>
+  <h2 class="mb-4">As Minhas Encomendas</h2>
 
-  @if (mensagem) {
-    <div class="alert alert-success">
-      <span class="alert-icon"></span>
-      {{ mensagem }}
-      <button class="alert-close" (click)="mensagem = null">✕</button>
-    </div>
-  }
+  <div *ngIf="mensagem" class="alert alert-success mb-4">{{ mensagem }}</div>
+  <div *ngIf="erro" class="alert alert-danger mb-4">{{ erro }}</div>
 
-  @if (erro) {
-    <div class="alert alert-error">
-      <span class="alert-icon"></span>
-      {{ erro }}
-      <button class="alert-close" (click)="erro = null">✕</button>
-    </div>
-  }
+  <div *ngIf="loading" class="text-center p-5">
+    <div class="spinner-border text-primary"></div>
+    <p>A carregar encomendas...</p>
+  </div>
 
-  @if (loading) {
-    <div class="loading">
-      <div class="loading-spinner"></div>
-      <p>A carregar encomendas...</p>
-    </div>
-  } @else if (orders.length === 0) {
-    <div class="empty-state">
-      <div class="empty-icon"></div>
-      <h2>Ainda não tens encomendas</h2>
-      <p>Explora os nossos supermercados e faz a tua primeira encomenda!</p>
-      <a routerLink="/" class="btn-primary">Ver Supermercados</a>
-    </div>
-  } @else {
-    <div class="orders-list">
-      @for (order of orders; track order.id) {
-        <div class="order-card">
-          <div class="order-header">
-            <div class="order-info">
-              <span class="order-id">#{{ order.id.slice(-6).toUpperCase() }}</span>
-              <span class="order-date">{{ order.criadoEm | date:'dd/MM/yyyy HH:mm' }}</span>
-            </div>
-            <span class="badge" [ngClass]="order.estadoCssClass">
-              {{ order.estadoLabel }}
-            </span>
-          </div>
+  <div *ngIf="!loading && orders.length === 0" class="text-center p-5 bg-white border rounded">
+    <p class="text-secondary">Ainda não tem encomendas.</p>
+    <a routerLink="/" class="btn btn-primary mt-3">Ver Supermercados</a>
+  </div>
 
-          <div class="order-body">
-            <div class="order-supermarket">
-              <span class="supermarket-icon"></span>
-              <span>{{ order.supermercado?.nome || 'Supermercado' }}</span>
-            </div>
+  <div *ngIf="!loading && orders.length > 0" class="orders-list">
+    <div *ngFor="let order of orders" class="card order-card">
+      <div class="order-header">
+        <div>
+          <span class="fw-bold">#{{ order.id.slice(-6).toUpperCase() }}</span>
+          <span class="text-secondary ms-3 small">{{ order.criadoEm | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <span class="badge badge-{{ order.estado }}">{{ order.estadoLabel }}</span>
+      </div>
 
-            <div class="order-products">
-              @for (item of order.produtos; track item.produtoId._id) {
-                <div class="product-row">
-                  <img
-                    [src]="item.produtoId?.imagem ? 'http://localhost:3000' + item.produtoId.imagem : '/assets/placeholder.png'"
-                    [alt]="item.produtoId?.nome"
-                    class="product-thumb"
-                  />
-                  <span class="product-name">{{ item.produtoId?.nome || 'Produto' }}</span>
-                  <span class="product-qty">x{{ item.quantidade }}</span>
-                  <span class="product-price">{{ (item.precoUnitario * item.quantidade).toFixed(2) }} €</span>
-                </div>
-              }
-            </div>
+      <div class="card-body p-0">
+        <div class="p-3 border-bottom">
+          <span class="text-secondary small">Supermercado:</span> <strong>{{ order.supermercado.nome }}</strong>
+        </div>
 
-            <div class="order-footer">
-              <div class="order-meta">
-                <span class="delivery-method">{{ order.metodoEntregaLabel }}</span>
-                @if (order.moradaEntrega) {
-                  <span class="delivery-address">Morada: {{ order.moradaEntrega }}</span>
-                }
-              </div>
-
-              <div class="order-total">
-                Total: <strong>{{ order.valorTotal.toFixed(2) }} €</strong>
-              </div>
-            </div>
-
-            <!-- Ações -->
-            <div class="order-actions">
-              @if (order.podeCancelar()) {
-                <button class="btn-cancel" (click)="cancelarEncomenda(order.id)">
-                  Cancelar Encomenda
-                </button>
-                @if (order.tempoRestanteCancelamento(); as tempo) {
-                  <span class="cancel-timer">Pode cancelar nos próximos {{ tempo }}</span>
-                }
-              }
-
-              @if (order.podeConfirmarRececao()) {
-                <button class="btn-confirm" (click)="confirmarRececao(order.id)">
-                  Confirmar Receção
-                </button>
-              }
-
-              @if (order.estado === 'em_entrega' && order.estafeta) {
-                <div class="estafeta-info">
-                  <span>Estafeta: <strong>{{ order.estafeta.nome }}</strong></span>
-                  <span>Telefone: {{ order.estafeta.telefone }}</span>
-                </div>
-              }
-            </div>
+        <div class="order-products py-2">
+          <div *ngFor="let item of order.produtos" class="product-row">
+            <img [src]="'http://localhost:3000' + item.produtoId.imagem" class="product-thumb">
+            <div class="flex-grow-1">{{ item.produtoId.nome }}</div>
+            <div class="text-secondary small">x{{ item.quantidade }}</div>
+            <div class="fw-bold">{{ (item.precoUnitario * item.quantidade).toFixed(2) }} €</div>
           </div>
         </div>
-      }
+      </div>
+
+      <div class="order-footer">
+        <div>
+          <span class="text-secondary small">Total:</span>
+          <strong class="h5 mb-0 ms-2">{{ order.valorTotal.toFixed(2) }} €</strong>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button *ngIf="order.podeCancelar()" class="btn btn-sm btn-danger" (click)="cancelarEncomenda(order.id)">Cancelar</button>
+          <button *ngIf="order.podeConfirmarRececao()" class="btn btn-sm btn-success" (click)="confirmarRececao(order.id)">Confirmar Receção</button>
+          <button *ngIf="podeAvaliar(order)" class="btn btn-sm btn-primary" (click)="abrirAvaliacao(order)">Avaliar</button>
+          <span *ngIf="jaAvaliadas.has(order.id)" class="badge btn-success">Avaliado ✓</span>
+        </div>
+      </div>
     </div>
-  }
+  </div>
+
+  <app-avaliacao-modal
+    *ngIf="orderParaAvaliar"
+    [order]="orderParaAvaliar"
+    (fechado)="fecharAvaliacao()"
+    (submetido)="onAvaliacaoSubmetida($event)"
+  ></app-avaliacao-modal>
 </div>

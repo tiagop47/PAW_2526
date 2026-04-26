@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ProductDTO } from '../models/product.dto';
+import { ProductDTO, ProductComparacaoDTO } from '../models/product.dto';
 import { API_URL } from '../app.config';
 
 @Injectable({
@@ -19,5 +19,9 @@ export class ProductService {
 
   getProduct(id: string): Observable<ProductDTO> {
     return this.http.get<ProductDTO>(`${this.apiUrl}/${id}`);
+  }
+
+  compararPorNome(nome: string): Observable<ProductComparacaoDTO[]> {
+    return this.http.get<ProductComparacaoDTO[]>(`${this.apiUrl}?nome=${encodeURIComponent(nome)}`);
   }
 }

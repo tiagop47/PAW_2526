@@ -1,57 +1,101 @@
-<div class="detail-page-wrapper">
-  <div class="header-actions">
-    <a routerLink="/" class="btn-back">← Voltar ao Início</a>
+<div class="product-detail-container">
+  <!-- Navegação de topo -->
+  <div class="mb-4">
+    <a routerLink="/" class="btn btn-sm btn-secondary">← VOLTAR</a>
   </div>
 
-  <div *ngIf="product" class="product-card-detail">
-    <div class="product-image-container">
-      <img
-        [src]="'http://localhost:3000' + product.imagem"
-        [alt]="product.nome"
-        class="product-image"
-      />
+  <div *ngIf="mensagemSucesso" class="alert alert-success mb-4 border-dark rounded-0">
+    {{ mensagemSucesso }}
+  </div>
+  <div *ngIf="error" class="alert alert-danger mb-4 border-dark rounded-0">{{ error }}</div>
+
+  <div *ngIf="loading" class="text-center p-5">
+    <div class="spinner-border text-dark mb-3"></div>
+    <p class="text-secondary small">A CARREGAR...</p>
+  </div>
+
+  <div *ngIf="product" class="row">
+    <!-- COLUNA 1: IMAGEM (ESQUERDA) -->
+    <div class="col-12 col-md-4 mb-4">
+      <div class="card p-3 bg-white border-dark rounded-0 shadow-sm text-center">
+        <img
+          [src]="'http://localhost:3000' + product.imagem"
+          [alt]="product.nome"
+          class="img-fluid"
+          style="max-height: 400px; object-fit: contain;"
+        />
+        <div *ngIf="desconto" class="badge bg-danger mt-3 w-100 rounded-0 border-0">
+          OFERTA: -{{ desconto }}%
+        </div>
+      </div>
     </div>
 
-    <div class="product-info-container">
-      <div class="product-header">
-        <span class="category-badge">{{ product.categoriaId.nome }}</span>
-        <h1>{{ product.nome }}</h1>
+    <!-- COLUNA 2: INFO E DESCRIÇÃO (CENTRO) -->
+    <div class="col-12 col-md-5 mb-4">
+      <div class="product-main-info border-bottom border-dark pb-3 mb-4">
+        <div class="text-secondary small mb-1 text-uppercase">{{ product.categoriaId.nome }}</div>
+        <h1 class="fw-bold mb-3">{{ product.nome }}</h1>
+        <div class="small text-secondary mb-2">VENDIDO POR: <strong>{{ product.supermercadoId?.nome || 'ESTE SUPERMERCADO' }}</strong></div>
       </div>
 
-      <div class="price-section">
-        <span class="price">{{ product.preco | currency: 'EUR' }}</span>
-        <span class="old-price" *ngIf="product.precoAntigo">{{ product.precoAntigo | currency: 'EUR' }}</span>
-      </div>
-
-      <div class="description-section" *ngIf="product.descricao">
-        <h3>Descrição</h3>
-        <p>{{ product.descricao }}</p>
-      </div>
-
-      <div class="meta-section">
-        <div class="meta-item" *ngIf="product.categoriaId.descricao">
-          <strong>Sobre a Categoria</strong>
-          <p>{{ product.categoriaId.descricao }}</p>
-        </div>
-
-        <div class="meta-item" *ngIf="product.stockDisponivel !== undefined">
-          <strong>Stock Disponível</strong>
-          <p>{{ product.stockDisponivel }} unidades</p>
-        </div>
-
-      </div>
-      
-      <div class="action-section">
-         <button class="btn-primary">Adicionar ao Carrinho</button>
+      <div class="product-description" *ngIf="product.descricao">
+        <h6 class="fw-bold text-uppercase small mb-3">Sobre o Produto</h6>
+        <p class="text-secondary" style="line-height: 1.6; text-align: justify;">
+          {{ product.descricao }}
+        </p>
       </div>
     </div>
-  </div>
 
-  <div *ngIf="loading" class="empty-state">
-    <p>A carregar detalhes do produto...</p>
-  </div>
+    <!-- COLUNA 3: COMPRA E COMPARAÇÃO (DIREITA / LADO) -->
+    <div class="col-12 col-md-3">
+      <!-- CAIXA DE COMPRA -->
+      <div class="card p-3 border-dark rounded-0 mb-4 bg-light shadow-sm">
+        <div class="mb-3">
+          <div class="h2 fw-bold text-dark mb-0">{{ product.preco | currency: 'EUR' }}</div>
+          <div class="text-secondary text-decoration-line-through small" *ngIf="product.precoAntigo">
+            ANTES: {{ product.precoAntigo | currency: 'EUR' }}
+          </div>
+        </div>
 
-  <div *ngIf="error" class="empty-state">
-    <p>{{ error }}</p>
+        <div class="mb-3 d-flex align-items-center">
+          <div 
+            class="border border-dark me-2" 
+            [style.width.px]="10" [style.height.px]="10"
+            [style.background-color]="product.stockDisponivel > 0 ? '#000' : '#fff'"
+          ></div>
+          <span class="fw-bold small text-uppercase">
+            {{ product.stockDisponivel > 0 ? 'Em Stock' : 'Esgotado' }}
+          </span>
+        </div>
+
+        <button 
+          class="btn btn-primary w-100 py-2 fw-bold border-dark mb-2" 
+          (click)="addToCart()"
+          [disabled]="product.stockDisponivel <= 0"
+        >
+          COMPRAR AGORA
+        </button>
+      </div>
+
+      <!-- COMPARAÇÃO RÁPIDA AO LADO -->
+      <div *ngIf="comparacao.length > 0">
+        <h6 class="fw-bold text-uppercase small border-bottom border-dark pb-2 mb-3">Outros Preços</h6>
+        <div *ngFor="let item of comparacao" class="card p-2 border-dark rounded-0 mb-2 bg-white">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="small">
+              <div class="fw-bold text-uppercase" style="font-size: 0.7rem;">{{ item.supermercadoId.nome }}</div>
+              <div class="text-secondary" style="font-size: 0.65rem;">{{ item.supermercadoId.localizacao }}</div>
+            </div>
+            <div class="text-end">
+              <div class="fw-bold text-primary">{{ item.preco | currency:'EUR' }}</div>
+              <a [routerLink]="['/product', item._id]" class="text-dark fw-bold" style="font-size: 0.65rem;">VER →</a>
+            </div>
+          </div>
+          <div *ngIf="item.preco < product.preco" class="badge bg-danger mt-1 rounded-0 p-1" style="font-size: 0.6rem;">
+            POUPA {{ (product.preco - item.preco) | currency:'EUR' }}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

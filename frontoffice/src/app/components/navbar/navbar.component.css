@@ -2,139 +2,69 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  padding: 1rem;
+  background-color: #fff;
+  color: #000;
+  border-bottom: 2px solid #000;
   position: sticky;
   top: 0;
   z-index: 1000;
 }
 
-.nav-brand .logo {
+.navbar-brand {
+  outline: auto;
+  padding: 0.1%;
   text-decoration: none;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #212529;
+  text-transform: uppercase;
 }
 
-.nav-links {
+.navbar-nav {
   display: flex;
   list-style: none;
   margin: 0;
   padding: 0;
-  align-items: center;
   gap: 1.5rem;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: #495057;
-  font-weight: 500;
-}
-
-.nav-links a:hover {
-  color: #212529;
-  text-decoration: underline;
-}
-
-.btn-login {
-  background-color: #212529;
-  color: #ffffff;
-  border: 1px solid #212529;
-  padding: 0.4rem 1rem;
-  border-radius: 4px;
-  font-size: 0.95rem;
-  cursor: pointer;
-}
-
-.nav-right {
-  display: flex;
   align-items: center;
-  gap: 1rem;
 }
 
-.menu-toggle {
+.nav-link {
+  color: #000;
+  text-decoration: none;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+.nav-link:not(.btn) {
+  padding: 0.5rem;
+}
+
+.nav-link:hover:not(.btn), .nav-link.active:not(.btn) {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.navbar-toggler {
   display: none;
-  flex-direction: column;
-  cursor: pointer;
-  gap: 4px;
-}
-
-.menu-toggle .bar {
-  width: 22px;
-  height: 2px;
-  background-color: #212529;
-}
-
-/* desktop: esconde o carrinho do nav-right (visível só em mobile) */
-.nav-right .cart-icon-link {
-  display: none;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.55);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
 }
 
 @media (max-width: 768px) {
-  .menu-toggle {
-    display: flex;
-  }
-
-  /* em mobile: mostra o carrinho no nav-right e esconde o do nav-links */
-  .nav-right .cart-icon-link {
-    display: inline-flex;
-  }
-
-  .cart-desktop {
-    display: none;
-  }
-
-  .nav-links {
+  .navbar-toggler { display: block; }
+  .navbar-nav {
     display: none;
     flex-direction: column;
     position: absolute;
     top: 100%;
     left: 0;
-    width: 100%;
-    background-color: #ffffff;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    padding: 1rem 0;
-    gap: 1rem;
+    right: 0;
+    background-color: var(--dark);
+    padding: 1rem;
   }
-
-  .nav-links.active {
-    display: flex;
-  }
-}
-
-/* Cart icon */
-.cart-link {
-  position: relative;
-}
-
-.cart-icon-link {
-  font-size: 1.3rem;
-  text-decoration: none;
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-
-.cart-badge {
-  position: absolute;
-  top: -8px;
-  right: -10px;
-  background: #dc3545;
-  color: #fff;
-  font-size: 0.65rem;
-  font-weight: 700;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  animation: popIn 0.2s ease-out;
-}
-
-@keyframes popIn {
-  from { transform: scale(0); }
-  to { transform: scale(1); }
+  .navbar-nav.show { display: flex; }
 }

@@ -1,9 +1,11 @@
 export interface UserDTO {
-  id: string;
+  _id: string;
   nome: string;
   email: string;
-  role: string;
+  role: 'cliente' | 'estafeta' | 'admin';
   telefone: string;
   nif?: string;
   morada: string;
+  supermercadoFavorito?: string;
+  token?: string;
 }

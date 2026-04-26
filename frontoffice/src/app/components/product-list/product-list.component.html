@@ -1,45 +1,46 @@
 <div class="product-container">
-  <h2>Produtos Disponíveis ({{ products().length }})</h2>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Produtos Disponíveis</h2>
+    <span class="badge btn-secondary">{{ products.length }} itens</span>
+  </div>
 
-  <!-- Toast notification -->
-  @if (toast()) {
-    <div class="toast" [class.toast-success]="toast()!.type === 'success'" [class.toast-error]="toast()!.type === 'error'">
-      {{ toast()!.message }}
-    </div>
-  }
+  <div *ngIf="loading" class="text-center p-5">
+    <div class="spinner-border text-primary"></div>
+    <p>A carregar produtos...</p>
+  </div>
 
-  <div *ngIf="loading()" class="info">A carregar produtos...</div>
-  <div *ngIf="error()" class="error">{{ error() }}</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-  <div *ngIf="!loading() && !error()" class="product-grid">
-    <div *ngFor="let product of products()" class="product-card" [class.out-of-stock]="isOutOfStock(product)">
-      <div class="image-placeholder">
-        <img [src]="'http://localhost:3000' + product.imagem" [alt]="product.nome" *ngIf="product.imagem" />
-        <span *ngIf="isOutOfStock(product)" class="stock-badge stock-out">Esgotado</span>
-        <span *ngIf="!isOutOfStock(product) && product.stockDisponivel <= 5" class="stock-badge stock-low">
-          Últimas {{ product.stockDisponivel }} unidades
+  <div *ngIf="!loading && !error" class="product-grid">
+    <div *ngFor="let product of products" class="card product-card" [class.out-of-stock]="isOutOfStock(product)">
+      <div class="product-img-container">
+        <img [src]="'http://localhost:3000' + product.imagem" [alt]="product.nome" *ngIf="product.imagem" class="product-img" />
+        <span *ngIf="isOutOfStock(product)" class="badge btn-danger stock-badge">Esgotado</span>
+        <span *ngIf="!isOutOfStock(product) && product.stockDisponivel <= 5" class="badge btn-warning stock-badge">
+          Últimas {{ product.stockDisponivel }}
         </span>
       </div>
-      <div class="product-details">
-        <h3>{{ product.nome }}</h3>
-        <p class="category">{{ product.categoriaId.nome }}</p>
-        <p class="price">{{ product.preco | currency:'EUR' }}</p>
-        <div class="product-actions">
-          <button [routerLink]="['/product', product._id]" class="view-btn">Ver Detalhes</button>
+      
+      <div class="card-body">
+        <h5 class="card-title">{{ product.nome }}</h5>
+        <p class="text-secondary small">{{ product.categoriaId.nome }}</p>
+        <p class="h5 text-primary mb-3">{{ product.preco | currency:'EUR' }}</p>
+        
+        <div class="d-grid gap-2">
+          <button [routerLink]="['/product', product._id]" class="btn btn-sm btn-secondary">Detalhes</button>
           <button
-            class="cart-btn"
+            class="btn btn-sm btn-primary"
             (click)="addToCart(product)"
             [disabled]="isOutOfStock(product)"
-            [title]="isOutOfStock(product) ? 'Sem stock disponível' : 'Adicionar ao carrinho'"
           >
-            Adicionar ao Carrinho
+            🛒 Comprar
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <div *ngIf="!loading() && products().length === 0 && !error()" class="info">
-    Nenhum produto encontrado.
+  <div *ngIf="!loading && products.length === 0 && !error" class="text-center p-5 bg-white border rounded">
+    <p class="text-secondary">Nenhum produto encontrado neste supermercado.</p>
   </div>
 </div>

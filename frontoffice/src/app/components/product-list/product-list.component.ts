@@ -25,7 +25,7 @@ export class ProductListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    var idTemp = this.route.snapshot.params['supermarketId'];
+    const idTemp = this.route.snapshot.params['supermarketId'];
     this.supermarketId = idTemp;
 
     if (this.supermarketId) {
