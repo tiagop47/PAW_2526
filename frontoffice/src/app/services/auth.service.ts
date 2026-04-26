@@ -1,72 +1,38 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { RegisterDTO } from '../models/register.dto';
-import { UserDTO } from '../models/user.dto';
-import { environment } from '../../environments/environment';
+import { Observable, tap } from 'rxjs';
+import { API_URL } from '../app.config';
+import { LoginModel } from '../models/login.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/auth`;
-  private tokenSubject = new BehaviorSubject<string | null>(this.getToken());
+  private endpoint = `${API_URL}/auth/`;
 
-  isLoggedIn$ = this.tokenSubject.asObservable();
+  constructor(private http: HttpClient) { }
 
-  login(credentials: { email: string; password: string }): Observable<{ token: string; user: UserDTO }> {
-    return this.http.post<{ token: string; user: UserDTO }>(`${this.apiUrl}/login`, credentials).pipe(
-      tap(response => {
-        if (response.token) {
-          this.setToken(response.token);
-        }
-        if (response.user) {
-          localStorage.setItem('currentUser', JSON.stringify(response.user));
+  login(email: string, password: string): Observable<any> {
+    return this.http.post<any>(this.endpoint + "login", new LoginModel(email, password)).pipe(
+      tap(user => {
+        if (user && user.token) {
+          localStorage.setItem('currentUser', JSON.stringify(user));
         }
       })
     );
   }
 
-  register(userData: RegisterDTO): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/registar`, userData);
-  }
-
   logout(): void {
-    localStorage.removeItem('token');
     localStorage.removeItem('currentUser');
-    this.tokenSubject.next(null);
   }
 
-  getCurrentUser(): UserDTO | null {
-    const userStr = localStorage.getItem('currentUser');
-    return userStr ? JSON.parse(userStr) : null;
+  register(username: string, password: string): Observable<any> {
+    // Note: Usei o endpoint do seu projeto, mas com o estilo do professor
+    return this.http.post<any>(this.endpoint + "registar", new LoginModel(username, password));
   }
 
-  getToken(): string | null {
-    return localStorage.getItem('token');
-  }
-
-  private setToken(token: string): void {
-    localStorage.setItem('token', token);
-    this.tokenSubject.next(token);
-  }
-
+  // Método auxiliar para os guards e outros componentes
   isLoggedIn(): boolean {
-    const token = this.getToken();
-    if (!token) return false;
-    
-    return !this.isTokenExpired(token);
-  }
-
-  private isTokenExpired(token: string): boolean {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      // O expiração do JWT (exp) é em segundos, o Date.now() em milissegundos
-      const expirationDate = payload.exp * 1000;
-      return Date.now() >= expirationDate;
-    } catch (e) {
-      return true; // Token inválido ou ilegível
-    }
+    return localStorage.getItem('currentUser') !== null;
   }
 }

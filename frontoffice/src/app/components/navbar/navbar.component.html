@@ -1,14 +1,24 @@
 <nav class="navbar">
   <div class="nav-brand">
     <a routerLink="/" class="logo">
-      <span class="logo-text">Loja PAW</span>
+      <span class="logo-text">Página Principal</span>
     </a>
   </div>
   
-  <div class="menu-toggle" (click)="toggleMenu()">
-    <span class="bar"></span>
-    <span class="bar"></span>
-    <span class="bar"></span>
+  <div class="nav-right">
+    <!-- Carrinho sempre visível -->
+    <a routerLink="/cart" class="cart-icon-link">
+      Carrinho
+      <span class="cart-badge" *ngIf="cartService.totalItems() > 0">
+        {{ cartService.totalItems() }}
+      </span>
+    </a>
+
+    <div class="menu-toggle" (click)="toggleMenu()">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </div>
   </div>
 
   <ul class="nav-links" [class.active]="isMenuOpen">
@@ -20,8 +30,8 @@
       <a routerLink="/orders" (click)="isMenuOpen = false">Encomendas</a>
     </li>
 
-    <!-- Carrinho -->
-    <li class="cart-link">
+    <!-- Carrinho (desktop, dentro do menu) -->
+    <li class="cart-link cart-desktop">
       <a routerLink="/cart" (click)="isMenuOpen = false" class="cart-icon-link">
         Carrinho
         <span class="cart-badge" *ngIf="cartService.totalItems() > 0">

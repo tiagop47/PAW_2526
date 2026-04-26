@@ -1,30 +1,39 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { Injectable } from '@angular/core';
+import {
+  HttpRequest,
+  HttpHandler,
+  HttpEvent,
+  HttpInterceptor,
+  HttpErrorResponse
+} from '@angular/common/http';
+import { Observable, catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
-import { catchError, throwError } from 'rxjs';
-import { AuthService } from '../services/auth.service';
 
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = localStorage.getItem('token');
-  const router = inject(Router);
-  const authService = inject(AuthService);
-  
-  let modifiedReq = req;
+@Injectable()
+export class AuthInterceptor implements HttpInterceptor {
 
-  if (token) {
-    modifiedReq = req.clone({
-      headers: req.headers.set('Authorization', `Bearer ${token}`)
-    });
+  constructor(private router: Router) {}
+
+  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    
+    let currentUser = JSON.parse(localStorage.getItem('currentUser') || "{}");
+
+    if (currentUser && currentUser.token) {
+      request = request.clone({
+          setHeaders: { 
+              "x-access-token": `${currentUser.token}`
+          }
+      });
+    }
+
+    return next.handle(request).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 401) {
+          localStorage.removeItem('currentUser');
+          this.router.navigate(['/login']);
+        }
+        return throwError(() => error);
+      })
+    );
   }
-
-  return next(modifiedReq).pipe(
-    catchError((error: HttpErrorResponse) => {
-      // Se a resposta for 401 (Não Autorizado), fazer logout e redirecionar
-      if (error.status === 401) {
-        authService.logout();
-        router.navigate(['/login']);
-      }
-      return throwError(() => error);
-    })
-  );
-};
+}

@@ -1,15 +1,31 @@
-import { inject } from '@angular/core';
-import { Router, CanActivateFn } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { Injectable } from '@angular/core';
+import { 
+  CanActivate, 
+  ActivatedRouteSnapshot, 
+  RouterStateSnapshot, 
+  UrlTree, 
+  Router 
+} from '@angular/router';
+import { Observable } from 'rxjs';
 
-export const guestGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
+@Injectable({
+  providedIn: 'root'
+})
+export class GuestGuard implements CanActivate {
+  
+  constructor(private router: Router) {}
 
-  if (!authService.isLoggedIn()) {
-    return true;
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+      
+    if (!localStorage.getItem('currentUser')) {
+      return true;
+    }
+
+    // Se já estiver logado, redireciona para a home
+    this.router.navigate(['/']);
+    return false;
   }
-
-  // Redireciona para a home caso já esteja autenticado
-  return router.parseUrl('/');
-};
+}

@@ -3,12 +3,11 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { ProductDTO } from '../../models/product.dto';
-import { BarcodeDirective } from '../../directives/barcode.directive';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, BarcodeDirective],
+  imports: [CommonModule, RouterModule],
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.css'],
 })
@@ -19,30 +18,14 @@ export class ProductDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private productService: ProductService,
+    private rest: ProductService,
   ) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.loadProduct(id);
-    } else {
-      this.error = 'Produto inválido ou ID não fornecido.';
+    var idTemp = this.route.snapshot.params['id'];
+    this.rest.getProduct(idTemp).subscribe((data: ProductDTO) => {
+      this.product = data;
       this.loading = false;
-    }
-  }
-
-  private loadProduct(id: string): void {
-    this.productService.getProduct(id).subscribe({
-      next: (data) => {
-        this.product = data;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Erro ao carregar produto:', err);
-        this.error = 'Não foi possível carregar os detalhes do produto.';
-        this.loading = false;
-      },
     });
   }
 }

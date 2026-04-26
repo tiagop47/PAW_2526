@@ -4,4 +4,9 @@ export interface SupermarketDTO {
   descricao?: string;
   localizacao: string;
   metodosEntrega?: string[];
+  localizacaoGeo?: {
+    type: 'Point';
+    coordinates: [number, number]; // [longitude, latitude]
+  };
+  raioEntregaKm?: number;
 }

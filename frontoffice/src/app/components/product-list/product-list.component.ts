@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
@@ -10,76 +10,54 @@ import { ProductDTO } from '../../models/product.dto';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './product-list.component.html',
-  styleUrl: './product-list.component.css'
+  styleUrl: './product-list.component.css',
 })
 export class ProductListComponent implements OnInit {
-  products = signal<ProductDTO[]>([]);
-  loading = signal<boolean>(true);
-  error = signal<string | null>(null);
-  toast = signal<{ message: string; type: 'success' | 'error' } | null>(null);
-
-  private supermarketId: string | null = null;
+  products: ProductDTO[] = [];
+  loading: boolean = true;
+  error: string | null = null;
+  supermarketId: string = "";
 
   constructor(
     private route: ActivatedRoute,
-    private productService: ProductService,
-    public cartService: CartService
+    private rest: ProductService,
+    public cartService: CartService,
   ) {}
 
   ngOnInit(): void {
-    this.supermarketId = this.route.snapshot.paramMap.get('supermarketId');
+    var idTemp = this.route.snapshot.params['supermarketId'];
+    this.supermarketId = idTemp;
 
     if (this.supermarketId) {
-      this.loadProducts(this.supermarketId);
+      this.rest.getProducts(this.supermarketId).subscribe((data: ProductDTO[]) => {
+        this.products = data;
+        this.loading = false;
+      });
     } else {
-      this.error.set('Nenhum supermercado selecionado.');
-      this.loading.set(false);
+      this.error = 'Nenhum supermercado selecionado.';
+      this.loading = false;
     }
   }
 
-  loadProducts(supermarketId: string): void {
-    this.productService.getProducts(supermarketId).subscribe({
-      next: (data) => {
-        this.products.set(data);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.error.set('Erro ao carregar produtos deste supermercado.');
-        this.loading.set(false);
-      }
-    });
-  }
-
-  /**
-   * Regra d): Produtos sem stock não podem ser adicionados ao carrinho.
-   * Regra a): Só produtos de um supermercado por encomenda.
-   */
   addToCart(product: ProductDTO): void {
-    if (!this.supermarketId) return;
-
-    const resultado = this.cartService.addItem({
-      produtoId: product._id,
-      nome: product.nome,
-      imagem: 'http://localhost:3000' + product.imagem,
-      preco: product.preco,
-      quantidade: 1,
-      stockDisponivel: product.stockDisponivel
-    }, this.supermarketId);
-
-    if (resultado.sucesso) {
-      this.showToast('Produto adicionado ao carrinho!', 'success');
-    } else {
-      this.showToast(resultado.erro!, 'error');
+    if (!this.supermarketId) {
+      return;
     }
+
+    this.cartService.addItem(
+      {
+        produtoId: product._id,
+        nome: product.nome,
+        imagem: 'http://localhost:3000' + product.imagem,
+        preco: product.preco,
+        quantidade: 1,
+        stockDisponivel: product.stockDisponivel,
+      },
+      this.supermarketId,
+    );
   }
 
   isOutOfStock(product: ProductDTO): boolean {
     return product.stockDisponivel <= 0;
   }
-
-  private showToast(message: string, type: 'success' | 'error'): void {
-    this.toast.set({ message, type });
-    setTimeout(() => this.toast.set(null), 3000);
-  }
 }
-

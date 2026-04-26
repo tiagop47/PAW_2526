@@ -1,28 +1,28 @@
 <div class="orders-page">
   <h1>As Minhas Encomendas</h1>
 
-  @if (mensagem()) {
+  @if (mensagem) {
     <div class="alert alert-success">
       <span class="alert-icon"></span>
-      {{ mensagem() }}
-      <button class="alert-close" (click)="mensagem.set(null)">✕</button>
+      {{ mensagem }}
+      <button class="alert-close" (click)="mensagem = null">✕</button>
     </div>
   }
 
-  @if (erro()) {
+  @if (erro) {
     <div class="alert alert-error">
       <span class="alert-icon"></span>
-      {{ erro() }}
-      <button class="alert-close" (click)="erro.set(null)">✕</button>
+      {{ erro }}
+      <button class="alert-close" (click)="erro = null">✕</button>
     </div>
   }
 
-  @if (loading()) {
+  @if (loading) {
     <div class="loading">
       <div class="loading-spinner"></div>
       <p>A carregar encomendas...</p>
     </div>
-  } @else if (orders().length === 0) {
+  } @else if (orders.length === 0) {
     <div class="empty-state">
       <div class="empty-icon"></div>
       <h2>Ainda não tens encomendas</h2>
@@ -31,29 +31,29 @@
     </div>
   } @else {
     <div class="orders-list">
-      @for (order of orders(); track order._id) {
+      @for (order of orders; track order.id) {
         <div class="order-card">
           <div class="order-header">
             <div class="order-info">
-              <span class="order-id">#{{ order._id.slice(-6).toUpperCase() }}</span>
+              <span class="order-id">#{{ order.id.slice(-6).toUpperCase() }}</span>
               <span class="order-date">{{ order.criadoEm | date:'dd/MM/yyyy HH:mm' }}</span>
             </div>
-            <span class="badge" [ngClass]="estadoClasses[order.estado]">
-              {{ order.estado === 'em_entrega' && !order.estafetaId ? 'Aguarda Estafeta' : estadoLabels[order.estado] }}
+            <span class="badge" [ngClass]="order.estadoCssClass">
+              {{ order.estadoLabel }}
             </span>
           </div>
 
           <div class="order-body">
             <div class="order-supermarket">
               <span class="supermarket-icon"></span>
-              <span>{{ order.supermercadoId?.nome || 'Supermercado' }}</span>
+              <span>{{ order.supermercado?.nome || 'Supermercado' }}</span>
             </div>
 
             <div class="order-products">
               @for (item of order.produtos; track item.produtoId._id) {
                 <div class="product-row">
                   <img
-                    [src]="item.produtoId?.imagem || '/assets/placeholder.png'"
+                    [src]="item.produtoId?.imagem ? 'http://localhost:3000' + item.produtoId.imagem : '/assets/placeholder.png'"
                     [alt]="item.produtoId?.nome"
                     class="product-thumb"
                   />
@@ -66,9 +66,7 @@
 
             <div class="order-footer">
               <div class="order-meta">
-                <span class="delivery-method">
-                  {{ getMetodoEntregaLabel(order.metodoEntrega) }}
-                </span>
+                <span class="delivery-method">{{ order.metodoEntregaLabel }}</span>
                 @if (order.moradaEntrega) {
                   <span class="delivery-address">Morada: {{ order.moradaEntrega }}</span>
                 }
@@ -81,25 +79,25 @@
 
             <!-- Ações -->
             <div class="order-actions">
-              @if (podeCancelar(order)) {
-                <button class="btn-cancel" (click)="cancelarEncomenda(order._id)">
+              @if (order.podeCancelar()) {
+                <button class="btn-cancel" (click)="cancelarEncomenda(order.id)">
                   Cancelar Encomenda
                 </button>
-                @if (tempoRestanteCancelamento(order); as tempo) {
+                @if (order.tempoRestanteCancelamento(); as tempo) {
                   <span class="cancel-timer">Pode cancelar nos próximos {{ tempo }}</span>
                 }
               }
 
-              @if (podeConfirmarRececao(order)) {
-                <button class="btn-confirm" (click)="confirmarRececao(order._id)">
+              @if (order.podeConfirmarRececao()) {
+                <button class="btn-confirm" (click)="confirmarRececao(order.id)">
                   Confirmar Receção
                 </button>
               }
 
-              @if (order.estado === 'em_entrega' && order.estafetaId) {
+              @if (order.estado === 'em_entrega' && order.estafeta) {
                 <div class="estafeta-info">
-                  <span>Estafeta: <strong>{{ order.estafetaId.nome }}</strong></span>
-                  <span>Telefone: {{ order.estafetaId.telefone }}</span>
+                  <span>Estafeta: <strong>{{ order.estafeta.nome }}</strong></span>
+                  <span>Telefone: {{ order.estafeta.telefone }}</span>
                 </div>
               }
             </div>

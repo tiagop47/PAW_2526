@@ -1,47 +1,87 @@
 <div class="home-container">
-  <div class="hero-section">
-    <h1>Descubra os Supermercados</h1>
-    <p>Escolha a sua zona e encontre as ofertas.</p>
 
-    <div class="search-container">
-      <select 
-        class="search-select" 
-        [ngModel]="selectedZone()"
-        (ngModelChange)="selectedZone.set($event)"
-      >
-        <option value="">Todas as Localidades</option>
-        <option *ngFor="let zone of availableZones()" [value]="zone">{{ zone }}</option>
-      </select>
+  <!-- Hero -->
+  <section class="hero">
+    <p class="hero-eyebrow">Entrega rápida · Produtos frescos · Sem filas</p>
+    <h1 class="hero-title">A sua mercearia,<br>quando precisar.</h1>
+
+    @if (!authService.isLoggedIn()) {
+      <div class="hero-cta">
+        <a routerLink="/login" class="btn-primary">Entrar</a>
+        <a routerLink="/register" class="btn-secondary">Criar conta</a>
+      </div>
+    }
+  </section>
+
+  <!-- Mapa de supermercados -->
+  @if (allSupermarkets.length > 0) {
+    <section class="map-section">
+      <h2 class="section-title">As nossas localizações</h2>
+      <app-supermarket-map [supermarkets]="allSupermarkets" />
+    </section>
+  }
+
+  <!-- Barra de pesquisa e filtro -->
+  <div class="search-bar">
+    <div class="search-input-wrap">
+      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Pesquisar supermercado..."
+        [(ngModel)]="searchQuery"
+      />
     </div>
+
+    <select
+      class="filter-select"
+      [(ngModel)]="selectedZone"
+    >
+      <option value="">Todas as localidades</option>
+      @for (zone of availableZones; track zone) {
+        <option [value]="zone">{{ zone }}</option>
+      }
+    </select>
   </div>
-  
-  <div class="zones-container">
-    <div *ngFor="let zoneGroup of supermarketsByZone()" class="zone-section">
-      <h2 class="zone-title">{{ zoneGroup.zone }}</h2>
-      
-      <div class="supermarket-grid">
-        <div 
-          *ngFor="let s of zoneGroup.supermarkets" 
-          (click)="select(s._id)"
-          class="supermarket-card"
-        >
-          <div class="card-content">
-            <h3>{{ s.nome }}</h3>
-            <p class="description" *ngIf="s.descricao">{{ s.descricao }}</p>
-            <div class="delivery-methods" *ngIf="s.metodosEntrega && s.metodosEntrega.length">
-              <span *ngFor="let method of s.metodosEntrega" class="badge">{{ method }}</span>
-            </div>
+
+  <!-- Resultados -->
+  <div class="results-meta">
+    {{ filteredSupermarkets.length }} supermercado{{ filteredSupermarkets.length !== 1 ? 's' : '' }} disponíve{{ filteredSupermarkets.length !== 1 ? 'is' : 'l' }}
+  </div>
+
+  <!-- Grid de supermercados -->
+  @if (filteredSupermarkets.length > 0) {
+    <div class="supermarket-grid">
+      @for (s of filteredSupermarkets; track s._id) {
+        <div class="supermarket-card" (click)="navigateToProducts(s._id)">
+          <div class="card-initial">{{ initial(s.nome) }}</div>
+          <div class="card-body">
+            <h3 class="card-name">{{ s.nome }}</h3>
+            <span class="card-location">{{ s.localizacao }}</span>
+            @if (s.descricao) {
+              <p class="card-desc">{{ s.descricao }}</p>
+            }
+            @if (s.metodosEntrega && s.metodosEntrega.length) {
+              <div class="card-badges">
+                @for (method of s.metodosEntrega; track method) {
+                  <span class="badge">{{ method }}</span>
+                }
+              </div>
+            }
           </div>
-          <div class="card-footer">
-            <button class="btn-enter">Ver Produtos</button>
+          <div class="card-action">
+            Ver produtos <span class="arrow">→</span>
           </div>
         </div>
-      </div>
-      
+      }
     </div>
-  </div>
-  
-  <div *ngIf="supermarketsByZone().length === 0" class="empty-state">
-    Nenhuma localidade encontrada com essa pesquisa.
-  </div>
+  } @else {
+    <div class="empty-state">
+      <p>Nenhum supermercado encontrado.</p>
+      <button class="btn-clear" (click)="searchQuery = ''; selectedZone = ''">Limpar filtros</button>
+    </div>
+  }
+
 </div>

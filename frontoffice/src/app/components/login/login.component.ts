@@ -1,38 +1,49 @@
-import { Component, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private router = inject(Router);
+export class LoginComponent implements OnInit {
 
-  loginForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', Validators.required]
-  });
+  username: string;
+  password: string;
 
-  errorMessage: string = '';
-
-  onSubmit() {
-    if (this.loginForm.valid) {
-      this.authService.login(this.loginForm.value as { email: string; password: string }).subscribe({
-        next: () => {
-          this.router.navigate(['/']);
-        },
-        error: (err) => {
-          this.errorMessage = err.error?.error || 'Erro ao iniciar sessão.';
-        }
-      });
-    }
+  constructor(private router: Router, private authService: AuthService) { 
+    this.password = "";
+    this.username = "";
   }
+
+  ngOnInit(): void {
+  }
+
+  login(): void {
+    this.authService.login(this.username, this.password).subscribe((user: any) => {
+      if (user && user.token) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        // Note: mudei para '/' porque é a rota principal no seu projeto atual, 
+        // mas pode mudar para '/itemlist' se preferir.
+        this.router.navigate(['/']);
+      } else {
+        alert('Erro no login!');
+      }
+    }, (error) => {
+      alert('Erro no login!');
+    });
+  }
+
+  // O seu exemplo tinha um método register no login, 
+  // no seu projeto atual existe um componente próprio para registo.
+  // Vou manter este aqui para seguir o seu modelo.
+  register(): void {
+    this.router.navigate(['/register']);
+  }
+
 }

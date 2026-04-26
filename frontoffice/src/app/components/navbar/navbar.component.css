@@ -47,6 +47,12 @@
   cursor: pointer;
 }
 
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .menu-toggle {
   display: none;
   flex-direction: column;
@@ -60,9 +66,23 @@
   background-color: #212529;
 }
 
+/* desktop: esconde o carrinho do nav-right (visível só em mobile) */
+.nav-right .cart-icon-link {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .menu-toggle {
     display: flex;
+  }
+
+  /* em mobile: mostra o carrinho no nav-right e esconde o do nav-links */
+  .nav-right .cart-icon-link {
+    display: inline-flex;
+  }
+
+  .cart-desktop {
+    display: none;
   }
 
   .nav-links {

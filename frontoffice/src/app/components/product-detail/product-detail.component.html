@@ -39,12 +39,6 @@
           <p>{{ product.stockDisponivel }} unidades</p>
         </div>
 
-        <div class="meta-item barcode-wrapper" *ngIf="product.codigoBarras">
-          <strong>Código de Barras</strong>
-          <div class="barcode-box">
-            <svg [appBarcode]="product.codigoBarras"></svg>
-          </div>
-        </div>
       </div>
       
       <div class="action-section">

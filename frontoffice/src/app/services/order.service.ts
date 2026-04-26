@@ -1,15 +1,17 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { OrderDTO } from '../models/order.dto';
-import { environment } from '../../environments/environment';
+import { Order } from '../models/order';
+import { API_URL } from '../app.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/orders`;
+  private endpoint = `${API_URL}/orders/`;
+
+  constructor(private http: HttpClient) { }
 
   criarEncomenda(dados: {
     supermercadoId: string;
@@ -17,33 +19,33 @@ export class OrderService {
     metodoEntrega: string;
     moradaEntrega?: string;
     coordenadasEntrega?: { lat: number; lng: number };
-  }): Observable<OrderDTO> {
-    return this.http.post<{ sucesso: boolean; encomenda: OrderDTO }>(this.apiUrl, dados).pipe(
-      map(res => res.encomenda)
+  }): Observable<Order> {
+    return this.http.post<{ sucesso: boolean; encomenda: OrderDTO }>(this.endpoint, dados).pipe(
+      map(res => new Order(res.encomenda))
     );
   }
 
-  listarEncomendas(): Observable<OrderDTO[]> {
-    return this.http.get<{ sucesso: boolean; encomendas: OrderDTO[] }>(this.apiUrl).pipe(
-      map(res => res.encomendas)
+  listarEncomendas(): Observable<Order[]> {
+    return this.http.get<{ sucesso: boolean; encomendas: OrderDTO[] }>(this.endpoint).pipe(
+      map(res => res.encomendas.map(dto => new Order(dto)))
     );
   }
 
-  obterEncomenda(id: string): Observable<OrderDTO> {
-    return this.http.get<{ sucesso: boolean; encomenda: OrderDTO }>(`${this.apiUrl}/${id}`).pipe(
-      map(res => res.encomenda)
+  obterEncomenda(id: string): Observable<Order> {
+    return this.http.get<{ sucesso: boolean; encomenda: OrderDTO }>(this.endpoint + id).pipe(
+      map(res => new Order(res.encomenda))
     );
   }
 
-  cancelarEncomenda(id: string): Observable<OrderDTO> {
-    return this.http.post<{ sucesso: boolean; encomenda: OrderDTO }>(`${this.apiUrl}/${id}/cancelar`, {}).pipe(
-      map(res => res.encomenda)
+  cancelarEncomenda(id: string): Observable<Order> {
+    return this.http.post<{ sucesso: boolean; encomenda: OrderDTO }>(this.endpoint + id + "/cancelar", {}).pipe(
+      map(res => new Order(res.encomenda))
     );
   }
 
-  confirmarRececao(id: string): Observable<OrderDTO> {
-    return this.http.post<{ sucesso: boolean; encomenda: OrderDTO }>(`${this.apiUrl}/${id}/confirmar-rececao`, {}).pipe(
-      map(res => res.encomenda)
+  confirmarRececao(id: string): Observable<Order> {
+    return this.http.post<{ sucesso: boolean; encomenda: OrderDTO }>(this.endpoint + id + "/confirmar-rececao", {}).pipe(
+      map(res => new Order(res.encomenda))
     );
   }
 }
