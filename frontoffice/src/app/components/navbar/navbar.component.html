@@ -1,55 +1,51 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
-    <div class="container">
-
+<nav class="navbar navbar-expand-lg bg-white rounded-5 shadow-sm m-3 px-4 sticky-top">
+    <div class="container-fluid">
         <!-- Toggler para Mobile -->
-        <button class="navbar-toggler" type="button" (click)="toggleMenu()" [attr.aria-expanded]="isMenuOpen">
+        <button class="navbar-toggler border-0" type="button" (click)="toggleMenu()" [attr.aria-expanded]="isMenuOpen">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <!-- Menu -->
-        <div class="collapse navbar-collapse" [class.show]="isMenuOpen">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <div class="collapse navbar-collapse rounded-4 bg-white" [class.show]="isMenuOpen">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
                 <li class="nav-item">
-                    <a class="nav-link" routerLink="/" routerLinkActive="active"
+                    <a class="nav-link text-dark fw-bold px-3" routerLink="/" routerLinkActive="active"
                         [routerLinkActiveOptions]="{exact: true}" (click)="isMenuOpen = false">Página Inicial</a>
                 </li>
                 <li class="nav-item" *ngIf="(authService.isLoggedIn$ | async)">
-                    <a class="nav-link" routerLink="/orders" routerLinkActive="active"
+                    <a class="nav-link text-dark fw-bold px-3" routerLink="/orders" routerLinkActive="active"
                         (click)="isMenuOpen = false">Encomendas</a>
                 </li>
                 <li class="nav-item" *ngIf="(authService.isLoggedIn$ | async)">
-                    <a class="nav-link" routerLink="/avaliacoes" routerLinkActive="active"
+                    <a class="nav-link text-dark fw-bold px-3" routerLink="/avaliacoes" routerLinkActive="active"
                         (click)="isMenuOpen = false">Avaliações</a>
                 </li>
                 <li class="nav-item" *ngIf="(authService.isLoggedIn$ | async)">
-                    <a class="nav-link" routerLink="/settings" routerLinkActive="active"
+                    <a class="nav-link text-dark fw-bold px-3" routerLink="/settings" routerLinkActive="active"
                         (click)="isMenuOpen = false">Configuração</a>
                 </li>
             </ul>
 
             <!-- Lado Direito -->
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 mt-3 mt-lg-0 pb-3 pb-lg-0">
                 <!-- Carrinho -->
-                <a routerLink="/cart" class="btn btn-outline-light position-relative"
-                    (click)="isMenuOpen = false">
+                <a routerLink="/cart" class="nav-link text-dark fw-bold position-relative px-3" (click)="isMenuOpen = false">
                     <i class="bi bi-cart3"></i>
                     <span class="ms-1 d-none d-sm-inline">Carrinho</span>
                     <span *ngIf="cartService.totalItems() > 0"
-                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark text-white">
                         {{ cartService.totalItems() }}
                     </span>
                 </a>
 
                 <!-- Auth -->
-                <div *ngIf="!(authService.isLoggedIn$ | async)" class="d-flex gap-2">
-                    <a class="btn btn-outline-light" routerLink="/login"
-                        (click)="isMenuOpen = false">Entrar</a>
-                    <a class="btn btn-primary" routerLink="/register"
-                        (click)="isMenuOpen = false">Registar</a>
+                <div *ngIf="!(authService.isLoggedIn$ | async)" class="d-flex flex-column flex-lg-row gap-2">
+                    <a class="nav-link text-dark fw-bold px-3" routerLink="/login" (click)="isMenuOpen = false">Entrar</a>
+                    <a class="nav-link text-dark fw-bold px-3" routerLink="/register" (click)="isMenuOpen = false">Registar</a>
                 </div>
 
-                <div *ngIf="(authService.isLoggedIn$ | async)" class="d-flex align-items-center gap-3">
-                    <button class="btn btn-outline-danger" (click)="logout()">Sair</button>
+                <div *ngIf="(authService.isLoggedIn$ | async)" class="d-flex align-items-center gap-2">
+                    <button class="btn btn-link text-danger text-decoration-none fw-bold px-3" (click)="logout()">Sair</button>
                 </div>
             </div>
         </div>

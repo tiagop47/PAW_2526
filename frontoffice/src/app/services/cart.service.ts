@@ -7,21 +7,39 @@ import { CartItem } from '../models/cart-item.dto';
 export class CartService {
   private readonly STORAGE_KEY = 'cart';
 
-  /** Signal reativo com os itens do carrinho */
+  /** Signal reativo com TODOS os itens do carrinho */
   items = signal<CartItem[]>(this.loadFromStorage());
 
-  /** Supermercado ao qual os itens do carrinho pertencem (regra a: só 1 supermercado por encomenda) */
-  supermarketId = signal<string | null>(this.loadSupermarketId());
+  /** Supermercado que está ATIVO na view da direita / faturação */
+  activeSupermarketId = signal<string | null>(this.loadActiveSupermarketId());
 
-  /** Dados do cupão ativo, se algum (repescado ou recém submetido) */
+  /** Dados do cupão ativo, se algum para a loja em causa */
   cupao = signal<{ codigo: string, percentagem: number } | null>(this.loadCupao());
 
-  /** Número total de itens no carrinho */
+  /** Número total de itens no carrinho (global) */
   totalItems = computed(() => this.items().reduce((sum, item) => sum + item.quantidade, 0));
 
-  /** Valor total do carrinho COM o cupão já deduzido */
+  /** Elementos da loja ATIVA para facturação */
+  activeItems = computed(() => {
+    const smId = this.activeSupermarketId();
+    if (!smId) return [];
+    return this.items().filter(i => i.supermercadoId === smId);
+  });
+
+  cartGroups = computed(() => {
+    const map = new Map<string, CartItem[]>();
+    for (const item of this.items()) {
+      if (!map.has(item.supermercadoId)) {
+        map.set(item.supermercadoId, []);
+      }
+      map.get(item.supermercadoId)!.push(item);
+    }
+    return map;
+  });
+
+  /** Valor total da loja ativa COM o cupão já deduzido */
   totalPrice = computed(() => {
-    const sum = this.items().reduce((sum, item) => sum + item.preco * item.quantidade, 0);
+    const sum = this.activeItems().reduce((s, item) => s + item.preco * item.quantidade, 0);
     const cupaoAtual = this.cupao();
     if (cupaoAtual) {
       return sum - (sum * (cupaoAtual.percentagem / 100));
@@ -29,33 +47,19 @@ export class CartService {
     return sum;
   });
 
-  /** Valor puro só dos items (sem cupão) */
-  subtotalPrice = computed(() => this.items().reduce((sum, item) => sum + item.preco * item.quantidade, 0));
-  
-  /** Valor deduzido pelo cupão */
+  /** Subtotal puro da loja activa (sem cupão) */
+  subtotalPrice = computed(() => this.activeItems().reduce((s, item) => s + item.preco * item.quantidade, 0));
+
+  /** Valor deduzido pelo cupão para a loja activa */
   discountValue = computed(() => {
     const subtotal = this.subtotalPrice();
     const cupaoAtual = this.cupao();
     return cupaoAtual ? subtotal * (cupaoAtual.percentagem / 100) : 0;
   });
 
-  /**
-   * Regra a): Só podem ser adicionados produtos de um supermercado.
-   */
-  addItem(item: CartItem, supermercadoId: string): { sucesso: boolean; erro?: string } {
-    // Regra d): Verificar stock
+  addItem(item: CartItem): { sucesso: boolean; erro?: string } {
     if (item.stockDisponivel <= 0) {
       return { sucesso: false, erro: 'Este produto não tem stock disponível.' };
-    }
-
-    const currentSupermarketId = this.supermarketId();
-
-    // Regra a): Se já há itens de outro supermercado, bloquear
-    if (currentSupermarketId && currentSupermarketId !== supermercadoId) {
-      return {
-        sucesso: false,
-        erro: 'Só pode encomendar produtos de um supermercado por encomenda. Limpa o carrinho para escolher outro supermercado.'
-      };
     }
 
     const currentItems = this.items();
@@ -66,10 +70,7 @@ export class CartService {
       const novaQuantidade = existing.quantidade + item.quantidade;
 
       if (novaQuantidade > item.stockDisponivel) {
-        return {
-          sucesso: false,
-          erro: `Stock insuficiente. Disponível: ${item.stockDisponivel}, no carrinho: ${existing.quantidade}.`
-        };
+        return { sucesso: false, erro: `Stock insuficiente. Disponível: ${item.stockDisponivel}, no carrinho: ${existing.quantidade}.` };
       }
 
       const updated = currentItems.slice();
@@ -79,7 +80,11 @@ export class CartService {
       this.items.set(currentItems.concat([Object.assign({}, item)]));
     }
 
-    this.supermarketId.set(supermercadoId);
+    // Se o cliente adicionar produto, vamos saltar o checkout auto para lá
+    if (this.activeSupermarketId() !== item.supermercadoId) {
+      this.setActiveSupermarket(item.supermercadoId);
+    }
+
     this.saveToStorage();
     return { sucesso: true };
   }
@@ -110,16 +115,42 @@ export class CartService {
     const updated = this.items().filter(i => i.produtoId !== produtoId);
     this.items.set(updated);
 
-    if (updated.length === 0) {
-      this.supermarketId.set(null);
-      this.cupao.set(null);
+    // Se o carrinho activo ficar vazio, reset!
+    if (this.activeItems().length === 0) {
+       this.cupao.set(null);
+       const remainingGroups = this.cartGroups();
+       if (remainingGroups.size > 0) {
+          // Selecionar o primeiro supermercado que existe
+          this.activeSupermarketId.set(Array.from(remainingGroups.keys())[0]);
+       } else {
+          this.activeSupermarketId.set(null);
+       }
     }
+    
+    this.saveToStorage();
+  }
+
+  clearActiveCart(): void {
+    const active = this.activeSupermarketId();
+    if (!active) return;
+    const updated = this.items().filter(i => i.supermercadoId !== active);
+    this.items.set(updated);
+    this.cupao.set(null);
+    
+    const remainingGroups = this.cartGroups();
+    if (remainingGroups.size > 0) {
+      this.activeSupermarketId.set(Array.from(remainingGroups.keys())[0]);
+    } else {
+      this.activeSupermarketId.set(null);
+    }
+    
+    localStorage.removeItem(this.STORAGE_KEY + '_cupao');
     this.saveToStorage();
   }
 
   clearCart(): void {
     this.items.set([]);
-    this.supermarketId.set(null);
+    this.activeSupermarketId.set(null);
     this.cupao.set(null);
     localStorage.removeItem(this.STORAGE_KEY);
     localStorage.removeItem(this.STORAGE_KEY + '_supermarket');
@@ -136,15 +167,23 @@ export class CartService {
     this.saveToStorage();
   }
 
+  setActiveSupermarket(smId: string) {
+    if (this.activeSupermarketId() !== smId) {
+      this.activeSupermarketId.set(smId);
+      this.cupao.set(null); // perdem-se cupoes entre mudanças por clareza!
+      this.saveToStorage();
+    }
+  }
+
   private saveToStorage(): void {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.items()));
-    const smId = this.supermarketId();
+    const smId = this.activeSupermarketId();
     if (smId) {
       localStorage.setItem(this.STORAGE_KEY + '_supermarket', smId);
     } else {
       localStorage.removeItem(this.STORAGE_KEY + '_supermarket');
     }
-    
+
     const cupaoAtual = this.cupao();
     if (cupaoAtual) {
       localStorage.setItem(this.STORAGE_KEY + '_cupao', JSON.stringify(cupaoAtual));
@@ -162,7 +201,7 @@ export class CartService {
     }
   }
 
-  private loadSupermarketId(): string | null {
+  private loadActiveSupermarketId(): string | null {
     return localStorage.getItem(this.STORAGE_KEY + '_supermarket');
   }
 

@@ -4,25 +4,19 @@
 }
 
 .nav-link.active {
-  color: var(--bs-primary) !important;
-  font-weight: bold;
+  background-color: #f1f3f5;
+  border-radius: 0.5rem;
+}
+
+.nav-link:hover, .btn-link:hover {
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
 }
 
 @media (max-width: 991.98px) {
   .navbar-collapse {
-    background-color: #212529; /* bg-dark */
-    padding: 1rem;
-    border-radius: 0.5rem;
+    background-color: #ffffff;
+    padding: 1rem 0;
     margin-top: 0.5rem;
-  }
-  
-  .border-start {
-    border-start: none !important;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    padding-left: 0 !important;
-    padding-top: 1rem;
-    margin-top: 0.5rem;
-    flex-direction: column;
-    align-items: flex-start !important;
   }
 }

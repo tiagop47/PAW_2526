@@ -6,6 +6,7 @@ import { CartService } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
+import { CartItem } from '../../models/cart-item.dto';
 
 @Component({
   selector: 'app-cart',
@@ -51,11 +52,20 @@ export class CartComponent {
   }
 
   limparCarrinho(): void {
-    if (confirm('Tem a certeza que deseja limpar todo o carrinho?')) {
-      this.cartService.clearCart();
+    if (confirm('Tem a certeza que deseja limpar este carrinho? ')) {
+      this.cartService.clearActiveCart();
       this.codigoCupaoInput = '';
       this.notificationService.showInfo('Carrinho vazio.');
     }
+  }
+
+  getSupermarketNameFromGroup(items: CartItem[]): string {
+    return items.length > 0 ? items[0].supermercadoNome : 'Supermercado';
+  }
+
+  expandirSupermercado(smId: string, event: Event): void {
+    event.preventDefault(); 
+    this.cartService.setActiveSupermarket(smId);
   }
 
   aplicarCupao(): void {
@@ -68,7 +78,7 @@ export class CartComponent {
     const codigo = this.codigoCupaoInput.trim().toUpperCase();
     if (!codigo) return;
 
-    const smId = this.cartService.supermarketId();
+    const smId = this.cartService.activeSupermarketId();
     if (!smId) return;
 
     this.validandoCupao = true;
@@ -100,8 +110,8 @@ export class CartComponent {
       return;
     }
 
-    const items = this.cartService.items();
-    const supermercadoId = this.cartService.supermarketId();
+    const items = this.cartService.activeItems();
+    const supermercadoId = this.cartService.activeSupermarketId();
 
     if (items.length === 0 || !supermercadoId) {
       this.notificationService.showError('O carrinho está vazio.');
@@ -126,9 +136,15 @@ export class CartComponent {
     this.orderService.criarEncomenda(dados).subscribe({
       next: () => {
         this.notificationService.showSuccess('Encomenda criada com sucesso!');
-        this.cartService.clearCart();
+        this.cartService.clearActiveCart();
         this.processando = false;
-        setTimeout(() => this.router.navigate(['/orders']), 1000);
+        
+        // Se ainda não houver nenhum supermercado activo, é pq esvaziámos tudo. 
+        if (!this.cartService.activeSupermarketId()) {
+             setTimeout(() => this.router.navigate(['/orders']), 1000);
+        } else {
+             this.notificationService.showInfo('O sub-carrinho desta loja foi liquidado. Podes verificar o carrinho seguinte!');
+        }
       },
       error: (err) => {
         this.notificationService.showError(err.error?.erro || 'Erro ao criar encomenda.');

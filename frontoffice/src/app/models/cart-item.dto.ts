@@ -5,4 +5,6 @@ export interface CartItem {
   preco: number;
   quantidade: number;
   stockDisponivel: number;
+  supermercadoId: string;
+  supermercadoNome: string;
 }

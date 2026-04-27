@@ -59,23 +59,23 @@ export class ProductListComponent implements OnInit {
 
   addToCart(product: ProductDTO): void {
     const smId = this.supermarketId || (typeof product.supermercadoId === 'string' ? product.supermercadoId : product.supermercadoId._id);
+    const smNome = typeof product.supermercadoId === 'string' ? 'Supermercado' : product.supermercadoId.nome;
 
     if (!smId) {
       console.error('Supermarket ID not found for product', product);
       return;
     }
 
-    this.cartService.addItem(
-      {
-        produtoId: product._id,
-        nome: product.nome,
-        imagem: 'http://localhost:3000' + product.imagem,
-        preco: product.preco,
-        quantidade: 1,
-        stockDisponivel: product.stockDisponivel,
-      },
-      smId,
-    );
+    this.cartService.addItem({
+      produtoId: product._id,
+      nome: product.nome,
+      imagem: 'http://localhost:3000' + product.imagem,
+      preco: product.preco,
+      quantidade: 1,
+      stockDisponivel: product.stockDisponivel,
+      supermercadoId: smId,
+      supermercadoNome: smNome
+    });
   }
 
   isOutOfStock(product: ProductDTO): boolean {

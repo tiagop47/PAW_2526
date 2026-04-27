@@ -28,7 +28,7 @@ export class PaginaMercado implements OnInit {
     private produtoService: ProductService,
     private cartService: CartService,
     private notificationService: NotificationService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'] || this.route.snapshot.params['supermarketId'];
@@ -67,17 +67,16 @@ export class PaginaMercado implements OnInit {
       typeof p.supermercadoId === 'string' ? p.supermercadoId : p.supermercadoId?._id;
     if (!smId) return;
 
-    const result = this.cartService.addItem(
-      {
-        produtoId: p._id,
-        nome: p.nome,
-        imagem: 'http://localhost:3000' + p.imagem,
-        preco: p.preco,
-        quantidade: 1,
-        stockDisponivel: p.stockDisponivel,
-      },
-      smId,
-    );
+    const result = this.cartService.addItem({
+      produtoId: p._id,
+      nome: p.nome,
+      imagem: 'http://localhost:3000' + p.imagem,
+      preco: p.preco,
+      quantidade: 1,
+      stockDisponivel: p.stockDisponivel,
+      supermercadoId: smId,
+      supermercadoNome: this.supermercado?.nome || 'Supermercado'
+    });
 
     if (result.sucesso) {
       this.notificationService.showSuccess('Adicionado ao carrinho.');

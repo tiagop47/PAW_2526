@@ -38,7 +38,7 @@ export class ProductDetailComponent implements OnInit {
     private rest: ProductService,
     private cartService: CartService,
     private notificationService: NotificationService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -137,17 +137,16 @@ export class ProductDetailComponent implements OnInit {
       return;
     }
 
-    const result = this.cartService.addItem(
-      {
-        produtoId: oferta.produtoId,
-        nome: oferta.nome,
-        imagem: 'http://localhost:3000' + oferta.imagem,
-        preco: oferta.preco,
-        quantidade: 1,
-        stockDisponivel: oferta.stockDisponivel,
-      },
-      oferta.supermercadoId,
-    );
+    const result = this.cartService.addItem({
+      produtoId: oferta.produtoId,
+      nome: oferta.nome,
+      imagem: 'http://localhost:3000' + oferta.imagem,
+      preco: oferta.preco,
+      quantidade: 1,
+      stockDisponivel: oferta.stockDisponivel,
+      supermercadoId: oferta.supermercadoId,
+      supermercadoNome: oferta.supermercadoNome,
+    });
 
     if (result.sucesso) {
       this.notificationService.showSuccess(
