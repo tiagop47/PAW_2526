@@ -11,7 +11,7 @@ import { NavbarComponent } from '../navbar/navbar.component';
 @Component({
   selector: 'app-supermarkets',
   standalone: true,
-  imports: [CommonModule, RouterModule, SupermarketMapComponent, NavbarComponent],
+  imports: [CommonModule, RouterModule, SupermarketMapComponent],
   templateUrl: './supermarkets.component.html',
 })
 export class SupermarketsComponent implements OnInit {

@@ -12,7 +12,7 @@ import { NavbarComponent } from '../components/navbar/navbar.component';
 @Component({
   selector: 'app-pagina-mercado',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './pagina-mercado.html',
   styleUrl: './pagina-mercado.css',
 })
