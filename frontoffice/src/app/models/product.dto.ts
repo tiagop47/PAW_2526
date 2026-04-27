@@ -3,6 +3,7 @@ import { CategoryDTO } from './category.dto';
 export interface ProductDTO {
   _id: string;
   supermercadoId: any; // Pode vir ID ou Objecto populado
+  catalogProductId?: { _id: string; nome: string } | null;
   nome: string;
   descricao?: string;
   categoriaId: CategoryDTO;

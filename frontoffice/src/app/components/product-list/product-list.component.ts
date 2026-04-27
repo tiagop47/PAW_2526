@@ -23,12 +23,12 @@ export class ProductListComponent implements OnInit {
     private route: ActivatedRoute,
     private rest: ProductService,
     public cartService: CartService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.supermarketId = params['supermarketId'];
-      
+
       this.route.queryParams.subscribe(queryParams => {
         const query = queryParams['q'];
         this.loadProducts(query);
@@ -41,8 +41,8 @@ export class ProductListComponent implements OnInit {
     this.rest.getProducts(this.supermarketId).subscribe({
       next: (data: ProductDTO[]) => {
         if (query) {
-          this.products = data.filter(p => 
-            p.nome.toLowerCase().includes(query.toLowerCase()) || 
+          this.products = data.filter(p =>
+            p.nome.toLowerCase().includes(query.toLowerCase()) ||
             p.categoriaId?.nome.toLowerCase().includes(query.toLowerCase())
           );
         } else {

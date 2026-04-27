@@ -47,7 +47,7 @@ export class HomeComponent implements OnInit {
     private productService: ProductService,
     private supermarketService: SupermarketService,
     private router: Router,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.supermarketService.getSupermarkets().subscribe((sms) => {
@@ -67,7 +67,7 @@ export class HomeComponent implements OnInit {
   private agrupar(produtos: ProductDTO[]): ProdutoAgrupado[] {
     const groups = new Map<string, ProductDTO[]>();
     produtos.forEach((p) => {
-      const key = p.codigoBarras || p.nome.toLowerCase().trim();
+      const key = p.catalogProductId?._id || p.nome.toLowerCase().trim();
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key)!.push(p);
     });
