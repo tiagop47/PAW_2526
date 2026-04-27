@@ -18,6 +18,10 @@ export class SupermarketService {
     return this.http.get<SupermarketDTO[]>(this.apiUrl);
   }
 
+  getSupermarket(id: string): Observable<SupermarketDTO> {
+    return this.http.get<SupermarketDTO>(`${this.apiUrl}/${id}`);
+  }
+
   selectSupermarket(id: string) {
     this.selectedSupermarketId.set(id);
   }

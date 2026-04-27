@@ -1,83 +1,113 @@
-<div class="home-container">
+<div class="home-container py-4">
+  <app-navbar></app-navbar>
 
-    <!-- Secção: Melhores Ofertas (Comparador) -->
-    <section class="mb-5" *ngIf="cheapestProducts.length > 0">
-        <h2 class="h4 fw-bold mb-4 border-bottom border-dark pb-2">MELHORES OFERTAS GLOBAIS</h2>
-        <div class="row">
-            <div *ngFor="let item of cheapestProducts" class="col-12 col-md-3 mb-3">
-                <div class="card h-100 border-dark rounded-0">
-                    <div class="card-body">
-                        <div class="text-center mb-3">
-                            <img [src]="'http://localhost:3000' + item.principal.imagem" [alt]="item.principal.nome"
-                                class="img-fluid" style="height: 100px; object-fit: contain;">
-                        </div>
-                        <h6 class="fw-bold mb-1 text-uppercase">{{ item.principal.nome }}</h6>
-                        <div class="h5 fw-bold mb-0 text-primary">{{ item.principal.preco | currency:'EUR' }}</div>
-                        <p class="text-secondary small mb-1">Vendido por: {{ item.principal.supermercadoId.nome }}</p>
+  <!-- HERO -->
+  <section class="bg-light border border-dark p-4 mb-5">
+    <h1 class="fw-bold mb-2">MARKETPLACE FRESHMARKET</h1>
+    <p class="text-secondary mb-0">
+      Pesquisa produtos em <strong>{{ supermercados.length }}</strong> supermercados e compara preços num só lugar.
+    </p>
+  </section>
 
-                        <!-- Distância no comparador -->
-                        <div *ngIf="item.principal.distanciaRef !== null" class="small text-dark mb-3 italic"
-                            style="font-size: 0.7rem;">
-                            A {{ item.principal.distanciaRef.toFixed(1) }} KM DO SEU FAVORITO
-                        </div>
-                        <div *ngIf="item.principal.distanciaRef === 0 || favoritoId === (item.principal.supermercadoId._id || item.principal.supermercadoId)"
-                            class="small text-dark mb-3 italic" style="font-size: 0.7rem;">
-                            ESTÁ NO SEU SUPERMERCADO FAVORITO </div>
-
-                        <div class="bg-light p-2 small border border-dark mb-3">
-                            Poupa <strong>{{ item.poupanca | currency:'EUR' }}</strong> face à concorrência.
-                        </div>
-
-                        <button [routerLink]="['/product', item.principal._id]" class="btn btn-primary w-100 btn-sm">VER
-                            PRODUTO</button>
-                    </div>
-                </div>
+  <!-- MELHORES OFERTAS -->
+  <section class="mb-5" *ngIf="melhoresOfertas.length > 0">
+    <h2 class="h4 fw-bold mb-4 border-bottom border-dark pb-2">MELHORES OFERTAS</h2>
+    <div class="row">
+      <div *ngFor="let item of melhoresOfertas" class="col-12 col-md-3 mb-3">
+        <div class="card h-100 border-dark rounded-0">
+          <div class="card-body">
+            <div class="text-center mb-3">
+              <img [src]="'http://localhost:3000' + item.imagem" [alt]="item.nome" class="img-fluid"
+                style="height: 100px; object-fit: contain;">
             </div>
-        </div>
-    </section>
+            <h6 class="fw-bold mb-1 text-uppercase">{{ item.nome }}</h6>
+            <div class="h5 fw-bold mb-0 text-primary">desde {{ item.precoMin | currency:'EUR' }}</div>
+            <p class="text-secondary small mb-1">{{ item.numMercados }} supermercados</p>
 
-    <div class="row mb-4 align-items-center">
-        <div class="col-12 col-md-8">
-            <h2 class="h4 fw-bold border-bottom border-dark pb-2 mb-4">SUPERMERCADOS</h2>
-        </div>
-        <div class="col-12 col-md-4">
-            <div class="mb-3">
-                <label class="form-label small fw-bold">SELECIONAR ZONA</label>
-                <select class="form-control" [(ngModel)]="selectedZone">
-                    <option value="">TODAS AS ZONAS</option>
-                    <option *ngFor="let zone of availableZones" [value]="zone">{{ zone | uppercase }}</option>
-                </select>
+            <div class="bg-light p-2 small border border-dark mb-3">
+              Poupa até <strong>{{ item.poupanca | currency:'EUR' }}</strong>.
             </div>
+
+            <button (click)="verProduto(item.produtoIdMaisBarato)" class="btn btn-primary w-100 btn-sm">
+              VER PRODUTO
+            </button>
+          </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATÁLOGO -->
+  <section class="mb-5">
+    <h2 class="h4 fw-bold mb-4 border-bottom border-dark pb-2">CATÁLOGO DE PRODUTOS</h2>
+
+    <div class="row mb-4 g-3">
+      <div class="col-12 col-md-5">
+        <input type="text" class="form-control" placeholder="Pesquisar por nome ou categoria..."
+          [(ngModel)]="pesquisa" name="pesquisa" />
+      </div>
+      <div class="col-6 col-md-3">
+        <select class="form-control" [(ngModel)]="categoriaSelecionada" name="categoria">
+          <option value="">Todas as categorias</option>
+          <option *ngFor="let c of todasCategorias" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <select class="form-control" [(ngModel)]="ordenarPor" name="ordenar">
+          <option value="poupanca">Maior poupança</option>
+          <option value="preco">Preço (mais barato)</option>
+          <option value="nome">Nome (A-Z)</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-2 text-md-end">
+        <span class="badge bg-dark py-2 px-3">{{ produtosFiltrados.length }} produtos</span>
+      </div>
     </div>
 
-    <div class="supermarket-grid mb-5">
-        <div *ngFor="let s of filteredSupermarkets" class="card supermarket-card border-dark rounded-0"
-            [class.favorito-card]="s.isFavorito">
-            <div class="card-body text-center">
-                <div *ngIf="s.isFavorito" class="badge bg-dark text-white mb-3 w-100 rounded-0 py-1">O MEU FAVORITO
-                </div>
-
-                <h5 class="fw-bold mb-1 text-uppercase">{{ s.nome }}</h5>
-                <p class="text-secondary small mb-0">{{ s.localizacao }}</p>
-
-                <p *ngIf="s.distanciaRef !== null" class="small text-muted mt-2 mb-0">
-                    A <strong>{{ s.distanciaRef.toFixed(1) }} km</strong> do seu favorito
-                </p>
-
-                <div class="d-flex justify-content-center gap-2 mt-4">
-                    <button class="btn btn-primary btn-sm" (click)="navigateToProducts(s._id)">Explorar</button>
-                    <button class="btn btn-outline-primary btn-sm" (click)="verNoMapa(s._id)">Mapa</button>
-                </div>
-            </div>
-        </div>
+    <div *ngIf="loading" class="text-center p-5">
+      <div class="spinner-border text-dark mb-3"></div>
+      <p class="text-secondary small">A CARREGAR PRODUTOS...</p>
     </div>
 
-    <section class="map-section mt-5">
-        <h2 class="h4 fw-bold border-bottom border-dark pb-2 mb-4">MAPA DE REDE</h2>
-        <div class="border border-dark p-1">
-            <app-supermarket-map [supermarkets]="allSupermarkets" [favoritoId]="favoritoId"
-                [focarSupermercado]="supermercadoNoMapa"></app-supermarket-map>
+    <div *ngIf="!loading" class="row">
+      <div *ngFor="let p of produtosFiltrados" class="col-6 col-md-3 mb-4">
+        <div class="card h-100 border-dark rounded-0">
+          <div class="card-body d-flex flex-column">
+            <div class="text-center mb-3">
+              <img [src]="'http://localhost:3000' + p.imagem" [alt]="p.nome" class="img-fluid"
+                style="height: 120px; object-fit: contain;">
+            </div>
+            <div class="text-secondary small text-uppercase mb-1">{{ p.categoria }}</div>
+            <h6 class="fw-bold mb-2 text-uppercase">{{ p.nome }}</h6>
+
+            <div class="mb-2">
+              <div class="h5 fw-bold mb-0 text-primary">
+                desde {{ p.precoMin | currency:'EUR' }}
+              </div>
+              <small class="text-secondary" *ngIf="p.numMercados > 1">
+                até {{ p.precoMax | currency:'EUR' }} · {{ p.numMercados }} mercados
+              </small>
+              <small class="text-secondary" *ngIf="p.numMercados === 1">
+                Só em {{ p.supermercadoMaisBaratoNome }}
+              </small>
+            </div>
+
+            <div *ngIf="p.poupanca > 0" class="bg-light border border-dark p-1 small mb-2">
+              Poupa <strong>{{ p.poupanca | currency:'EUR' }}</strong>
+            </div>
+
+            <button (click)="verProduto(p.produtoIdMaisBarato)"
+              class="btn btn-primary btn-sm mt-auto"
+              [disabled]="p.stockTotal <= 0">
+              {{ p.stockTotal > 0 ? 'Ver detalhes' : 'ESGOTADO' }}
+            </button>
+          </div>
         </div>
-    </section>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && produtosFiltrados.length === 0" class="text-center p-5 border border-dark">
+      <p class="text-secondary mb-0">Nenhum produto encontrado.</p>
+    </div>
+  </section>
 </div>

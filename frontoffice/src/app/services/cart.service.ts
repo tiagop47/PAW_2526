@@ -52,11 +52,11 @@ export class CartService {
         };
       }
 
-      const updated = [...currentItems];
-      updated[existingIndex] = { ...existing, quantidade: novaQuantidade };
+      const updated = currentItems.slice();
+      updated[existingIndex] = Object.assign({}, existing, { quantidade: novaQuantidade });
       this.items.set(updated);
     } else {
-      this.items.set([...currentItems, { ...item }]);
+      this.items.set(currentItems.concat([Object.assign({}, item)]));
     }
 
     this.supermarketId.set(supermercadoId);
@@ -80,8 +80,8 @@ export class CartService {
       return;
     }
 
-    const updated = [...currentItems];
-    updated[index] = { ...item, quantidade };
+    const updated = currentItems.slice();
+    updated[index] = Object.assign({}, item, { quantidade });
     this.items.set(updated);
     this.saveToStorage();
   }

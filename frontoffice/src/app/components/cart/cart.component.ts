@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { CartService } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-cart',
@@ -18,12 +19,11 @@ export class CartComponent {
   private orderService = inject(OrderService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private notificationService = inject(NotificationService);
 
   metodoEntrega: 'levantamento_loja' | 'entrega_domicilio' = 'levantamento_loja';
   moradaEntrega = '';
   processando = false;
-  erro: string | null = null;
-  sucesso: string | null = null;
 
   get isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
@@ -45,14 +45,19 @@ export class CartComponent {
 
   removerItem(produtoId: string): void {
     this.cartService.removeItem(produtoId);
+    this.notificationService.showSuccess('Item removido do carrinho.');
   }
 
   limparCarrinho(): void {
-    this.cartService.clearCart();
+    if (confirm('Tem a certeza que deseja limpar todo o carrinho?')) {
+      this.cartService.clearCart();
+      this.notificationService.showInfo('Carrinho vazio.');
+    }
   }
 
   finalizarEncomenda(): void {
     if (!this.isLoggedIn) {
+      this.notificationService.showInfo('Por favor, faça login para finalizar a encomenda.');
       this.router.navigate(['/login']);
       return;
     }
@@ -61,17 +66,16 @@ export class CartComponent {
     const supermercadoId = this.cartService.supermarketId();
 
     if (items.length === 0 || !supermercadoId) {
-      this.erro = 'O carrinho está vazio.';
+      this.notificationService.showError('O carrinho está vazio.');
       return;
     }
 
     if (this.metodoEntrega === 'entrega_domicilio' && !this.moradaEntrega.trim()) {
-      this.erro = 'A morada de entrega é obrigatória para entrega ao domicílio.';
+      this.notificationService.showError('A morada de entrega é obrigatória.');
       return;
     }
 
     this.processando = true;
-    this.erro = null;
 
     const dados = {
       supermercadoId,
@@ -82,13 +86,13 @@ export class CartComponent {
 
     this.orderService.criarEncomenda(dados).subscribe({
       next: () => {
-        this.sucesso = 'Encomenda criada com sucesso!';
+        this.notificationService.showSuccess('Encomenda criada com sucesso!');
         this.cartService.clearCart();
         this.processando = false;
-        setTimeout(() => this.router.navigate(['/orders']), 2000);
+        setTimeout(() => this.router.navigate(['/orders']), 1000);
       },
       error: (err) => {
-        this.erro = err.error?.erro || 'Erro ao criar encomenda.';
+        this.notificationService.showError(err.error?.erro || 'Erro ao criar encomenda.');
         this.processando = false;
       }
     });

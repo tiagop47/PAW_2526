@@ -20,20 +20,11 @@ export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
 
   constructor(
-    private fb: FormBuilder,
     private authService: AuthService,
     private supermarketService: SupermarketService,
     private router: Router,
   ) {
-    this.registerForm = this.fb.group({
-      nome: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
-      nif: ['', [Validators.minLength(9), Validators.maxLength(9)]],
-      telefone: ['', Validators.required],
-      morada: ['', Validators.required],
-      supermercadoFavorito: [''],
-    });
+ 
   }
 
   ngOnInit() {

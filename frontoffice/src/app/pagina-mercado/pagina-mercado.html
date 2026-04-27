@@ -1,1 +1,51 @@
-<p>pagina-mercado works!</p>
+<app-navbar></app-navbar>
+
+<div class="container py-4">
+  <div class="mb-4">
+    <a routerLink="/supermercados" class="btn btn-sm btn-secondary">← VOLTAR AOS SUPERMERCADOS</a>
+  </div>
+
+  <div *ngIf="loading" class="text-center p-5">
+    <div class="spinner-border text-dark mb-3"></div>
+    <p class="text-secondary small">A CARREGAR...</p>
+  </div>
+
+  <ng-container *ngIf="!loading && supermercado">
+    <div class="border-bottom border-dark pb-3 mb-4">
+      <h1 class="fw-bold mb-1">{{ supermercado.nome }}</h1>
+      <p class="text-secondary mb-0">{{ supermercado.localizacao }}</p>
+    </div>
+
+    <div class="mb-4">
+      <input type="text" class="form-control" placeholder="Pesquisar produtos neste supermercado..."
+        [value]="pesquisa" (input)="pesquisa = $any($event.target).value" />
+    </div>
+
+    <div class="row">
+      <div *ngFor="let p of produtosFiltrados" class="col-6 col-md-3 mb-4">
+        <div class="card h-100 border-dark rounded-0">
+          <div class="card-body d-flex flex-column">
+            <div class="text-center mb-3">
+              <img [src]="'http://localhost:3000' + p.imagem" [alt]="p.nome" class="img-fluid"
+                style="height: 120px; object-fit: contain;">
+            </div>
+            <div class="text-secondary small text-uppercase mb-1">{{ p.categoriaId?.nome }}</div>
+            <h6 class="fw-bold mb-2 text-uppercase">{{ p.nome }}</h6>
+            <div class="h5 fw-bold text-primary mb-3">{{ p.preco | currency:'EUR' }}</div>
+            <div class="d-grid gap-2 mt-auto">
+              <a [routerLink]="['/product', p._id]" class="btn btn-sm btn-outline-dark">DETALHES</a>
+              <button class="btn btn-sm btn-primary" (click)="adicionar(p)"
+                [disabled]="p.stockDisponivel <= 0">
+                {{ p.stockDisponivel > 0 ? 'ADICIONAR' : 'ESGOTADO' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="produtosFiltrados.length === 0" class="text-center p-5 border border-dark">
+      <p class="text-secondary mb-0">Nenhum produto encontrado.</p>
+    </div>
+  </ng-container>
+</div>

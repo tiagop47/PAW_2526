@@ -1,60 +1,122 @@
-<div class="cart-container">
-  <h2 class="mb-4">O Meu Carrinho</h2>
-
-  <div *ngIf="cartService.items().length === 0" class="text-center p-5 bg-white border rounded">
-    <p class="text-secondary mb-4">O seu carrinho está vazio.</p>
-    <a routerLink="/" class="btn btn-primary">Começar a Comprar</a>
+<div class="container py-5">
+  <div class="d-flex align-items-center mb-5 pb-3 border-bottom">
+    <i class="bi bi-cart3 h1 me-3 text-primary mb-0"></i>
+    <h1 class="h2 fw-bold mb-0">O Meu Carrinho</h1>
   </div>
 
-  <div *ngIf="cartService.items().length > 0" class="row">
-    <div class="col col-lg-8">
-      <div class="card mb-3">
-        <div *ngFor="let item of cartService.items()" class="cart-item-row">
-          <img [src]="item.imagem" [alt]="item.nome" class="cart-item-img">
-          
-          <div class="cart-item-info">
-            <h6 class="mb-0">{{ item.nome }}</h6>
-            <span class="text-secondary small">{{ item.preco | currency:'EUR' }}</span>
-          </div>
+  <div *ngIf="cartService.items().length === 0" class="text-center py-5">
+    <i class="bi bi-cart-x text-muted display-1"></i>
+    <h3 class="mt-4 text-muted">O seu carrinho está vazio</h3>
+    <p class="mb-4">Adicione alguns produtos para começar a poupar!</p>
+    <a routerLink="/" class="btn btn-primary rounded-pill px-5 fw-bold">CONTINUAR A COMPRAR</a>
+  </div>
 
-          <div class="cart-item-actions">
-            <button class="btn btn-sm btn-secondary" (click)="cartService.updateQuantity(item.produtoId, item.quantidade - 1)">-</button>
-            <span class="mx-2">{{ item.quantidade }}</span>
-            <button class="btn btn-sm btn-secondary" (click)="cartService.updateQuantity(item.produtoId, item.quantidade + 1)">+</button>
-            <button class="btn btn-sm btn-danger ms-3" (click)="cartService.removeItem(item.produtoId)">✕</button>
+  <div *ngIf="cartService.items().length > 0" class="row g-5">
+    <!-- Lista de Itens -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card-header bg-white py-3">
+          <h5 class="mb-0 fw-bold">Produtos Selecionados</h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="bg-light">
+                <tr>
+                  <th class="ps-4 border-0">Produto</th>
+                  <th class="border-0">Preço</th>
+                  <th class="border-0 text-center">Quantidade</th>
+                  <th class="border-0 text-end pe-4">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of cartService.items()">
+                  <td class="ps-4 py-3">
+                    <div class="d-flex align-items-center">
+                      <img [src]="item.imagem" [alt]="item.nome" class="rounded border" style="width: 50px; height: 50px; object-fit: contain;">
+                      <div class="ms-3">
+                        <div class="fw-bold">{{ item.nome }}</div>
+                        <button (click)="removerItem(item.produtoId)" class="btn btn-link btn-sm p-0 text-danger text-decoration-none small">
+                          Remover
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-secondary">{{ item.preco | currency:'EUR' }}</td>
+                  <td style="width: 150px;">
+                    <div class="input-group input-group-sm">
+                      <button class="btn btn-outline-secondary" (click)="decrementar(item.produtoId)" [disabled]="item.quantidade <= 1">-</button>
+                      <span class="input-group-text bg-white px-3">{{ item.quantidade }}</span>
+                      <button class="btn btn-outline-secondary" (click)="incrementar(item.produtoId)" [disabled]="item.quantidade >= item.stockDisponivel">+</button>
+                    </div>
+                  </td>
+                  <td class="text-end pe-4 fw-bold">{{ (item.preco * item.quantidade) | currency:'EUR' }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
+      
+      <div class="d-flex justify-content-between">
+        <a routerLink="/" class="btn btn-link text-decoration-none text-muted">
+          <i class="bi bi-arrow-left me-2"></i>Continuar a comprar
+        </a>
+        <button class="btn btn-outline-danger btn-sm" (click)="limparCarrinho()">
+          <i class="bi bi-trash me-2"></i>Limpar Carrinho
+        </button>
+      </div>
     </div>
 
-    <div class="col col-lg-4">
-      <div class="cart-summary">
-        <h5 class="mb-4">Resumo</h5>
-        <div class="d-flex justify-content-between mb-2">
-          <span>Itens:</span>
-          <span>{{ cartService.totalItems() }}</span>
-        </div>
-        <div class="d-flex justify-content-between mb-4 h5">
-          <span>Total:</span>
-          <span class="text-primary">{{ cartService.totalPrice() | currency:'EUR' }}</span>
-        </div>
-        
-        <div class="mb-3">
-          <label class="form-label small">Método de Entrega</label>
-          <select class="form-control" [(ngModel)]="metodoEntrega">
-            <option value="levantamento_loja">Levantamento em Loja</option>
-            <option value="entrega_domicilio">Entrega ao Domicílio</option>
-          </select>
-        </div>
+    <!-- Finalização -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-4">Resumo e Entrega</h5>
+          
+          <div class="mb-4 pt-3 border-top">
+            <label class="form-label fw-bold small text-uppercase mb-3">Método de Entrega</label>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="radio" name="metodo" id="loja" value="levantamento_loja" [(ngModel)]="metodoEntrega">
+              <label class="form-check-label" for="loja">Levantamento em Loja (Grátis)</label>
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="radio" name="metodo" id="domicilio" value="entrega_domicilio" [(ngModel)]="metodoEntrega">
+              <label class="form-check-label" for="domicilio">Entrega ao Domicílio</label>
+            </div>
+          </div>
 
-        <div class="mb-4" *ngIf="metodoEntrega === 'entrega_domicilio'">
-          <label class="form-label small">Morada de Entrega</label>
-          <input type="text" class="form-control" [(ngModel)]="moradaEntrega" placeholder="Rua, número, código postal...">
-        </div>
+          <div *ngIf="metodoEntrega === 'entrega_domicilio'" class="mb-4 animate-fade-in">
+            <label class="form-label fw-bold small text-uppercase">Morada de Entrega</label>
+            <textarea class="form-control rounded-3" rows="3" [(ngModel)]="moradaEntrega" placeholder="Rua, número, código postal..."></textarea>
+          </div>
 
-        <button class="btn btn-primary w-100" (click)="finalizarEncomenda()" [disabled]="processando">
-          {{ processando ? 'A processar...' : 'Finalizar Encomenda' }}
-        </button>
+          <div class="bg-light p-3 rounded-3 mb-4">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-secondary">Subtotal</span>
+              <span>{{ cartService.totalPrice() | currency:'EUR' }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-secondary">Taxa de Entrega</span>
+              <span class="text-success">{{ metodoEntrega === 'entrega_domicilio' ? (3.50 | currency:'EUR') : 'Grátis' }}</span>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="fw-bold">TOTAL</span>
+              <span class="h4 fw-bold text-primary mb-0">
+                {{ (cartService.totalPrice() + (metodoEntrega === 'entrega_domicilio' ? 3.50 : 0)) | currency:'EUR' }}
+              </span>
+            </div>
+          </div>
+
+          <button (click)="finalizarEncomenda()" 
+                  class="btn btn-primary w-100 py-3 fw-bold rounded-pill" 
+                  [disabled]="processando">
+            <span *ngIf="!processando">{{ isLoggedIn ? 'FINALIZAR ENCOMENDA' : 'FAZER LOGIN PARA COMPRAR' }}</span>
+            <span *ngIf="processando" class="spinner-border spinner-border-sm me-2"></span>
+            <span *ngIf="processando">A PROCESSAR...</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

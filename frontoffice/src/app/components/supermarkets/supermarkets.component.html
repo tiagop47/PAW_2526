@@ -1,0 +1,47 @@
+<div class="home-container py-4">
+  <app-navbar></app-navbar>
+
+  <div class="row mb-4 align-items-center">
+    <div class="col-12 col-md-8">
+      <h2 class="h4 fw-bold border-bottom pb-2 mb-4">Supermercados</h2>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="mb-3">
+        <label class="form-label small fw-medium">Selecionar Zona</label>
+        <select class="form-select shadow-sm" [value]="selectedZone" (change)="selectedZone = $any($event.target).value">
+          <option value="">Todas as Zonas</option>
+          <option *ngFor="let zone of availableZones" [value]="zone">{{ zone }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="supermarket-grid mb-5">
+    <div *ngFor="let s of filteredSupermarkets" class="card supermarket-card shadow-sm border-0 h-100"
+      [class.border-primary]="s.isFavorito">
+      <div class="card-body text-center d-flex flex-column">
+        <div *ngIf="s.isFavorito" class="badge bg-primary mb-3 mx-auto py-2 px-3">O Meu Favorito</div>
+
+        <h5 class="fw-bold mb-1">{{ s.nome }}</h5>
+        <p class="text-muted small mb-0">{{ s.localizacao }}</p>
+
+        <p *ngIf="s.distanciaRef !== null" class="small text-muted mt-2 mb-0">
+          A <strong>{{ s.distanciaRef.toFixed(1) }} km</strong> do seu favorito
+        </p>
+
+        <div class="mt-auto pt-4 d-flex justify-content-center gap-2">
+          <button class="btn btn-primary btn-sm px-3" (click)="navigateToMercado(s._id)">Explorar</button>
+          <button class="btn btn-outline-secondary btn-sm px-3" (click)="verNoMapa(s._id)">Mapa</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="map-section mt-5">
+    <h2 class="h4 fw-bold border-bottom pb-2 mb-4">Mapa de Rede</h2>
+    <div class="shadow-sm rounded overflow-hidden">
+      <app-supermarket-map [supermarkets]="allSupermarkets" [favoritoId]="favoritoId"
+        [focarSupermercado]="supermercadoNoMapa"></app-supermarket-map>
+    </div>
+  </section>
+</div>

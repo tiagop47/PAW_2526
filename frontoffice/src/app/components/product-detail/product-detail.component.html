@@ -1,101 +1,95 @@
-<div class="product-detail-container">
-  <!-- Navegação de topo -->
-  <div class="mb-4">
-    <a routerLink="/" class="btn btn-sm btn-secondary">← VOLTAR</a>
-  </div>
+<app-navbar></app-navbar>
 
-  <div *ngIf="mensagemSucesso" class="alert alert-success mb-4 border-dark rounded-0">
-    {{ mensagemSucesso }}
-  </div>
-  <div *ngIf="error" class="alert alert-danger mb-4 border-dark rounded-0">{{ error }}</div>
+<div class="product-detail-container py-4">
+  <div *ngIf="error" class="alert alert-danger mb-4">{{ error }}</div>
 
   <div *ngIf="loading" class="text-center p-5">
-    <div class="spinner-border text-dark mb-3"></div>
-    <p class="text-secondary small">A CARREGAR...</p>
+    <div class="spinner-border text-primary mb-3"></div>
+    <p class="text-muted">A carregar...</p>
   </div>
 
-  <div *ngIf="product" class="row">
-    <!-- COLUNA 1: IMAGEM (ESQUERDA) -->
-    <div class="col-12 col-md-4 mb-4">
-      <div class="card p-3 bg-white border-dark rounded-0 shadow-sm text-center">
-        <img
-          [src]="'http://localhost:3000' + product.imagem"
-          [alt]="product.nome"
-          class="img-fluid"
-          style="max-height: 400px; object-fit: contain;"
-        />
-        <div *ngIf="desconto" class="badge bg-danger mt-3 w-100 rounded-0 border-0">
-          OFERTA: -{{ desconto }}%
+  <div *ngIf="produtoBase && !loading" class="row">
+    <!-- IMAGEM + INFO -->
+    <div class="col-12 col-md-5 mb-4">
+      <div class="card p-4 bg-white border-0 shadow-sm text-center h-100">
+        <img [src]="'http://localhost:3000' + produtoBase.imagem" [alt]="produtoBase.nome" class="img-fluid"
+          style="max-height: 400px; object-fit: contain;" />
+        <div *ngIf="desconto" class="badge bg-danger mt-4 w-100 p-2 fs-6">
+          Oferta: -{{ desconto }}%
         </div>
       </div>
     </div>
 
-    <!-- COLUNA 2: INFO E DESCRIÇÃO (CENTRO) -->
-    <div class="col-12 col-md-5 mb-4">
-      <div class="product-main-info border-bottom border-dark pb-3 mb-4">
-        <div class="text-secondary small mb-1 text-uppercase">{{ product.categoriaId.nome }}</div>
-        <h1 class="fw-bold mb-3">{{ product.nome }}</h1>
-        <div class="small text-secondary mb-2">VENDIDO POR: <strong>{{ product.supermercadoId?.nome || 'ESTE SUPERMERCADO' }}</strong></div>
+    <div class="col-12 col-md-7 mb-4">
+      <div class="border-bottom pb-3 mb-4">
+        <div class="text-muted small mb-2">{{ produtoBase.categoriaId.nome }}</div>
+        <h1 class="h2 fw-bold mb-3">{{ produtoBase.nome }}</h1>
+
+        <div class="d-flex align-items-baseline gap-3 mb-2">
+          <div class="h3 fw-bold text-primary mb-0">desde {{ melhorPreco | currency:'EUR' }}</div>
+          <small class="text-muted">em {{ ofertas.length }} supermercado(s)</small>
+        </div>
       </div>
 
-      <div class="product-description" *ngIf="product.descricao">
-        <h6 class="fw-bold text-uppercase small mb-3">Sobre o Produto</h6>
-        <p class="text-secondary" style="line-height: 1.6; text-align: justify;">
-          {{ product.descricao }}
+      <div *ngIf="produtoBase.descricao" class="mb-4">
+        <h6 class="fw-bold mb-3">Sobre o Produto</h6>
+        <p class="text-muted" style="line-height: 1.6; text-align: justify;">
+          {{ produtoBase.descricao }}
         </p>
       </div>
     </div>
 
-    <!-- COLUNA 3: COMPRA E COMPARAÇÃO (DIREITA / LADO) -->
-    <div class="col-12 col-md-3">
-      <!-- CAIXA DE COMPRA -->
-      <div class="card p-3 border-dark rounded-0 mb-4 bg-light shadow-sm">
-        <div class="mb-3">
-          <div class="h2 fw-bold text-dark mb-0">{{ product.preco | currency: 'EUR' }}</div>
-          <div class="text-secondary text-decoration-line-through small" *ngIf="product.precoAntigo">
-            ANTES: {{ product.precoAntigo | currency: 'EUR' }}
-          </div>
-        </div>
+    <!-- COMPARADOR -->
+    <div class="col-12">
+      <h3 class="h5 fw-bold border-bottom pb-2 mb-4">
+        Comparar Preços ({{ ofertas.length }} mercados)
+      </h3>
 
-        <div class="mb-3 d-flex align-items-center">
-          <div 
-            class="border border-dark me-2" 
-            [style.width.px]="10" [style.height.px]="10"
-            [style.background-color]="product.stockDisponivel > 0 ? '#000' : '#fff'"
-          ></div>
-          <span class="fw-bold small text-uppercase">
-            {{ product.stockDisponivel > 0 ? 'Em Stock' : 'Esgotado' }}
-          </span>
-        </div>
-
-        <button 
-          class="btn btn-primary w-100 py-2 fw-bold border-dark mb-2" 
-          (click)="addToCart()"
-          [disabled]="product.stockDisponivel <= 0"
-        >
-          COMPRAR AGORA
-        </button>
+      <div class="table-responsive shadow-sm rounded">
+        <table class="table table-hover align-middle mb-0 bg-white">
+          <thead class="table-light">
+            <tr>
+              <th>Supermercado</th>
+              <th>Localização</th>
+              <th class="text-end">Preço</th>
+              <th class="text-center">Stock</th>
+              <th class="text-end">Poupança</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let o of ofertas" [class.table-success]="o.isMaisBarato">
+              <td class="fw-medium">
+                {{ o.supermercadoNome }}
+                <span *ngIf="o.isMaisBarato" class="badge bg-success ms-2">Mais Barato</span>
+              </td>
+              <td class="text-muted small">{{ o.supermercadoLocalizacao }}</td>
+              <td class="text-end fw-bold">{{ o.preco | currency:'EUR' }}</td>
+              <td class="text-center">
+                <span *ngIf="o.stockDisponivel > 0" class="text-success">{{ o.stockDisponivel }} un</span>
+                <span *ngIf="o.stockDisponivel <= 0" class="text-danger">Esgotado</span>
+              </td>
+              <td class="text-end">
+                <span *ngIf="o.poupancaFaceMaisCaro > 0" class="text-success small">
+                  -{{ o.poupancaFaceMaisCaro | currency:'EUR' }}
+                </span>
+                <span *ngIf="o.poupancaFaceMaisCaro === 0" class="text-muted small">—</span>
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-primary" (click)="adicionarAoCarrinho(o)"
+                  [disabled]="o.stockDisponivel <= 0">
+                  Adicionar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      <!-- COMPARAÇÃO RÁPIDA AO LADO -->
-      <div *ngIf="comparacao.length > 0">
-        <h6 class="fw-bold text-uppercase small border-bottom border-dark pb-2 mb-3">Outros Preços</h6>
-        <div *ngFor="let item of comparacao" class="card p-2 border-dark rounded-0 mb-2 bg-white">
-          <div class="d-flex justify-content-between align-items-start">
-            <div class="small">
-              <div class="fw-bold text-uppercase" style="font-size: 0.7rem;">{{ item.supermercadoId.nome }}</div>
-              <div class="text-secondary" style="font-size: 0.65rem;">{{ item.supermercadoId.localizacao }}</div>
-            </div>
-            <div class="text-end">
-              <div class="fw-bold text-primary">{{ item.preco | currency:'EUR' }}</div>
-              <a [routerLink]="['/product', item._id]" class="text-dark fw-bold" style="font-size: 0.65rem;">VER →</a>
-            </div>
-          </div>
-          <div *ngIf="item.preco < product.preco" class="badge bg-danger mt-1 rounded-0 p-1" style="font-size: 0.6rem;">
-            POUPA {{ (product.preco - item.preco) | currency:'EUR' }}
-          </div>
-        </div>
-      </div>
+      <p class="small text-muted mt-3 mb-0">
+        Lembre-se: cada encomenda só pode conter produtos de um supermercado. O carrinho mantém o supermercado da
+        primeira adição.
+      </p>
     </div>
   </div>
 </div>

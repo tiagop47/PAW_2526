@@ -7,3 +7,4 @@ export interface RegisterDTO {
   morada: string;
   supermercadoFavorito?: string;
 }
+    
