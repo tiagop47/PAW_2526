@@ -69,7 +69,8 @@ supermarketController.exibirProdutos = async function (req, res) {
  */
 supermarketController.exibirFormularioNovo = async function (req, res) {
     const categorias = await supermarketService.listarCategorias();
-    res.render('supermercado/novoProduto', { title: 'Novo Produto', categorias });
+    const catalogo = await supermarketService.listarCatalogo();
+    res.render('supermercado/novoProduto', { title: 'Novo Produto', categorias, catalogo });
 };
 
 /**

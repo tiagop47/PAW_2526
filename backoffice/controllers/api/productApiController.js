@@ -32,4 +32,17 @@ productApiController.getProductById = async function (req, res) {
     }
 };
 
+/**
+ * Lista todos os produtos do catálogo partilhado
+ */
+productApiController.getCatalogo = async function (req, res) {
+    try {
+        const catalogo = await supermarketService.listarCatalogo();
+        res.json(catalogo);
+    } catch (error) {
+        console.error('Erro na API de catálogo:', error);
+        res.status(500).json({ error: 'Erro ao carregar catálogo' });
+    }
+};
+
 module.exports = productApiController;

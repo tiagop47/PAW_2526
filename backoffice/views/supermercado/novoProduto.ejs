@@ -15,6 +15,25 @@
                     <h2 class="h4 fw-bold mb-4 text-center">Novo Produto</h2>
 
                     <form action="/supermercado/produtos" method="POST" id="formCriar" enctype="multipart/form-data" novalidate>
+                        <input type="hidden" name="catalogProductId" id="catalogProductId" value="">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Produto do Catálogo (opcional)</label>
+                            <select id="catalogoSelect" class="form-select">
+                                <option value="">— Criar produto novo —</option>
+                                <% catalogo.forEach(function(cp) { %>
+                                    <option value="<%= cp._id %>"
+                                        data-nome="<%= cp.nome %>"
+                                        data-categoria="<%= cp.categoriaId ? cp.categoriaId._id : '' %>">
+                                        <%= cp.nome %> (<%= cp.categoriaId ? cp.categoriaId.nome : 'Sem categoria' %>)
+                                    </option>
+                                <% }) %>
+                            </select>
+                            <div class="form-text">Selecione um produto existente no catálogo para permitir a comparação de preços entre supermercados.</div>
+                        </div>
+
+                        <hr class="mb-3">
+
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Nome do Produto</label>
                             <input type="text" name="nome" id="nome" class="form-control" minlength="2" maxlength="100" required>
@@ -81,6 +100,52 @@
 
         <script src="/javascript/userValidator.js"></script>
         <script src="/javascript/supermercado/produtoCriarEditar.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const catalogoSelect = document.getElementById('catalogoSelect');
+                const catalogProductIdInput = document.getElementById('catalogProductId');
+                const nomeInput = document.getElementById('nome');
+                const categoriaSelect = document.getElementById('categoriaId');
+
+                catalogoSelect.addEventListener('change', function() {
+                    const selected = this.options[this.selectedIndex];
+                    const catalogId = this.value;
+
+                    if (catalogId) {
+                        // Produto do catálogo selecionado
+                        catalogProductIdInput.value = catalogId;
+                        nomeInput.value = selected.dataset.nome;
+                        nomeInput.readOnly = true;
+                        nomeInput.classList.add('bg-light');
+
+                        const catId = selected.dataset.categoria;
+                        if (catId) {
+                            categoriaSelect.value = catId;
+                        }
+                        categoriaSelect.disabled = true;
+                        // Hidden input para submeter o valor de categoriaId quando disabled
+                        let hiddenCat = document.getElementById('categoriaIdHidden');
+                        if (!hiddenCat) {
+                            hiddenCat = document.createElement('input');
+                            hiddenCat.type = 'hidden';
+                            hiddenCat.name = 'categoriaId';
+                            hiddenCat.id = 'categoriaIdHidden';
+                            categoriaSelect.parentNode.appendChild(hiddenCat);
+                        }
+                        hiddenCat.value = catId;
+                    } else {
+                        // Criar produto novo
+                        catalogProductIdInput.value = '';
+                        nomeInput.value = '';
+                        nomeInput.readOnly = false;
+                        nomeInput.classList.remove('bg-light');
+                        categoriaSelect.disabled = false;
+                        const hiddenCat = document.getElementById('categoriaIdHidden');
+                        if (hiddenCat) hiddenCat.remove();
+                    }
+                });
+            });
+        </script>
 
 </body>
 

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({
     supermercadoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Supermarket', required: true },
+    catalogProductId: { type: mongoose.Schema.Types.ObjectId, ref: 'CatalogProduct', default: null },
     nome: {
         type: String,
         required: [true, "O nome do produto é obrigatório"],

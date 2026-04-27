@@ -9,6 +9,7 @@ const config = require('../config/config');
 const authService = require('./authService');
 
 const Category = require('../models/CategoryModel');
+const CatalogProduct = require('../models/CatalogProductModel');
 
 const supermarketService = {};
 
@@ -132,11 +133,36 @@ function validarOuGerarEAN(codigo) {
 }
 
 supermarketService.criarProduto = async function (supermercadoId, productData) {
+    let catalogProductId = productData.catalogProductId || null;
+    let nome = productData.nome;
+    let categoriaId = productData.categoriaId;
+
+    // Se o utilizador selecionou um produto do catálogo, copiar nome e categoria
+    if (catalogProductId) {
+        const catalogo = await CatalogProduct.findById(catalogProductId);
+        if (catalogo) {
+            nome = catalogo.nome;
+            categoriaId = catalogo.categoriaId;
+        }
+    } else if (nome) {
+        // Se não selecionou catálogo, criar automaticamente uma entrada no catálogo
+        let catalogo = await CatalogProduct.findOne({ nome: { $regex: new RegExp('^' + nome.trim() + '$', 'i') } });
+        if (!catalogo) {
+            catalogo = await CatalogProduct.create({
+                nome: nome.trim(),
+                categoriaId: categoriaId,
+                descricao: productData.descricao || ''
+            });
+        }
+        catalogProductId = catalogo._id;
+    }
+
     const novoProduto = new Product({
         supermercadoId: supermercadoId,
-        nome: productData.nome,
+        catalogProductId: catalogProductId,
+        nome: nome,
         descricao: productData.descricao,
-        categoriaId: productData.categoriaId,
+        categoriaId: categoriaId,
         preco: productData.preco,
         precoAntigo: productData.precoAntigo || 0,
         stockDisponivel: productData.stockDisponivel,
@@ -185,7 +211,8 @@ supermarketService.listarProdutosGeral = async function (supermercadoId) {
     }
     return Product.find(query)
         .sort({ criadoEm: -1 })
-        .populate('categoriaId', 'nome');
+        .populate('categoriaId', 'nome')
+        .populate('catalogProductId', 'nome categoriaId');
 };
 
 supermarketService.compararProdutosPorNome = async function (nome) {
@@ -510,6 +537,13 @@ supermarketService.registarVenda = async function (supermercadoId, saleData) {
  */
 supermarketService.listarCategorias = async function () {
     return Category.find().sort({ nome: 1 });
+};
+
+/**
+ * Catálogo de Produtos Partilhado
+ */
+supermarketService.listarCatalogo = async function () {
+    return CatalogProduct.find().populate('categoriaId', 'nome').sort({ nome: 1 });
 };
 
 /**
