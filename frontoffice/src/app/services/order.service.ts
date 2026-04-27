@@ -18,11 +18,19 @@ export class OrderService {
     produtos: { produtoId: string; quantidade: number }[];
     metodoEntrega: string;
     moradaEntrega?: string;
+    codigoCupao?: string;
     coordenadasEntrega?: { lat: number; lng: number };
   }): Observable<Order> {
     return this.http
       .post<OrderResponseDTO>(this.endpoint, dados)
       .pipe(map((res) => new Order(res.encomenda)));
+  }
+
+  validarCupao(codigo: string, supermercadoId: string): Observable<{ sucesso: boolean; percentagemDesconto: number; cupaoId: string }> {
+    return this.http.post<{ sucesso: boolean; percentagemDesconto: number; cupaoId: string }>(`${this.endpoint}/validar-cupao`, {
+      codigo,
+      supermercadoId
+    });
   }
 
   listarEncomendas(): Observable<Order[]> {

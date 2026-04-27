@@ -91,14 +91,39 @@
             <textarea class="form-control rounded-3" rows="3" [(ngModel)]="moradaEntrega" placeholder="Rua, número, código postal..."></textarea>
           </div>
 
+          <!-- Cupões -->
+          <div class="mb-4 pt-3 border-top">
+            <label class="form-label fw-bold small text-uppercase mb-3">Código Promocional</label>
+            <div *ngIf="!cartService.cupao()" class="input-group">
+              <input type="text" class="form-control text-uppercase" placeholder="Ex: NATAL10" [(ngModel)]="codigoCupaoInput" [disabled]="validandoCupao">
+              <button class="btn btn-dark" type="button" (click)="aplicarCupao()" [disabled]="validandoCupao || !codigoCupaoInput.trim()">
+                <span *ngIf="validandoCupao" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span *ngIf="!validandoCupao">Aplicar</span>
+              </button>
+            </div>
+            <div *ngIf="cartService.cupao()" class="alert alert-success d-flex align-items-center mb-0 py-2">
+              <i class="bi bi-check-circle-fill me-2"></i>
+              <div>
+                <strong>{{ cartService.cupao()?.codigo }}</strong> aplicado
+              </div>
+              <button class="btn btn-sm btn-link text-success ms-auto p-0" (click)="removerCupao()">Remover</button>
+            </div>
+          </div>
+
           <div class="bg-light p-3 rounded-3 mb-4">
             <div class="d-flex justify-content-between mb-2">
               <span class="text-secondary">Subtotal</span>
-              <span>{{ cartService.totalPrice() | currency:'EUR' }}</span>
+              <span>{{ cartService.subtotalPrice() | currency:'EUR' }}</span>
             </div>
+            
+            <div *ngIf="cartService.cupao()" class="d-flex justify-content-between mb-2 text-success animate-fade-in">
+              <span>Desconto ({{ cartService.cupao()?.percentagem }}%)</span>
+              <span>-{{ cartService.discountValue() | currency:'EUR' }}</span>
+            </div>
+
             <div class="d-flex justify-content-between mb-2">
               <span class="text-secondary">Taxa de Entrega</span>
-              <span class="text-success">{{ metodoEntrega === 'entrega_domicilio' ? (3.50 | currency:'EUR') : 'Grátis' }}</span>
+              <span [class.text-success]="metodoEntrega !== 'entrega_domicilio'">{{ metodoEntrega === 'entrega_domicilio' ? (3.50 | currency:'EUR') : 'Grátis' }}</span>
             </div>
             <hr>
             <div class="d-flex justify-content-between align-items-center">

@@ -62,6 +62,34 @@ router.post('/', orderApiController.criarEncomenda);
 
 /**
  * @swagger
+ * /api/orders/validar-cupao:
+ *   post:
+ *     summary: Validar um cupão promocional
+ *     tags: [Encomendas]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [codigo, supermercadoId]
+ *             properties:
+ *               codigo:
+ *                 type: string
+ *               supermercadoId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Cupão válido
+ *       400:
+ *         description: Cupão inválido
+ */
+router.post('/validar-cupao', orderApiController.validarCupao);
+
+/**
+ * @swagger
  * /api/orders/{id}:
  *   get:
  *     summary: Obter detalhes de uma encomenda

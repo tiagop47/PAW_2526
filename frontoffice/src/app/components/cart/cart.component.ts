@@ -23,7 +23,9 @@ export class CartComponent {
 
   metodoEntrega: 'levantamento_loja' | 'entrega_domicilio' = 'levantamento_loja';
   moradaEntrega = '';
+  codigoCupaoInput = '';
   processando = false;
+  validandoCupao = false;
 
   get isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
@@ -51,8 +53,44 @@ export class CartComponent {
   limparCarrinho(): void {
     if (confirm('Tem a certeza que deseja limpar todo o carrinho?')) {
       this.cartService.clearCart();
+      this.codigoCupaoInput = '';
       this.notificationService.showInfo('Carrinho vazio.');
     }
+  }
+
+  aplicarCupao(): void {
+    if (!this.isLoggedIn) {
+      this.notificationService.showInfo('Tem de iniciar sessão para utilizar cupões.');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const codigo = this.codigoCupaoInput.trim().toUpperCase();
+    if (!codigo) return;
+
+    const smId = this.cartService.supermarketId();
+    if (!smId) return;
+
+    this.validandoCupao = true;
+    this.orderService.validarCupao(codigo, smId).subscribe({
+      next: (res) => {
+        this.validandoCupao = false;
+        if (res.sucesso) {
+          this.cartService.applyCoupon(codigo, res.percentagemDesconto);
+          this.notificationService.showSuccess(`Cupão de ${res.percentagemDesconto}% aplicado com sucesso!`);
+          this.codigoCupaoInput = '';
+        }
+      },
+      error: (err) => {
+        this.validandoCupao = false;
+        this.notificationService.showError(err.error?.erro || 'Cupão inválido.');
+      }
+    });
+  }
+
+  removerCupao(): void {
+    this.cartService.removeCoupon();
+    this.notificationService.showInfo('Cupão removido.');
   }
 
   finalizarEncomenda(): void {
@@ -81,6 +119,7 @@ export class CartComponent {
       supermercadoId,
       produtos: items.map(i => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
       metodoEntrega: this.metodoEntrega,
+      codigoCupao: this.cartService.cupao()?.codigo,
       moradaEntrega: this.metodoEntrega === 'entrega_domicilio' ? this.moradaEntrega : undefined
     };
 

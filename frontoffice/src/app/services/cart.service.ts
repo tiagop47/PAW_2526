@@ -13,11 +13,31 @@ export class CartService {
   /** Supermercado ao qual os itens do carrinho pertencem (regra a: só 1 supermercado por encomenda) */
   supermarketId = signal<string | null>(this.loadSupermarketId());
 
+  /** Dados do cupão ativo, se algum (repescado ou recém submetido) */
+  cupao = signal<{ codigo: string, percentagem: number } | null>(this.loadCupao());
+
   /** Número total de itens no carrinho */
   totalItems = computed(() => this.items().reduce((sum, item) => sum + item.quantidade, 0));
 
-  /** Valor total do carrinho */
-  totalPrice = computed(() => this.items().reduce((sum, item) => sum + item.preco * item.quantidade, 0));
+  /** Valor total do carrinho COM o cupão já deduzido */
+  totalPrice = computed(() => {
+    const sum = this.items().reduce((sum, item) => sum + item.preco * item.quantidade, 0);
+    const cupaoAtual = this.cupao();
+    if (cupaoAtual) {
+      return sum - (sum * (cupaoAtual.percentagem / 100));
+    }
+    return sum;
+  });
+
+  /** Valor puro só dos items (sem cupão) */
+  subtotalPrice = computed(() => this.items().reduce((sum, item) => sum + item.preco * item.quantidade, 0));
+  
+  /** Valor deduzido pelo cupão */
+  discountValue = computed(() => {
+    const subtotal = this.subtotalPrice();
+    const cupaoAtual = this.cupao();
+    return cupaoAtual ? subtotal * (cupaoAtual.percentagem / 100) : 0;
+  });
 
   /**
    * Regra a): Só podem ser adicionados produtos de um supermercado.
@@ -92,6 +112,7 @@ export class CartService {
 
     if (updated.length === 0) {
       this.supermarketId.set(null);
+      this.cupao.set(null);
     }
     this.saveToStorage();
   }
@@ -99,8 +120,20 @@ export class CartService {
   clearCart(): void {
     this.items.set([]);
     this.supermarketId.set(null);
+    this.cupao.set(null);
     localStorage.removeItem(this.STORAGE_KEY);
     localStorage.removeItem(this.STORAGE_KEY + '_supermarket');
+    localStorage.removeItem(this.STORAGE_KEY + '_cupao');
+  }
+
+  applyCoupon(codigo: string, percentagem: number) {
+    this.cupao.set({ codigo, percentagem });
+    this.saveToStorage();
+  }
+
+  removeCoupon() {
+    this.cupao.set(null);
+    this.saveToStorage();
   }
 
   private saveToStorage(): void {
@@ -110,6 +143,13 @@ export class CartService {
       localStorage.setItem(this.STORAGE_KEY + '_supermarket', smId);
     } else {
       localStorage.removeItem(this.STORAGE_KEY + '_supermarket');
+    }
+    
+    const cupaoAtual = this.cupao();
+    if (cupaoAtual) {
+      localStorage.setItem(this.STORAGE_KEY + '_cupao', JSON.stringify(cupaoAtual));
+    } else {
+      localStorage.removeItem(this.STORAGE_KEY + '_cupao');
     }
   }
 
@@ -124,5 +164,14 @@ export class CartService {
 
   private loadSupermarketId(): string | null {
     return localStorage.getItem(this.STORAGE_KEY + '_supermarket');
+  }
+
+  private loadCupao(): { codigo: string, percentagem: number } | null {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY + '_cupao');
+      return data ? JSON.parse(data) : null;
+    } catch {
+      return null;
+    }
   }
 }

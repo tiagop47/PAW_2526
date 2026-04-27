@@ -42,3 +42,21 @@
   position: sticky;
   top: 80px;
 }
+
+/* Tira a borda azul e o brilho do input nos cupões (e no resto do carrinho) */
+.form-control:focus {
+  border-color: #000000;
+  box-shadow: none;
+}
+
+.btn-black {
+  background-color: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+.btn-black:hover {
+  background-color: #333333;
+  color: #ffffff;
+  border-color: #333333;
+}
