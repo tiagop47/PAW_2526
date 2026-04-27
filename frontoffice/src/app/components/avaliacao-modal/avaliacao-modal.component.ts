@@ -22,7 +22,7 @@ export class AvaliacaoModalComponent {
   erro: string | null = null;
   a_submeter: boolean = false;
 
-  readonly estrelas = [1, 2, 3, 4, 5];
+  readonly notas = [1, 2, 3, 4, 5];
 
   constructor(private avaliacaoService: AvaliacaoService) {}
 

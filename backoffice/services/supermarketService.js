@@ -175,10 +175,6 @@ supermarketService.atualizarProduto = async function (supermercadoId, productId,
     );
 };
 
-supermarketService.eliminarProduto = async function (supermercadoId, productId) {
-    return Product.findOneAndDelete({ _id: productId, supermercadoId });
-};
-
 /**
  * Listagem geral de produtos para o Frontoffice
  */

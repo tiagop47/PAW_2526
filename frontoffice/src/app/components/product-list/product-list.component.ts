@@ -12,6 +12,7 @@ import { ProductDTO } from '../../models/product.dto';
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css',
 })
+
 export class ProductListComponent implements OnInit {
   products: ProductDTO[] = [];
   loading: boolean = true;

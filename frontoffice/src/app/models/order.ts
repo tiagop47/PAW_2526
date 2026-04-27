@@ -72,7 +72,7 @@ export class Order {
   podeAvaliar(): boolean {
     return this.estado === 'entregue';
   }
-
+  
   temEstafeta(): boolean {
     return this.metodoEntrega === 'entrega_domicilio' && !!this.estafeta;
   }

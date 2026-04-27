@@ -139,18 +139,6 @@ supermarketController.atualizarProduto = async function (req, res) {
     }
 };
 
-/**
- * Elimina um produto.
- */
-supermarketController.eliminarProduto = async function (req, res) {
-    try {
-        await supermarketService.eliminarProduto(req.supermercado._id, req.produto._id);
-        res.redirect('/supermercado/produtos?success=1');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Erro ao eliminar produto.');
-    }
-};
 
 /**
  * API — Pesquisar produtos (devolve JSON).
