@@ -1,6 +1,32 @@
 const estafetaService = require('../services/estafetaServices');
+const Avaliacao = require('../models/AvaliacaoModel');
+const mongoose = require('mongoose');
 
 const estafetaController = {};
+
+estafetaController.exibirAvaliacoes = async function (req, res) {
+    try {
+        const estafetaId = req.user.id;
+        
+        const avaliacoes = await Avaliacao.find({ estafetaId: new mongoose.Types.ObjectId(estafetaId) })
+            .populate('supermercadoId', 'nome')
+            .sort({ criadoEm: -1 });
+
+        const total = avaliacoes.length;
+        const soma = avaliacoes.reduce((acc, curr) => acc + (curr.notaEstafeta || 0), 0);
+        const media = total > 0 ? (soma / total).toFixed(1) : 0;
+
+        res.render('estafeta/avaliacoes', {
+            title: 'Minhas Avaliações',
+            avaliacoes,
+            media,
+            total
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Erro ao carregar avaliações.');
+    }
+};
 
 estafetaController.exibirDashboard = async function (req, res) {
     try {

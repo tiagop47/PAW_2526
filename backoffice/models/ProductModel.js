@@ -47,6 +47,12 @@ const ProductSchema = new mongoose.Schema({
             message: "O preço antigo deve ser superior ao preço atual para ser uma promoção válida."
         }
     },
+    iva: {
+        type: Number,
+        enum: [6, 13, 23],
+        default: 23,
+        required: [true, "A taxa de IVA é obrigatória"]
+    },
     stockDisponivel: {
         type: Number,
         required: [true, "O stock é obrigatório"],

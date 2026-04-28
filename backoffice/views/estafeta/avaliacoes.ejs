@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="bg-white">
+    <%- include('../partials/navbar') %>
+    <main class="container py-4">
+        <div class="row mb-4 border-bottom pb-2">
+            <div class="col">
+                <h1 class="h4 fw-bold">Minhas Avaliações</h1>
+                <p class="text-muted small">Desempenho: <%= media %> / 5.0 (Total: <%= total %>)</p>
+            </div>
+            <div class="col-auto">
+                <a href="/estafeta/dashboard" class="btn btn-sm btn-outline-dark">Voltar ao Painel</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <% if (avaliacoes && avaliacoes.length > 0) { %>
+                    <div class="list-group list-group-flush border">
+                        <% avaliacoes.forEach(function(av) { %>
+                            <div class="list-group-item py-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold small text-uppercase text-secondary">Loja: <%= av.supermercadoId?.nome %></span>
+                                    <span class="badge border text-dark fw-bold small">Nota: <%= av.notaEstafeta %>/5</span>
+                                </div>
+                                <div class="my-2 small">Recebido em: <%= new Date(av.criadoEm).toLocaleDateString('pt-PT') %></div>
+                                <p class="mb-1 text-dark small">"<%= av.comentario || 'Sem comentário.' %>"</p>
+                                <div class="extra-small text-muted">Ref: #<%= av.encomendaId.toString().substring(18).toUpperCase() %></div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <div class="alert alert-light border text-center py-5">
+                        Ainda não existem feedbacks para as suas entregas.
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

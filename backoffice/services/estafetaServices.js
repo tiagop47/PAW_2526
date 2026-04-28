@@ -61,7 +61,7 @@ estafetaService.obterDadosDashboard = async function (estafetaId) {
 estafetaService.obterEntregasDisponiveis = async function (concelho = null) {
     const filtro = {
         estafetaId: null,
-        estado: 'confirmada',
+        estado: 'confirmada', // Supermercado já preparou e confirmou prontidão
         metodoEntrega: 'entrega_domicilio'
     };
 
@@ -99,7 +99,7 @@ estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
     );
 
     if (!encomenda) {
-        throw new Error('Esta entrega já não está disponível.');
+        throw new Error('Esta entrega já não está disponível ou ainda não foi preparada pelo supermercado.');
     }
 
     return encomenda;

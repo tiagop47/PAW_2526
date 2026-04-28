@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const OrderItemSchema = new mongoose.Schema({
     produtoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
     quantidade: { type: Number, required: true, min: [1, 'A quantidade mínima é 1'] },
-    precoUnitario: { type: Number, required: true, min: [0, 'O preço unitário não pode ser negativo'] }
+    precoUnitario: { type: Number, required: true, min: [0, 'O preço unitário não pode ser negativo'] },
+    ivaTaxa: { type: Number, default: 23 }
 },
     { _id: false });
 
@@ -17,9 +18,31 @@ const OrderSchema = new mongoose.Schema({
         type: [OrderItemSchema],
         validate: [function (arr) { return arr.length > 0; }, 'A encomenda deve ter pelo menos um produto']
     },
+    valorProdutos: { type: Number, default: 0 },
     valorTotal: { type: Number, required: true, min: [0, 'O valor total não pode ser negativo'] },
+    valorTotalIVA: { type: Number, default: 0 },
+    taxaEntrega: { type: Number, default: 0 },
+    metodoPagamento: {
+        type: String,
+        enum: ['dinheiro', 'cartao', 'mbway', 'online'],
+        default: 'online'
+    },
     cupaoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
     descontoValor: { type: Number, default: 0 },
+    /**
+     * Ciclo de vida da encomenda (7 estados):
+     *   pendente → em_preparacao → confirmada → entregue (levantamento em loja)
+     *   pendente → em_preparacao → confirmada → em_entrega → aguarda_validacao → entregue (entrega domicílio)
+     *   Qualquer estado (pendente/confirmada/em_preparacao) → cancelada (com restrições)
+     *
+     * - pendente:            Encomenda criada, aguarda processamento do supermercado
+     * - em_preparacao:       Supermercado está a preparar a encomenda
+     * - confirmada:          Encomenda pronta; disponível para estafeta ou levantamento
+     * - em_entrega:          Estafeta aceitou e está a caminho do cliente
+     * - aguarda_validacao:   Estafeta confirmou entrega, aguarda validação do cliente
+     * - entregue:            Encomenda entregue e confirmada
+     * - cancelada:           Encomenda cancelada (stock reposto)
+     */
     estado: {
         type: String,
         enum: ['pendente', 'confirmada', 'em_preparacao', 'em_entrega', 'aguarda_validacao', 'entregue', 'cancelada'],

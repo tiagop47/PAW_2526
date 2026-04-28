@@ -54,6 +54,9 @@ router.post('/produtos/editar/:productId', upload.single('imagem'), supermarketC
 router.get('/editar', supermarketController.exibirEditarSupermercado);
 router.post('/editar', supermarketController.atualizarSupermercado);
 
+// Avaliações
+router.get('/avaliacoes', supermarketController.exibirAvaliacoes);
+
 // Perfil
 router.get('/perfil', supermarketController.exibirPerfil);
 

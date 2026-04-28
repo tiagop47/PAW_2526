@@ -1,6 +1,6 @@
 const supermarketService = require('../services/supermarketService');
 const cupaoService = require('../services/cupaoService');
-
+const avaliacaoService = require('../services/avaliacaoService');
 
 var supermarketController = {};
 
@@ -451,6 +451,22 @@ supermarketController.eliminarCupao = async function (req, res) {
         res.redirect('/supermercado/cupoes');
     } catch (err) {
         res.redirect('/supermercado/cupoes?error=' + encodeURIComponent('Erro ao eliminar cupão.'));
+    }
+};
+
+supermarketController.exibirAvaliacoes = async function (req, res) {
+    try {
+        const dados = await avaliacaoService.getAvaliacoesPorSupermercado(req.supermercado._id);
+        res.render('supermercado/avaliacoes', {
+            title: 'Avaliações',
+            avaliacoes: dados.avaliacoes,
+            media: dados.media || 0,
+            total: dados.total,
+            supermercado: req.supermercado
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Erro ao carregar avaliações.');
     }
 };
 

@@ -1,189 +1,223 @@
+const mongoose = require('mongoose');
 const Order = require('../models/OrderModel');
 const Product = require('../models/ProductModel');
 const Supermarket = require('../models/SupermarketModel');
 const User = require('../models/UserModel');
 const Coupon = require('../models/CupomModel');
+const Counter = require('../models/CounterModel');
+const bcrypt = require('bcrypt');
+const config = require('../config/config');
 
 const orderService = {};
 
+/**
+ * Função auxiliar para gerir o utilizador em vendas de balcão (POS).
+ */
+async function obterOuCriarConsumidorFinal(snapshot) {
+    const emailFinal = snapshot?.email || 'consumidor.final@paw.com';
+    const nifFinal = snapshot?.nif || undefined;
+
+    let query = { email: emailFinal };
+    if (nifFinal) {
+        query = { $or: [{ email: emailFinal }, { nif: nifFinal }] };
+    }
+
+    let cliente = await User.findOne(query);
+
+    if (!cliente) {
+        const passwordTemp = config.DEFAULT_ADMIN_PASSWORD || 'ChangeMe123!';
+        const hash = await bcrypt.hash(passwordTemp, config.SALT_ROUNDS || 10);
+
+        cliente = await User.create({
+            nome: snapshot?.nome || 'Consumidor Final',
+            email: emailFinal,
+            password: hash,
+            telefone: snapshot?.telefone || '900000000',
+            nif: nifFinal,
+            morada: snapshot?.morada || 'Venda Local em Loja',
+            role: 'clientes'
+        });
+    }
+    return cliente._id;
+}
+
+/**
+ * Gera um número de fatura sequencial e atómico.
+ */
+async function gerarNumeroFatura(supermercadoId) {
+    const anoAtual = new Date().getFullYear();
+    const counterId = `fatura_${supermercadoId}_${anoAtual}`;
+
+    const counter = await Counter.findOneAndUpdate(
+        { _id: counterId },
+        { $inc: { seq: 1 } },
+        { upsert: true, new: true }
+    );
+
+    const sequencial = counter.seq.toString().padStart(4, '0');
+    return `FT ${anoAtual}/${sequencial}`;
+}
+
 orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
-    const { supermercadoId, produtos, metodoEntrega, moradaEntrega, coordenadasEntrega, codigoCupao } = dadosEncomenda;
+    let { supermercadoId, produtos, metodoEntrega, moradaEntrega, coordenadasEntrega, codigoCupao, origem, metodoPagamento } = dadosEncomenda;
+    
+    origem = origem || 'online';
+
+    if (origem === 'caixa' && !clienteId) {
+        clienteId = await obterOuCriarConsumidorFinal(dadosEncomenda.clienteSnapshot);
+    }
 
     const supermercado = await Supermarket.findOne({ _id: supermercadoId, estadoAprovacao: 'Aprovado' });
-    if (!supermercado) {
-        throw new Error('Supermercado não encontrado ou não aprovado.');
+    if (!supermercado) throw new Error('Supermercado não encontrado ou não aprovado.');
+
+    // Validação de Raio de Entrega
+    if (metodoEntrega === 'entrega_domicilio') {
+        if (!coordenadasEntrega?.lat || !coordenadasEntrega?.lng) {
+            throw new Error('Coordenadas de entrega são obrigatórias para entrega ao domicílio.');
+        }
+
+        const dist = calcularDistancia(
+            supermercado.localizacaoGeo.coordinates[1],
+            supermercado.localizacaoGeo.coordinates[0],
+            coordenadasEntrega.lat,
+            coordenadasEntrega.lng
+        );
+
+        if (dist > supermercado.raioEntregaKm) {
+            throw new Error(`A morada está fora do raio de alcance (${supermercado.raioEntregaKm}km). Distância: ${dist.toFixed(2)}km.`);
+        }
     }
 
-    if (!produtos || produtos.length === 0) {
-        throw new Error('A encomenda deve ter pelo menos um produto.');
-    }
+    if (!produtos || produtos.length === 0) throw new Error('A encomenda deve ter pelo menos um produto.');
 
     const produtoIds = produtos.map(p => p.produtoId);
     const produtosDB = await Product.find({ _id: { $in: produtoIds }, supermercadoId });
 
-    if (produtosDB.length !== produtoIds.length) {
-        throw new Error('Todos os produtos devem pertencer ao mesmo supermercado.');
-    }
+    if (produtosDB.length !== produtoIds.length) throw new Error('Produtos inválidos ou de lojas diferentes.');
 
     const produtosEncomenda = [];
     let valorSubtotal = 0;
+    let valorTotalIVA = 0;
 
     for (const item of produtos) {
         const produto = produtosDB.find(p => p._id.toString() === item.produtoId);
-        if (!produto) {
-            throw new Error(`Produto ${item.produtoId} não encontrado.`);
-        }
-
         if (produto.stockDisponivel < item.quantidade) {
-            throw new Error(`Stock insuficiente para "${produto.nome}". Disponível: ${produto.stockDisponivel}, solicitado: ${item.quantidade}.`);
+            throw new Error(`Stock insuficiente para "${produto.nome}". Disponível: ${produto.stockDisponivel}.`);
         }
 
+        const precoComIVA = produto.preco;
+        const taxaIVA = produto.iva || 23;
+        const valorIVAUnitario = precoComIVA - (precoComIVA / (1 + taxaIVA / 100));
+        
         produtosEncomenda.push({
             produtoId: produto._id,
             quantidade: item.quantidade,
-            precoUnitario: produto.preco
+            precoUnitario: precoComIVA,
+            ivaTaxa: taxaIVA
         });
-        valorSubtotal += produto.preco * item.quantidade;
+        
+        valorSubtotal += precoComIVA * item.quantidade;
+        valorTotalIVA += valorIVAUnitario * item.quantidade;
     }
 
-    let cupaoAplicado = null;
     let descontoValor = 0;
-
+    let cupaoAplicado = null;
     if (codigoCupao) {
         const cupao = await Coupon.findOne({ codigo: codigoCupao.toUpperCase().trim(), ativo: true });
-        
-        if (!cupao) {
-            throw new Error('Cupão inválido ou inativo.');
+        if (cupao && new Date(cupao.prazo) >= new Date() && (!cupao.supermercadoId || cupao.supermercadoId.toString() === supermercadoId)) {
+            descontoValor = (valorSubtotal * cupao.percentagemDesconto) / 100;
+            cupaoAplicado = cupao;
         }
-
-        if (new Date(cupao.prazo) < new Date()) {
-            throw new Error('Este cupão já expirou.');
-        }
-
-        if (cupao.supermercadoId && cupao.supermercadoId.toString() !== supermercadoId) {
-            throw new Error('Este cupão não é válido para este supermercado.');
-        }
-
-        const cliente = await User.findById(clienteId);
-        if (!cliente.cupoes.includes(cupao._id)) {
-            throw new Error('Não tens este cupão disponível na tua conta.');
-        }
-
-        descontoValor = (valorSubtotal * cupao.percentagemDesconto) / 100;
-        cupaoAplicado = cupao;
     }
 
-    const valorTotalFinal = Math.max(0, valorSubtotal - descontoValor);
+    const valorProdutosFinal = Math.max(0, valorSubtotal - descontoValor);
+    const taxaEntrega = metodoEntrega === 'entrega_domicilio' 
+        ? (supermercado.custoEntregaPorMetodo?.entrega_domicilio || 0)
+        : 0;
 
-    // Decrementar stock atomicamente
-    for (const item of produtos) {
-        const resultado = await Product.findOneAndUpdate(
-            { _id: item.produtoId, stockDisponivel: { $gte: item.quantidade } },
-            { $inc: { stockDisponivel: -item.quantidade } },
-            { new: true }
-        );
+    const valorTotalFinal = valorProdutosFinal + taxaEntrega;
 
-        if (!resultado) {
-            // Reverter o stock já descontado
-            for (const revertItem of produtos) {
-                if (revertItem.produtoId === item.produtoId) break;
-                await Product.findByIdAndUpdate(revertItem.produtoId, {
-                    $inc: { stockDisponivel: revertItem.quantidade }
-                });
+    // Transação atómica: abate de stock + criação da encomenda + remoção de cupão
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        for (const item of produtos) {
+            const res = await Product.findOneAndUpdate(
+                { _id: item.produtoId, stockDisponivel: { $gte: item.quantidade } },
+                { $inc: { stockDisponivel: -item.quantidade } },
+                { session }
+            );
+            if (!res) throw new Error('Falha no abate de stock.');
+        }
+
+        const cliente = await User.findById(clienteId).session(session);
+        const novaEncomenda = new Order({
+            supermercadoId,
+            clienteId,
+            produtos: produtosEncomenda,
+            valorProdutos: valorProdutosFinal,
+            valorTotal: valorTotalFinal,
+            valorTotalIVA,
+            taxaEntrega,
+            metodoPagamento: metodoPagamento || (origem === 'caixa' ? 'dinheiro' : 'online'),
+            cupaoId: cupaoAplicado?._id,
+            descontoValor,
+            estado: origem === 'caixa' ? 'confirmada' : 'pendente',
+            confirmadaEm: origem === 'caixa' ? new Date() : undefined,
+            origem,
+            metodoEntrega: metodoEntrega || (origem === 'caixa' ? 'levantamento_loja' : 'levantamento_loja'),
+            moradaEntrega: metodoEntrega === 'entrega_domicilio' ? (moradaEntrega || cliente.morada) : undefined,
+            coordenadasEntrega: metodoEntrega === 'entrega_domicilio' ? coordenadasEntrega : undefined,
+            faturaNumero: origem === 'caixa' ? await gerarNumeroFatura(supermercadoId) : undefined,
+            faturaData: origem === 'caixa' ? new Date() : undefined,
+            clienteSnapshot: {
+                nome: cliente.nome, nif: cliente.nif, morada: cliente.morada, email: cliente.email, telefone: cliente.telefone
             }
-            const pInfo = await Product.findById(item.produtoId);
-            throw new Error(`Stock insuficiente para "${pInfo ? pInfo.nome : 'produto desconhecido'}".`);
-        }
-    }
-
-    // Obter snapshot do cliente
-    const cliente = await User.findById(clienteId);
-
-    const novaEncomenda = new Order({
-        supermercadoId,
-        clienteId,
-        produtos: produtosEncomenda,
-        valorTotal: valorTotalFinal,
-        cupaoId: cupaoAplicado ? cupaoAplicado._id : undefined,
-        descontoValor: descontoValor,
-        estado: 'pendente',
-        origem: 'online',
-        metodoEntrega: metodoEntrega || 'levantamento_loja',
-        moradaEntrega: metodoEntrega === 'entrega_domicilio' ? (moradaEntrega || cliente.morada) : undefined,
-        coordenadasEntrega: coordenadasEntrega || undefined,
-        clienteSnapshot: cliente ? {
-            nome: cliente.nome,
-            nif: cliente.nif,
-            morada: cliente.morada,
-            email: cliente.email,
-            telefone: cliente.telefone
-        } : undefined
-    });
-
-    const orderGuardada = await novaEncomenda.save();
-
-    if (cupaoAplicado) {
-        await User.findByIdAndUpdate(clienteId, {
-            $pull: { cupoes: cupaoAplicado._id }
         });
-    }
 
-    return orderGuardada;
+        const guardada = await novaEncomenda.save({ session });
+        if (cupaoAplicado) await User.findByIdAndUpdate(clienteId, { $pull: { cupoes: cupaoAplicado._id } }, { session });
+
+        await session.commitTransaction();
+        return guardada;
+    } catch (err) {
+        await session.abortTransaction();
+        throw err;
+    } finally {
+        session.endSession();
+    }
 };
 
 orderService.cancelarEncomenda = async function (clienteId, encomendaId) {
     const encomenda = await Order.findOne({ _id: encomendaId, clienteId });
-
-    if (!encomenda) {
-        throw new Error('Encomenda não encontrada.');
+    if (!encomenda || !['pendente', 'em_preparacao', 'confirmada'].includes(encomenda.estado)) {
+        throw new Error('Encomenda não encontrada ou cancelamento não permitido neste estado.');
     }
 
-    if (!['pendente', 'confirmada'].includes(encomenda.estado)) {
-        throw new Error('Esta encomenda já não pode ser cancelada. Estado atual: ' + encomenda.estado);
+    // Regra dos 5 minutos após FAZER a encomenda (criadoEm)
+    const agora = new Date();
+    const dataCriacao = new Date(encomenda.criadoEm);
+    const diffMinutos = (agora - dataCriacao) / (1000 * 60);
+
+    if (diffMinutos > 5) {
+        throw new Error('Já passaram mais de 5 minutos desde que realizou a encomenda. Não é possível cancelar.');
     }
 
-    if (encomenda.estado === 'confirmada' && encomenda.confirmadaEm) {
-        const agora = new Date();
-        const diffMs = agora.getTime() - encomenda.confirmadaEm.getTime();
-        const cincoMinutosMs = 5 * 60 * 1000;
-
-        if (diffMs > cincoMinutosMs) {
-            throw new Error('Já passaram mais de 5 minutos desde a confirmação. Não é possível cancelar.');
-        }
-    }
-
-    // Repor o stock dos produtos
     for (const item of encomenda.produtos) {
-        await Product.findByIdAndUpdate(item.produtoId, {
-            $inc: { stockDisponivel: item.quantidade }
-        });
+        await Product.findByIdAndUpdate(item.produtoId, { $inc: { stockDisponivel: item.quantidade } });
     }
 
     encomenda.estado = 'cancelada';
     return encomenda.save();
 };
 
-/**
- * O cliente confirma que recebeu a encomenda (Estado Final).
- */
 orderService.confirmarRececaoCliente = async function (clienteId, encomendaId) {
-    const encomenda = await Order.findOne({ _id: encomendaId, clienteId });
-
-    if (!encomenda) {
-        throw new Error('Encomenda não encontrada.');
-    }
-
-    if (encomenda.estado !== 'aguarda_validacao') {
-        throw new Error('Apenas encomendas entregues pelo estafeta e a aguardar validação podem ser confirmadas pelo cliente.');
-    }
-
+    const encomenda = await Order.findOne({ _id: encomendaId, clienteId, estado: 'aguarda_validacao' });
+    if (!encomenda) throw new Error('Encomenda não disponível para confirmação.');
     encomenda.estado = 'entregue';
     return encomenda.save();
 };
 
-/**
- * Listar encomendas do cliente.
- */
 orderService.listarEncomendasCliente = async function (clienteId) {
     return Order.find({ clienteId })
         .populate('supermercadoId', 'nome localizacao')
@@ -194,9 +228,6 @@ orderService.listarEncomendasCliente = async function (clienteId) {
         .sort({ criadoEm: -1 });
 };
 
-/**
- * Obter detalhes de uma encomenda do cliente.
- */
 orderService.obterEncomendaCliente = async function (clienteId, encomendaId) {
     return Order.findOne({ _id: encomendaId, clienteId })
         .populate('supermercadoId', 'nome localizacao')
@@ -206,5 +237,36 @@ orderService.obterEncomendaCliente = async function (clienteId, encomendaId) {
         })
         .populate('estafetaId', 'nome telefone');
 };
+
+orderService.obterEstatisticasCliente = async function (clienteId) {
+    const stats = await Order.aggregate([
+        { $match: { clienteId: new mongoose.Types.ObjectId(clienteId) } },
+        { $facet: {
+            total: [{ $count: 'count' }],
+            maisComprados: [
+                { $unwind: '$produtos' },
+                { $group: { _id: '$produtos.produtoId', total: { $sum: '$produtos.quantidade' } } },
+                { $sort: { total: -1 } },
+                { $limit: 5 },
+                { $lookup: { from: 'products', localField: '_id', foreignField: '_id', as: 'info' } },
+                { $unwind: '$info' },
+                { $project: { nome: '$info.nome', imagem: '$info.imagem', totalQuantidade: '$total' } }
+            ]
+        }}
+    ]);
+
+    return {
+        totalEncomendas: stats[0].total[0]?.count || 0,
+        produtosMaisComprados: stats[0].maisComprados
+    };
+};
+
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 module.exports = orderService;

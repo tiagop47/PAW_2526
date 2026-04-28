@@ -14,6 +14,15 @@ avaliacaoApiController.criarAvaliacao = async function (req, res) {
     }
 };
 
+avaliacaoApiController.getMinhasAvaliacoes = async function (req, res) {
+    try {
+        const avaliacoes = await avaliacaoService.getMinhasAvaliacoes(req.user.id);
+        res.json(avaliacoes);
+    } catch (err) {
+        res.status(500).json({ sucesso: false, erro: err.message });
+    }
+};
+
 avaliacaoApiController.getAvaliacoesPorSupermercado = async function (req, res) {
     try {
         const resultado = await avaliacaoService.getAvaliacoesPorSupermercado(req.params.supermercadoId);

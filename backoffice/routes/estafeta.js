@@ -17,6 +17,9 @@ router.post('/perfil', estafetaController.atualizarPerfil);
 router.get('/entregas', estafetaController.listarEntregasDisponiveis);
 router.get('/minhas-entregas', estafetaController.listarMinhasEntregas);
 
+// Avaliações
+router.get('/avaliacoes', estafetaController.exibirAvaliacoes);
+
 /**
  * Middleware de Parâmetro: Carrega a encomenda se :orderId estiver presente no URL.
  * Uniformiza com o padrão do Administrador e Supermercado.

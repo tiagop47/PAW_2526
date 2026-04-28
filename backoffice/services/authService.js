@@ -114,9 +114,9 @@ authService.autenticarUtilizador = async function (email, password) {
         { expiresIn: 86400 }
     );
 
-    delete user.password;
+    const { password: _hash, ...userSemPassword } = user;
 
-    return { token, role: user.role, user };
+    return { token, role: user.role, user: userSemPassword };
 };
 
 authService.autenticarCliente = async function (email, password) {

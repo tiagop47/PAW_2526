@@ -32,6 +32,13 @@ avaliacaoService.criarAvaliacao = async function (clienteId, dados) {
     return Avaliacao.create(dadosAvaliacao);
 };
 
+avaliacaoService.getMinhasAvaliacoes = async function (clienteId) {
+    return Avaliacao.find({ clienteId })
+        .populate('supermercadoId', 'nome')
+        .populate('estafetaId', 'nome')
+        .sort({ criadoEm: -1 });
+};
+
 avaliacaoService.getAvaliacoesPorSupermercado = async function (supermercadoId) {
     const avaliacoes = await Avaliacao.find({ supermercadoId })
         .populate('clienteId', 'nome')
