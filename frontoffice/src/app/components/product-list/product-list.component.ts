@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
@@ -15,11 +15,13 @@ import { ProductDTO } from '../../models/product.dto';
   styleUrl: './product-list.component.css',
 })
 export class ProductListComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private rest = inject(ProductService);
-  private supermarketService = inject(SupermarketService);
-  public cartService = inject(CartService);
-  private notificationService = inject(NotificationService);
+  constructor(
+    private route: ActivatedRoute,
+    private rest: ProductService,
+    private supermarketService: SupermarketService,
+    public cartService: CartService,
+    private notificationService: NotificationService
+  ) {}
 
   allProducts: ProductDTO[] = [];
   filteredProducts: ProductDTO[] = [];
@@ -75,19 +77,7 @@ export class ProductListComponent implements OnInit {
   }
 
   addToCart(product: ProductDTO): void {
-    const smId = this.supermarketId || (typeof product.supermercadoId === 'string' ? product.supermercadoId : product.supermercadoId?._id);
-    const smNome = this.supermarketNome || (typeof product.supermercadoId === 'string' ? 'Supermercado' : (product.supermercadoId?.nome || 'Supermercado'));
-
-    const resultado = this.cartService.addItem({
-      produtoId: product._id,
-      nome: product.nome,
-      imagem: product.imagem,
-      preco: product.preco,
-      quantidade: 1,
-      stockDisponivel: product.stockDisponivel,
-      supermercadoId: smId,
-      supermercadoNome: smNome
-    });
+    const resultado = this.cartService.addProduct(product, this.supermarketNome);
 
     if (resultado.sucesso) {
       this.notificationService.showSuccess(`"${product.nome}" adicionado!`);

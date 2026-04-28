@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { ProductDTO, ProductComparacaoDTO } from '../models/product.dto';
-import { API_URL } from '../app.config';
+import { API_URL, formatImageUrl } from '../app.config';
 
 @Injectable({
   providedIn: 'root'
@@ -26,9 +26,7 @@ export class ProductService {
   }
 
   private formatProduct(p: ProductDTO): ProductDTO {
-    if (p.imagem && !p.imagem.startsWith('http')) {
-      p.imagem = `http://localhost:3000${p.imagem}`;
-    }
+    p.imagem = formatImageUrl(p.imagem);
     return p;
   }
 

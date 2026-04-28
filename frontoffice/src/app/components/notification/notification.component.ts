@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
 
@@ -10,5 +10,5 @@ import { NotificationService } from '../../services/notification.service';
   styleUrl: './notification.component.css'
 })
 export class NotificationComponent {
-  notificationService = inject(NotificationService);
+  constructor(public notificationService: NotificationService) {}
 }

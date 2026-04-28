@@ -1,5 +1,5 @@
 /** ID: FIX_HOME_TEMPLATE_001 */
-import { Component, OnInit, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -17,8 +17,9 @@ import { StorePromotionDTO } from '../../models/home-promotions.dto';
   styleUrl: './home.component.css',
 })
 export class HomeComponent implements OnInit {
-  private supermarketService = inject(SupermarketService);
   @ViewChild('productList') productList!: ProductListComponent;
+
+  constructor(private supermarketService: SupermarketService) {}
   
   categories: CategoryDTO[] = [];
   lojasPromocao: StorePromotionDTO[] = [];

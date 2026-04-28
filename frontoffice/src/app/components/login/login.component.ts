@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -18,7 +19,11 @@ export class LoginComponent implements OnInit {
   username: string;
   password: string;
 
-  constructor(private router: Router, private authService: AuthService) { 
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private notificationService: NotificationService
+  ) { 
     this.password = "";
     this.username = "";
   }
@@ -33,8 +38,8 @@ export class LoginComponent implements OnInit {
           this.router.navigate(['/']);
         }
       },
-      error: (err) => {
-        alert('Erro no login! Verifique as suas credenciais.');
+      error: () => {
+        this.notificationService.showError('Erro no login! Verifique as suas credenciais.');
       }
     });
   }

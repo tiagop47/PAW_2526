@@ -56,12 +56,15 @@ export class AuthService {
     );
   }
 
+  get currentUser(): UserDTO | null {
+    return this.currentUserSubject.value;
+  }
+
   getCurrentUser(): Observable<UserDTO> {
-    const user = this.currentUserSubject.value;
-    return of(user as UserDTO);
+    return of(this.currentUser as UserDTO);
   }
 
   isLoggedIn(): boolean {
-    return localStorage.getItem('currentUser') !== null;
+    return this.currentUser !== null;
   }
 }

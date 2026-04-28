@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -13,9 +13,12 @@ import { CartService } from '../../services/cart.service';
 })
 export class NavbarComponent {
   isMenuOpen = false;
-  authService = inject(AuthService);
-  cartService = inject(CartService);
-  router = inject(Router);
+
+  constructor(
+    public authService: AuthService,
+    public cartService: CartService,
+    private router: Router
+  ) {}
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;

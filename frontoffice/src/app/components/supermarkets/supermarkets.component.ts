@@ -1,5 +1,5 @@
 /** ID: FIX_SUPERMARKETS_TEMPLATE_001 */
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import * as L from 'leaflet';
@@ -21,9 +21,11 @@ interface SupermarketDisplay extends SupermarketDTO {
   styleUrl: './supermarkets.component.css'
 })
 export class SupermarketsComponent implements OnInit {
-  private supermarketService = inject(SupermarketService);
-  public authService = inject(AuthService);
-  private router = inject(Router);
+  constructor(
+    private supermarketService: SupermarketService,
+    public authService: AuthService,
+    private router: Router
+  ) {}
 
   allSupermarkets: SupermarketDTO[] = [];
   availableZones: string[] = [];
@@ -31,10 +33,7 @@ export class SupermarketsComponent implements OnInit {
   supermercadoNoMapa: string | null = null;
 
   get favoritoId(): string | null {
-    const userStr = localStorage.getItem('currentUser');
-    if (!userStr) return null;
-    const user = JSON.parse(userStr);
-    return user?.supermercadoFavorito || null;
+    return this.authService.currentUser?.supermercadoFavorito || null;
   }
 
   get filteredSupermarkets(): SupermarketDisplay[] {

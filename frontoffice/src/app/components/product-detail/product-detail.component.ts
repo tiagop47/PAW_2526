@@ -5,7 +5,6 @@ import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { NotificationService } from '../../services/notification.service';
 import { ProductDTO, ProductComparacaoDTO } from '../../models/product.dto';
-import { NavbarComponent } from '../navbar/navbar.component';
 
 interface OfertaMercado {
   produtoId: string;

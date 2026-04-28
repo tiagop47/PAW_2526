@@ -4,7 +4,17 @@ import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@a
 import { AuthInterceptor } from './interceptors/auth-interceptor';
 import { routes } from './app.routes';
 
-export const API_URL = 'http://localhost:3000/api';
+export const BASE_URL = 'http://localhost:3000';
+export const API_URL = `${BASE_URL}/api`;
+
+/**
+ * Converte caminhos relativos de imagem em URLs absolutas.
+ * Centraliza a lógica usada por ProductService e OrderService.
+ */
+export function formatImageUrl(path: string | undefined): string {
+  if (!path) return '';
+  return path.startsWith('http') ? path : `${BASE_URL}${path}`;
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [

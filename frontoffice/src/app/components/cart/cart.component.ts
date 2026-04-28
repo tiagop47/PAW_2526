@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -15,11 +15,13 @@ import { NotificationService } from '../../services/notification.service';
   styleUrl: './cart.component.css'
 })
 export class CartComponent {
-  cartService = inject(CartService);
-  private orderService = inject(OrderService);
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  private notificationService = inject(NotificationService);
+  constructor(
+    public cartService: CartService,
+    private orderService: OrderService,
+    private authService: AuthService,
+    private router: Router,
+    private notificationService: NotificationService
+  ) {}
 
   metodoEntrega: 'levantamento_loja' | 'entrega_domicilio' = 'levantamento_loja';
   metodoPagamento: 'cartao' | 'mbway' | 'dinheiro' = 'cartao';

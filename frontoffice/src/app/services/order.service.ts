@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { OrderDTO, OrderResponseDTO, OrdersResponseDTO } from '../models/order.dto';
 import { Order } from '../models/order';
-import { API_URL } from '../app.config';
+import { API_URL, formatImageUrl } from '../app.config';
 
 @Injectable({
   providedIn: 'root',
@@ -48,8 +48,8 @@ export class OrderService {
   private formatOrder(o: OrderDTO): OrderDTO {
     if (o.produtos) {
       o.produtos.forEach(item => {
-        if (item.produtoId && item.produtoId.imagem && !item.produtoId.imagem.startsWith('http')) {
-          item.produtoId.imagem = `http://localhost:3000${item.produtoId.imagem}`;
+        if (item.produtoId) {
+          item.produtoId.imagem = formatImageUrl(item.produtoId.imagem);
         }
       });
     }

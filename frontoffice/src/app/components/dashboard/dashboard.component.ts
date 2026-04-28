@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserStatsService, UserStats, Cupao } from '../../services/user-stats.service';
 import { AuthService } from '../../services/auth.service';
@@ -12,8 +12,10 @@ import { RouterModule } from '@angular/router';
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
-  private statsService = inject(UserStatsService);
-  private authService = inject(AuthService);
+  constructor(
+    private statsService: UserStatsService,
+    private authService: AuthService
+  ) {}
   
   stats: UserStats | null = null;
   cupoes: Cupao[] = [];

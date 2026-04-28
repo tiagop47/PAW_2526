@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_URL } from '../app.config';
@@ -27,8 +27,9 @@ export interface Cupao {
   providedIn: 'root'
 })
 export class UserStatsService {
-  private http = inject(HttpClient);
   private baseUrl = `${API_URL}/users`;
+
+  constructor(private http: HttpClient) {}
 
   getStats(): Observable<{ sucesso: boolean; stats: UserStats }> {
     return this.http.get<{ sucesso: boolean; stats: UserStats }>(`${this.baseUrl}/stats`);
