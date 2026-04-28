@@ -8,8 +8,10 @@ import {
   Input,
   OnChanges,
   SimpleChanges,
+  NgZone,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { SupermarketDTO } from '../../models/supermarket.dto';
 
@@ -44,6 +46,11 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
 
   private readonly COORD_PADRAO: [number, number] = [41.1579, -8.6291];
   private readonly ZOOM_PADRAO = 12;
+
+  constructor(
+    private router: Router,
+    private zone: NgZone,
+  ) {}
 
   ngOnInit(): void {}
 
@@ -138,10 +145,21 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
         <div class="p-1 text-center" style="min-width: 130px;">
           <div class="fw-bold extra-small text-uppercase mb-0">${s.nome}</div>
           ${distHtml}
-          <a href="/supermercado/${s._id}" class="btn btn-dark btn-sm extra-small py-1 px-3 fw-bold w-100 mt-1">EXPLORAR</a>
+          <button id="explorar-${s._id}" class="btn btn-dark btn-sm extra-small py-1 px-3 fw-bold w-100 mt-1">EXPLORAR</button>
         </div>
       `;
       marker.bindPopup(popupHtml);
+
+      marker.on('popupopen', () => {
+        const btn = document.getElementById(`explorar-${s._id}`);
+        if (btn) {
+          btn.onclick = () => {
+            this.zone.run(() => {
+              this.router.navigate(['/products', s._id]);
+            });
+          };
+        }
+      });
 
       // Raio de Atuação (Reduzido para 30% da escala visual original para ser discreto)
       L.circle(pos, {
