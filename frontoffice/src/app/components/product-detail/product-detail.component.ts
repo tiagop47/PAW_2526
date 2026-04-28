@@ -82,10 +82,16 @@ export class ProductDetailComponent implements OnInit {
       typeof produto.supermercadoId === 'string'
         ? produto.supermercadoId
         : produto.supermercadoId?._id;
+
+    const smFromComparacao = comparacao.find((c) => c.supermercadoId?._id === smBaseId);
     const smBaseNome =
-      typeof produto.supermercadoId === 'string' ? '' : produto.supermercadoId?.nome || '';
+      typeof produto.supermercadoId === 'string'
+        ? smFromComparacao?.supermercadoId?.nome || ''
+        : produto.supermercadoId?.nome || '';
     const smBaseLoc =
-      typeof produto.supermercadoId === 'string' ? '' : produto.supermercadoId?.localizacao || '';
+      typeof produto.supermercadoId === 'string'
+        ? smFromComparacao?.supermercadoId?.localizacao || ''
+        : produto.supermercadoId?.localizacao || '';
 
     if (smBaseId) {
       map.set(smBaseId, {
@@ -137,10 +143,10 @@ export class ProductDetailComponent implements OnInit {
       return;
     }
 
-    const result = this.cartService.addItem({
+    const resultado = this.cartService.addItem({
       produtoId: oferta.produtoId,
       nome: oferta.nome,
-      imagem: 'http://localhost:3000' + oferta.imagem,
+      imagem: oferta.imagem,
       preco: oferta.preco,
       quantidade: 1,
       stockDisponivel: oferta.stockDisponivel,
@@ -148,12 +154,10 @@ export class ProductDetailComponent implements OnInit {
       supermercadoNome: oferta.supermercadoNome,
     });
 
-    if (result.sucesso) {
-      this.notificationService.showSuccess(
-        `Adicionado ao carrinho (${oferta.supermercadoNome}).`,
-      );
+    if (resultado.sucesso) {
+      this.notificationService.showSuccess(`"${oferta.nome}" adicionado ao carrinho!`);
     } else {
-      this.notificationService.showError(result.erro || 'Erro ao adicionar.');
+      this.notificationService.showError(resultado.erro || 'Erro ao adicionar.');
     }
   }
 

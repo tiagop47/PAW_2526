@@ -1,24 +1,27 @@
-<div class="login-container">
-  <div class="card login-card">
-    <h2 class="text-center mb-4">Entrar</h2>
-    
-    <form>
-      <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input type="email" class="form-control" name="username" [(ngModel)]="username" required>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Palavra-passe</label>
-        <input type="password" class="form-control" name="password" [(ngModel)]="password" required>
-      </div>
-
-      <button type="button" class="btn btn-primary w-100 mb-3" (click)="login()">Entrar</button>
+<div class="container">
+  <div class="card login-container border shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-center fw-bold mb-4">Entrar</h3>
       
-      <div class="text-center">
-        <span class="text-secondary small">Ainda não tem conta?</span><br>
-        <a routerLink="/register" class="small">Registe-se aqui</a>
+      <form (submit)="login()" #loginForm="ngForm">
+        <div class="mb-3">
+          <label for="email" class="form-label small fw-bold">Endereço de Email</label>
+          <input type="email" class="form-control" id="email" name="email" [(ngModel)]="username" required placeholder="exemplo&#64;email.com">
+        </div>
+        
+        <div class="mb-3">
+          <label for="password" class="form-label small fw-bold">Palavra-passe</label>
+          <input type="password" class="form-control" id="password" name="password" [(ngModel)]="password" required placeholder="********">
+        </div>
+
+        <button type="submit" class="btn btn-dark w-100 fw-bold py-2" [disabled]="!loginForm.form.valid">
+          Entrar
+        </button>
+      </form>
+
+      <div class="mt-4 text-center">
+        <p class="text-muted small">Não tem conta? <a routerLink="/register" class="text-decoration-none">Registe-se aqui</a></p>
       </div>
-    </form>
+    </div>
   </div>
 </div>

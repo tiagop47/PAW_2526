@@ -1,165 +1,140 @@
-<div class="container py-5">
-  <div class="d-flex align-items-center mb-5 pb-3 border-bottom">
-    <i class="bi bi-cart3 h1 me-3 text-primary mb-0"></i>
-    <h1 class="h2 fw-bold mb-0">O Meu Carrinho</h1>
+<div class="container my-5">
+  <h2 class="mb-1">O Meu Carrinho</h2>
+  <p class="text-muted small mb-4" *ngIf="cartService.items().length > 0">
+    <i class="bi bi-shop me-1"></i>{{ cartService.activeSupermarketNome() }} &middot; {{ cartService.totalItems() }} {{ cartService.totalItems() === 1 ? 'item' : 'itens' }}
+  </p>
+
+  <!-- Carrinho Vazio -->
+  <div *ngIf="cartService.items().length === 0" class="text-center py-5 my-5">
+    <i class="bi bi-cart3 display-1 text-muted opacity-25"></i>
+    <p class="text-muted mt-3 mb-4">O seu carrinho está vazio.</p>
+    <a routerLink="/" class="btn btn-dark px-4">Explorar Produtos</a>
   </div>
 
-  <div *ngIf="cartService.items().length === 0" class="text-center py-5">
-    <i class="bi bi-cart-x text-muted display-1"></i>
-    <h3 class="mt-4 text-muted">O seu carrinho está vazio</h3>
-    <p class="mb-4">Adicione alguns produtos para começar a poupar!</p>
-    <a routerLink="/" class="btn btn-primary rounded-pill px-5 fw-bold">CONTINUAR A COMPRAR</a>
-  </div>
+  <!-- Carrinho com Itens -->
+  <div *ngIf="cartService.items().length > 0" class="row g-4">
 
-  <div *ngIf="cartService.items().length > 0" class="row g-5">
-    <!-- Lista de Itens -->
+    <!-- Coluna Esquerda: Lista de Produtos -->
     <div class="col-lg-8">
-      <div *ngIf="cartService.cartGroups().size === 0" class="alert alert-info">Sem produtos de momento.</div>
-      
-      <details *ngFor="let group of cartService.cartGroups() | keyvalue" 
-               class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" 
-               [open]="group.key === cartService.activeSupermarketId()">
-        <summary (click)="expandirSupermercado(group.key, $event)" 
-                 class="card-header bg-white py-3 d-flex align-items-center user-select-none" 
-                 style="cursor: pointer; list-style: none;">
-          <button class="btn btn-dark rounded-pill me-3 px-4 fw-bold">
-            <i class="bi bi-shop me-2"></i> {{ getSupermarketNameFromGroup(group.value) }}
-          </button>
-          <span class="text-muted small ms-auto"><i class="bi bi-chevron-down"></i> Visualizar & Comprar</span>
-        </summary>
-        <div class="card-body p-0 border-top">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="bg-light">
-                <tr>
-                  <th class="ps-4 border-0">Produto</th>
-                  <th class="border-0">Preço</th>
-                  <th class="border-0 text-center">Quantidade</th>
-                  <th class="border-0 text-end pe-4">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of group.value">
-                  <td class="ps-4 py-3">
-                    <div class="d-flex align-items-center">
-                      <img [src]="item.imagem" [alt]="item.nome" class="rounded border"
-                        style="width: 50px; height: 50px; object-fit: contain;">
-                      <div class="ms-3">
-                        <div class="fw-bold">{{ item.nome }}</div>
-                        <button (click)="removerItem(item.produtoId)"
-                          class="btn btn-link btn-sm p-0 text-danger text-decoration-none small">
-                          Remover
-                        </button>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="text-secondary">{{ item.preco | currency:'EUR' }}</td>
-                  <td style="width: 150px;">
-                    <div class="input-group input-group-sm">
-                      <button class="btn btn-outline-secondary" (click)="decrementar(item.produtoId)"
-                        [disabled]="item.quantidade <= 1">-</button>
-                      <span class="input-group-text bg-white px-3">{{ item.quantidade }}</span>
-                      <button class="btn btn-outline-secondary" (click)="incrementar(item.produtoId)"
+      <div class="card border-0 shadow-sm">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item px-3 py-3" *ngFor="let item of cartService.items()">
+            <div class="d-flex align-items-center gap-3">
+              <!-- Imagem -->
+              <img [src]="item.imagem"
+                   class="rounded bg-light border"
+                   style="width: 56px; height: 56px; object-fit: contain; padding: 4px;">
+
+              <!-- Info -->
+              <div class="flex-grow-1 min-width-0">
+                <div class="fw-semibold text-truncate">{{ item.nome }}</div>
+                <div class="text-muted small">{{ item.preco | currency:'EUR' }} / unid.</div>
+              </div>
+
+              <!-- Quantidade -->
+              <div class="input-group input-group-sm" style="width: 120px;">
+                <button class="btn btn-outline-secondary"
+                        (click)="cartService.updateQuantity(item.produtoId, item.quantidade - 1)">−</button>
+                <span class="input-group-text bg-white text-center flex-grow-1 justify-content-center fw-bold">{{ item.quantidade }}</span>
+                <button class="btn btn-outline-secondary"
+                        (click)="cartService.updateQuantity(item.produtoId, item.quantidade + 1)"
                         [disabled]="item.quantidade >= item.stockDisponivel">+</button>
-                    </div>
-                  </td>
-                  <td class="text-end pe-4 fw-bold">{{ (item.preco * item.quantidade) | currency:'EUR' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </details>
+              </div>
 
-      <div class="d-flex justify-content-between">
-        <a routerLink="/" class="btn btn-link text-decoration-none text-muted">
-          <i class="bi bi-arrow-left me-2"></i>Continuar a comprar
-        </a>
-        <button class="btn btn-outline-danger btn-sm" (click)="limparCarrinho()">
-          <i class="bi bi-trash me-2"></i>Limpar Carrinho
-        </button>
-      </div>
-    </div>
+              <!-- Subtotal -->
+              <div class="text-end" style="min-width: 80px;">
+                <div class="fw-bold">{{ (item.preco * item.quantidade) | currency:'EUR' }}</div>
+              </div>
 
-    <!-- Finalização -->
-    <div class="col-lg-4">
-      <div class="card border-0 shadow-sm rounded-4 mb-4">
-        <div class="card-body p-4">
-          <h5 class="fw-bold mb-4">Resumo e Entrega</h5>
-
-          <div class="mb-4 pt-3 border-top">
-            <label class="form-label fw-bold small text-uppercase mb-3">Método de Entrega</label>
-            <div class="form-check mb-2">
-              <input class="form-check-input" type="radio" name="metodo" id="loja" value="levantamento_loja"
-                [(ngModel)]="metodoEntrega">
-              <label class="form-check-label" for="loja">Levantamento em Loja (Grátis)</label>
-            </div>
-            <div class="form-check mb-3">
-              <input class="form-check-input" type="radio" name="metodo" id="domicilio" value="entrega_domicilio"
-                [(ngModel)]="metodoEntrega">
-              <label class="form-check-label" for="domicilio">Entrega ao Domicílio</label>
-            </div>
-          </div>
-
-          <div *ngIf="metodoEntrega === 'entrega_domicilio'" class="mb-4 animate-fade-in">
-            <label class="form-label fw-bold small text-uppercase">Morada de Entrega</label>
-            <textarea class="form-control rounded-3" rows="3" [(ngModel)]="moradaEntrega"
-              placeholder="Rua, número, código postal..."></textarea>
-          </div>
-
-          <!-- Cupões -->
-          <div class="mb-4 pt-3 border-top">
-            <label class="form-label fw-bold small text-uppercase mb-3">Código Promocional</label>
-            <div *ngIf="!cartService.cupao()" class="input-group">
-              <input type="text" class="form-control text-uppercase" placeholder="Ex: NATAL10"
-                [(ngModel)]="codigoCupaoInput" [disabled]="validandoCupao">
-              <button class="btn btn-dark" type="button" (click)="aplicarCupao()"
-                [disabled]="validandoCupao || !codigoCupaoInput.trim()">
-                <span *ngIf="validandoCupao" class="spinner-border spinner-border-sm" role="status"
-                  aria-hidden="true"></span>
-                <span *ngIf="!validandoCupao">Aplicar</span>
+              <!-- Remover -->
+              <button class="btn btn-sm text-muted p-1" (click)="cartService.removeItem(item.produtoId)" title="Remover">
+                <i class="bi bi-x-lg"></i>
               </button>
             </div>
-            <div *ngIf="cartService.cupao()" class="alert alert-success d-flex align-items-center mb-0 py-2">
-              <i class="bi bi-check-circle-fill me-2"></i>
-              <div>
-                <strong>{{ cartService.cupao()?.codigo }}</strong> aplicado
-              </div>
-              <button class="btn btn-sm btn-link text-success ms-auto p-0" (click)="removerCupao()">Remover</button>
-            </div>
+          </li>
+        </ul>
+      </div>
+
+      <button (click)="limparCarrinho()" class="btn btn-link text-danger text-decoration-none small mt-3 p-0">
+        <i class="bi bi-trash3 me-1"></i>Esvaziar carrinho
+      </button>
+    </div>
+
+    <!-- Coluna Direita: Resumo -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm sticky-top" style="top: 1.5rem;">
+        <div class="card-body p-4">
+          <h6 class="fw-bold text-uppercase text-muted small mb-4">Resumo da Compra</h6>
+
+          <!-- Entrega -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Entrega</label>
+            <select class="form-select form-select-sm" [(ngModel)]="metodoEntrega">
+              <option value="levantamento_loja">Levantamento em Loja (Grátis)</option>
+              <option value="entrega_domicilio">Entrega ao Domicílio</option>
+            </select>
           </div>
 
-          <div class="bg-light p-3 rounded-3 mb-4">
-            <div class="d-flex justify-content-between mb-2">
-              <span class="text-secondary">Subtotal</span>
-              <span>{{ cartService.subtotalPrice() | currency:'EUR' }}</span>
-            </div>
+          <div *ngIf="metodoEntrega === 'entrega_domicilio'" class="mb-3">
+            <label class="form-label small fw-semibold">Morada de entrega</label>
+            <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="moradaEntrega" placeholder="Rua, nº, código postal, cidade..."></textarea>
+          </div>
 
-            <div *ngIf="cartService.cupao()" class="d-flex justify-content-between mb-2 text-success animate-fade-in">
-              <span>Desconto ({{ cartService.cupao()?.percentagem }}%)</span>
-              <span>-{{ cartService.discountValue() | currency:'EUR' }}</span>
-            </div>
+          <!-- Pagamento -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Pagamento</label>
+            <select class="form-select form-select-sm" [(ngModel)]="metodoPagamento">
+              <option value="cartao">Cartão de Crédito / Débito</option>
+              <option value="mbway">MB WAY</option>
+              <option value="dinheiro">Pagar na Entrega</option>
+            </select>
+          </div>
 
-            <div class="d-flex justify-content-between mb-2">
-              <span class="text-secondary">Taxa de Entrega</span>
-              <span [class.text-success]="metodoEntrega !== 'entrega_domicilio'">{{ metodoEntrega ===
-                'entrega_domicilio' ? (3.50 | currency:'EUR') : 'Grátis' }}</span>
+          <!-- Cupão -->
+          <div class="mb-4">
+            <label class="form-label small fw-semibold">Cupão de desconto</label>
+            <div *ngIf="!cartService.cupao()" class="input-group input-group-sm">
+              <input type="text" class="form-control text-uppercase" [(ngModel)]="codigoCupaoInput" placeholder="Ex: BEMVINDO10">
+              <button class="btn btn-dark px-3" (click)="aplicarCupao()">Aplicar</button>
             </div>
-            <hr>
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="fw-bold">TOTAL</span>
-              <span class="h4 fw-bold text-primary mb-0">
-                {{ (cartService.totalPrice() + (metodoEntrega === 'entrega_domicilio' ? 3.50 : 0)) | currency:'EUR' }}
+            <div *ngIf="cartService.cupao()" class="d-flex align-items-center justify-content-between bg-light border rounded px-3 py-2">
+              <span class="small fw-semibold">
+                <i class="bi bi-check2 me-1"></i>{{ cartService.cupao()?.codigo }}
               </span>
+              <button class="btn btn-sm btn-link text-danger p-0 text-decoration-none small" (click)="cartService.removeCoupon()">Remover</button>
             </div>
           </div>
 
-          <button (click)="finalizarEncomenda()" class="btn btn-primary w-100 py-3 fw-bold rounded-pill"
-            [disabled]="processando">
-            <span *ngIf="!processando">{{ isLoggedIn ? 'FINALIZAR ENCOMENDA' : 'FAZER LOGIN PARA COMPRAR' }}</span>
-            <span *ngIf="processando" class="spinner-border spinner-border-sm me-2"></span>
-            <span *ngIf="processando">A PROCESSAR...</span>
+          <hr>
+
+          <!-- Totais -->
+          <div class="d-flex justify-content-between small mb-2">
+            <span class="text-muted">Subtotal ({{ cartService.totalItems() }} itens)</span>
+            <span>{{ cartService.subtotalPrice() | currency:'EUR' }}</span>
+          </div>
+
+          <div *ngIf="cartService.cupao()" class="d-flex justify-content-between small mb-2 text-success">
+            <span>Desconto ({{ cartService.cupao()?.codigo }})</span>
+            <span>-{{ cartService.discountValue() | currency:'EUR' }}</span>
+          </div>
+
+          <div class="d-flex justify-content-between fw-bold fs-5 mt-3 pt-3 border-top">
+            <span>Total</span>
+            <span class="text-dark">{{ cartService.totalPrice() | currency:'EUR' }}</span>
+          </div>
+
+          <button (click)="finalizarEncomenda()" 
+                  class="btn btn-dark w-100 py-2 fw-bold mt-4"
+                  [disabled]="processando">
+            <ng-container *ngIf="!processando">
+              <i class="bi bi-lock-fill me-1"></i>Confirmar Compra
+            </ng-container>
+            <span *ngIf="processando" class="spinner-border spinner-border-sm"></span>
           </button>
+
+          <p *ngIf="!isLoggedIn" class="text-center text-muted extra-small mt-2 mb-0">
+            <a routerLink="/login" class="text-dark text-decoration-none">Inicie sessão</a> para finalizar.
+          </p>
         </div>
       </div>
     </div>

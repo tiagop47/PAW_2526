@@ -1,61 +1,47 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { CartItem } from '../models/cart-item.dto';
+import { ProductDTO } from '../models/product.dto';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CartService {
   private readonly STORAGE_KEY = 'cart';
 
-  /** Signal reativo com TODOS os itens do carrinho */
+  /** Signal reativo com os itens do carrinho (sempre da mesma loja) */
   items = signal<CartItem[]>(this.loadFromStorage());
 
-  /** Supermercado que está ATIVO na view da direita / faturação */
-  activeSupermarketId = signal<string | null>(this.loadActiveSupermarketId());
+  /** Dados do cupão ativo */
+  cupao = signal<{ codigo: string; percentagem: number } | null>(this.loadCupao());
 
-  /** Dados do cupão ativo, se algum para a loja em causa */
-  cupao = signal<{ codigo: string, percentagem: number } | null>(this.loadCupao());
-
-  /** Número total de itens no carrinho (global) */
+  /** Número total de itens no carrinho */
   totalItems = computed(() => this.items().reduce((sum, item) => sum + item.quantidade, 0));
 
-  /** Elementos da loja ATIVA para facturação */
-  activeItems = computed(() => {
-    const smId = this.activeSupermarketId();
-    if (!smId) return [];
-    return this.items().filter(i => i.supermercadoId === smId);
+  /** Supermercado atual do carrinho */
+  activeSupermarketId = computed(() => {
+    const items = this.items();
+    return items.length > 0 ? items[0].supermercadoId : null;
   });
 
-  cartGroups = computed(() => {
-    const map = new Map<string, CartItem[]>();
-    for (const item of this.items()) {
-      if (!map.has(item.supermercadoId)) {
-        map.set(item.supermercadoId, []);
-      }
-      map.get(item.supermercadoId)!.push(item);
-    }
-    return map;
+  activeSupermarketNome = computed(() => {
+    const items = this.items();
+    return items.length > 0 ? items[0].supermercadoNome : null;
   });
 
-  /** Valor total da loja ativa COM o cupão já deduzido */
-  totalPrice = computed(() => {
-    const sum = this.activeItems().reduce((s, item) => s + item.preco * item.quantidade, 0);
-    const cupaoAtual = this.cupao();
-    if (cupaoAtual) {
-      return sum - (sum * (cupaoAtual.percentagem / 100));
-    }
-    return sum;
-  });
+  /** Subtotal puro (sem cupão) */
+  subtotalPrice = computed(() =>
+    this.items().reduce((s, item) => s + item.preco * item.quantidade, 0),
+  );
 
-  /** Subtotal puro da loja activa (sem cupão) */
-  subtotalPrice = computed(() => this.activeItems().reduce((s, item) => s + item.preco * item.quantidade, 0));
-
-  /** Valor deduzido pelo cupão para a loja activa */
+  /** Valor deduzido pelo cupão */
   discountValue = computed(() => {
     const subtotal = this.subtotalPrice();
     const cupaoAtual = this.cupao();
     return cupaoAtual ? subtotal * (cupaoAtual.percentagem / 100) : 0;
   });
+
+  /** Valor total final */
+  totalPrice = computed(() => this.subtotalPrice() - this.discountValue());
 
   addItem(item: CartItem): { sucesso: boolean; erro?: string } {
     if (item.stockDisponivel <= 0) {
@@ -63,14 +49,26 @@ export class CartService {
     }
 
     const currentItems = this.items();
-    const existingIndex = currentItems.findIndex(i => i.produtoId === item.produtoId);
+
+    // Regra: Apenas um supermercado no carrinho
+    if (currentItems.length > 0 && currentItems[0].supermercadoId !== item.supermercadoId) {
+      return {
+        sucesso: false,
+        erro: `Só pode adicionar produtos de um supermercado de cada vez. Finalize ou limpe o carrinho atual.`,
+      };
+    }
+
+    const existingIndex = currentItems.findIndex((i) => i.produtoId === item.produtoId);
 
     if (existingIndex >= 0) {
       const existing = currentItems[existingIndex];
       const novaQuantidade = existing.quantidade + item.quantidade;
 
       if (novaQuantidade > item.stockDisponivel) {
-        return { sucesso: false, erro: `Stock insuficiente. Disponível: ${item.stockDisponivel}, no carrinho: ${existing.quantidade}.` };
+        return {
+          sucesso: false,
+          erro: `Stock insuficiente. Disponível: ${item.stockDisponivel}.`,
+        };
       }
 
       const updated = currentItems.slice();
@@ -80,19 +78,16 @@ export class CartService {
       this.items.set(currentItems.concat([Object.assign({}, item)]));
     }
 
-    // Se o cliente adicionar produto, vamos saltar o checkout auto para lá
-    if (this.activeSupermarketId() !== item.supermercadoId) {
-      this.setActiveSupermarket(item.supermercadoId);
-    }
-
     this.saveToStorage();
     return { sucesso: true };
   }
 
   updateQuantity(produtoId: string, quantidade: number): void {
     const currentItems = this.items();
-    const index = currentItems.findIndex(i => i.produtoId === produtoId);
-    if (index < 0) return;
+    const index = currentItems.findIndex((i) => i.produtoId === produtoId);
+    if (index < 0) {
+      return;
+    }
 
     const item = currentItems[index];
 
@@ -101,59 +96,25 @@ export class CartService {
       return;
     }
 
-    if (quantidade > item.stockDisponivel) {
-      return;
-    }
+    if (quantidade > item.stockDisponivel) return;
 
     const updated = currentItems.slice();
-    updated[index] = Object.assign({}, item, { quantidade });
+    updated[index] = Object.assign({}, item, { quantidade: quantidade });
     this.items.set(updated);
     this.saveToStorage();
   }
 
   removeItem(produtoId: string): void {
-    const updated = this.items().filter(i => i.produtoId !== produtoId);
+    const updated = this.items().filter((i) => i.produtoId !== produtoId);
     this.items.set(updated);
-
-    // Se o carrinho activo ficar vazio, reset!
-    if (this.activeItems().length === 0) {
-       this.cupao.set(null);
-       const remainingGroups = this.cartGroups();
-       if (remainingGroups.size > 0) {
-          // Selecionar o primeiro supermercado que existe
-          this.activeSupermarketId.set(Array.from(remainingGroups.keys())[0]);
-       } else {
-          this.activeSupermarketId.set(null);
-       }
-    }
-    
-    this.saveToStorage();
-  }
-
-  clearActiveCart(): void {
-    const active = this.activeSupermarketId();
-    if (!active) return;
-    const updated = this.items().filter(i => i.supermercadoId !== active);
-    this.items.set(updated);
-    this.cupao.set(null);
-    
-    const remainingGroups = this.cartGroups();
-    if (remainingGroups.size > 0) {
-      this.activeSupermarketId.set(Array.from(remainingGroups.keys())[0]);
-    } else {
-      this.activeSupermarketId.set(null);
-    }
-    
-    localStorage.removeItem(this.STORAGE_KEY + '_cupao');
+    if (updated.length === 0) this.cupao.set(null);
     this.saveToStorage();
   }
 
   clearCart(): void {
     this.items.set([]);
-    this.activeSupermarketId.set(null);
     this.cupao.set(null);
     localStorage.removeItem(this.STORAGE_KEY);
-    localStorage.removeItem(this.STORAGE_KEY + '_supermarket');
     localStorage.removeItem(this.STORAGE_KEY + '_cupao');
   }
 
@@ -167,23 +128,36 @@ export class CartService {
     this.saveToStorage();
   }
 
-  setActiveSupermarket(smId: string) {
-    if (this.activeSupermarketId() !== smId) {
-      this.activeSupermarketId.set(smId);
-      this.cupao.set(null); // perdem-se cupoes entre mudanças por clareza!
-      this.saveToStorage();
+  /**
+   * Método centralizado para adicionar um ProductDTO ao carrinho.
+   * Evita duplicação de lógica de conversão nos componentes.
+   */
+  addProduct(product: ProductDTO, supermercadoNome?: string): { sucesso: boolean; erro?: string } {
+    const smId = typeof product.supermercadoId === 'string'
+      ? product.supermercadoId
+      : product.supermercadoId?._id;
+
+    if (!smId) {
+      return { sucesso: false, erro: 'Não foi possível identificar o supermercado deste produto.' };
     }
+
+    const smNome = supermercadoNome
+      || (typeof product.supermercadoId === 'string' ? 'Supermercado' : product.supermercadoId?.nome || 'Supermercado');
+
+    return this.addItem({
+      produtoId: product._id,
+      nome: product.nome,
+      imagem: product.imagem,
+      preco: product.preco,
+      quantidade: 1,
+      stockDisponivel: product.stockDisponivel,
+      supermercadoId: smId,
+      supermercadoNome: smNome,
+    });
   }
 
   private saveToStorage(): void {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.items()));
-    const smId = this.activeSupermarketId();
-    if (smId) {
-      localStorage.setItem(this.STORAGE_KEY + '_supermarket', smId);
-    } else {
-      localStorage.removeItem(this.STORAGE_KEY + '_supermarket');
-    }
-
     const cupaoAtual = this.cupao();
     if (cupaoAtual) {
       localStorage.setItem(this.STORAGE_KEY + '_cupao', JSON.stringify(cupaoAtual));
@@ -201,11 +175,7 @@ export class CartService {
     }
   }
 
-  private loadActiveSupermarketId(): string | null {
-    return localStorage.getItem(this.STORAGE_KEY + '_supermarket');
-  }
-
-  private loadCupao(): { codigo: string, percentagem: number } | null {
+  private loadCupao(): { codigo: string; percentagem: number } | null {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY + '_cupao');
       return data ? JSON.parse(data) : null;

@@ -2,7 +2,7 @@ import { CategoryDTO } from './category.dto';
 
 export interface ProductDTO {
   _id: string;
-  supermercadoId: any; // Pode vir ID ou Objecto populado
+  supermercadoId: string | { _id: string, nome: string, localizacao: string };
   catalogProductId?: { _id: string; nome: string } | null;
   nome: string;
   descricao?: string;

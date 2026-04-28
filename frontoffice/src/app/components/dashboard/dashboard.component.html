@@ -1,0 +1,119 @@
+<div class="container mt-4">
+  <!-- Título da Página -->
+  <div class="row mb-4">
+    <div class="col">
+      <h2 class="border-bottom pb-2">Área do Cliente</h2>
+      <p class="text-secondary">Bem-vindo, {{ userName }}</p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center my-5">
+    <div class="spinner-border" role="status"></div>
+  </div>
+
+  <div *ngIf="!loading && stats" class="row">
+    
+    <!-- Coluna de Ações e Resumo -->
+    <div class="col-md-4">
+      <!-- Card de Total -->
+      <div class="card mb-4 text-center">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted text-uppercase small">Total de Encomendas</h6>
+          <p class="card-text display-4 fw-bold">{{ stats.totalEncomendas }}</p>
+          <a routerLink="/orders" class="btn btn-outline-dark btn-sm">Ver Histórico</a>
+        </div>
+      </div>
+
+      <!-- Links Rápidos -->
+      <div class="list-group mb-4">
+        <a routerLink="/orders" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-box-seam me-2"></i>As Minhas Encomendas</span>
+        </a>
+        <a routerLink="/avaliacoes" class="list-group-item list-group-item-action">
+          <i class="bi bi-star me-2"></i>As Minhas Avaliações
+        </a>
+        <a routerLink="/cart" class="list-group-item list-group-item-action">
+          <i class="bi bi-cart3 me-2"></i>Ver Carrinho
+        </a>
+        <a routerLink="/" class="list-group-item list-group-item-action">
+          <i class="bi bi-shop me-2"></i>Ir para a Loja
+        </a>
+        <a routerLink="/settings" class="list-group-item list-group-item-action">
+          <i class="bi bi-gear me-2"></i>Configurações da Conta
+        </a>
+      </div>
+    </div>
+
+    <!-- Coluna de Produtos -->
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-header bg-white fw-bold">
+          Produtos Mais Comprados
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="stats.produtosMaisComprados.length === 0" class="p-4 text-center text-muted">
+            Ainda não existem compras registadas.
+          </div>
+
+          <table *ngIf="stats.produtosMaisComprados.length > 0" class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Produto</th>
+                <th class="text-end pe-3">Quantidade</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let prod of stats.produtosMaisComprados">
+                <td>
+                  <span class="fw-bold small d-block">{{ prod.nome }}</span>
+                </td>
+                <td class="text-end pe-3">
+                  <span class="badge bg-secondary">{{ prod.totalQuantidade }} un.</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Meus Cupões -->
+      <div class="card">
+        <div class="card-header bg-white fw-bold">
+          Os Meus Cupões
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="cupoes.length === 0" class="p-4 text-center text-muted">
+            Não tem cupões atribuídos de momento.
+          </div>
+
+          <table *ngIf="cupoes.length > 0" class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Código</th>
+                <th>Desconto</th>
+                <th>Supermercado</th>
+                <th>Validade</th>
+                <th class="text-end pe-3">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of cupoes" [class.table-secondary]="c.expirado || !c.ativo">
+                <td class="ps-3"><code class="fw-bold">{{ c.codigo }}</code></td>
+                <td>{{ c.percentagemDesconto }}%</td>
+                <td class="small">{{ c.supermercado }}</td>
+                <td class="small">{{ c.prazo | date:'dd/MM/yyyy' }}</td>
+                <td class="text-end pe-3">
+                  <span *ngIf="c.expirado" class="badge bg-secondary">Expirado</span>
+                  <span *ngIf="!c.expirado && c.ativo" class="badge bg-dark">Ativo</span>
+                  <span *ngIf="!c.expirado && !c.ativo" class="badge bg-secondary">Inativo</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

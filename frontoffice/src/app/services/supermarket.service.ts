@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { SupermarketDTO } from '../models/supermarket.dto';
 import { API_URL } from '../app.config';
+import { CategoryDTO } from '../models/category.dto';
+import { HomePromotionsDTO } from '../models/home-promotions.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +18,14 @@ export class SupermarketService {
 
   getSupermarkets(): Observable<SupermarketDTO[]> {
     return this.http.get<SupermarketDTO[]>(this.apiUrl);
+  }
+
+  getCategorias(): Observable<CategoryDTO[]> {
+    return this.http.get<CategoryDTO[]>(`${this.apiUrl}/categorias`);
+  }
+
+  getPromocoes(): Observable<HomePromotionsDTO> {
+    return this.http.get<HomePromotionsDTO>(`${this.apiUrl}/promocoes`);
   }
 
   getSupermarket(id: string): Observable<SupermarketDTO> {

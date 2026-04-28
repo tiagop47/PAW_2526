@@ -1,14 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { OrderService } from '../../services/order.service';
+import { AvaliacaoService } from '../../services/avaliacao.service';
 import { Order } from '../../models/order';
-import { AvaliacaoModalComponent } from '../avaliacao-modal/avaliacao-modal.component';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, RouterModule, AvaliacaoModalComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css'
 })
@@ -20,7 +21,10 @@ export class OrdersComponent implements OnInit {
   orderParaAvaliar: Order | null = null;
   jaAvaliadas = new Set<string>();
 
-  constructor(private orderService: OrderService) {}
+  constructor(
+    private orderService: OrderService,
+    private avaliacaoService: AvaliacaoService,
+  ) {}
 
   ngOnInit(): void {
     this.carregarEncomendas();
@@ -28,32 +32,45 @@ export class OrdersComponent implements OnInit {
 
   carregarEncomendas(): void {
     this.loading = true;
-    this.orderService.listarEncomendas().subscribe({
-      next: (encomendas: Order[]) => {
+    forkJoin({
+      encomendas: this.orderService.listarEncomendas(),
+      avaliacoes: this.avaliacaoService.getMinhasAvaliacoes(),
+    }).subscribe({
+      next: ({ encomendas, avaliacoes }) => {
         this.orders = encomendas;
+        this.jaAvaliadas = new Set(avaliacoes.map((a) => a.encomendaId));
         this.loading = false;
       },
-      error: (err) => {
+      error: () => {
         this.erro = 'Não foi possível carregar as suas encomendas. Por favor, tente mais tarde.';
         this.loading = false;
-        console.error('Erro ao listar encomendas:', err);
-      }
+      },
     });
   }
 
   cancelarEncomenda(orderId: string): void {
     if (!confirm('Tem a certeza que deseja cancelar esta encomenda?')) return;
 
-    this.orderService.cancelarEncomenda(orderId).subscribe(() => {
-      this.mensagem = 'Encomenda cancelada com sucesso.';
-      this.carregarEncomendas();
+    this.orderService.cancelarEncomenda(orderId).subscribe({
+      next: () => {
+        this.mensagem = 'Encomenda cancelada com sucesso.';
+        this.carregarEncomendas();
+      },
+      error: (err) => {
+        this.erro = err.error?.erro || 'Não foi possível cancelar a encomenda.';
+      },
     });
   }
 
   confirmarRececao(orderId: string): void {
-    this.orderService.confirmarRececao(orderId).subscribe(() => {
-      this.mensagem = 'Entrega confirmada com sucesso!';
-      this.carregarEncomendas();
+    this.orderService.confirmarRececao(orderId).subscribe({
+      next: () => {
+        this.mensagem = 'Entrega confirmada com sucesso!';
+        this.carregarEncomendas();
+      },
+      error: (err) => {
+        this.erro = err.error?.erro || 'Não foi possível confirmar a receção.';
+      },
     });
   }
 

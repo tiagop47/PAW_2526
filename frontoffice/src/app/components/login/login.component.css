@@ -1,8 +1,5 @@
+/* Login Clean Bootstrap */
 .login-container {
-  max-width: 400px;
-  margin: 2rem auto;
-}
-
-.login-card {
-  padding: 2rem;
+    max-width: 400px;
+    margin: 4rem auto;
 }

@@ -1,135 +1,59 @@
-import { Component, OnInit } from '@angular/core';
+/** ID: FIX_HOME_TEMPLATE_001 */
+import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { ProductService } from '../../services/product.service';
+import { RouterModule } from '@angular/router';
 import { SupermarketService } from '../../services/supermarket.service';
-import { AuthService } from '../../services/auth.service';
-import { ProductDTO } from '../../models/product.dto';
-import { SupermarketDTO } from '../../models/supermarket.dto';
-import { NavbarComponent } from '../navbar/navbar.component';
-
-interface ProdutoAgrupado {
-  chave: string;
-  nome: string;
-  imagem: string;
-  categoria: string;
-  precoMin: number;
-  precoMax: number;
-  poupanca: number;
-  numMercados: number;
-  produtoIdMaisBarato: string;
-  supermercadoMaisBaratoNome: string;
-  stockTotal: number;
-}
+import { ProductListComponent } from '../product-list/product-list.component';
+import { CategoryDTO } from '../../models/category.dto';
+import { CouponDTO } from '../../models/coupon.dto';
+import { StorePromotionDTO } from '../../models/home-promotions.dto';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, ProductListComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
 export class HomeComponent implements OnInit {
-  produtosAgrupados: ProdutoAgrupado[] = [];
-  todasCategorias: string[] = [];
-  todasZonas: string[] = [];
-  supermercados: SupermarketDTO[] = [];
-
-  loading = true;
-  pesquisa = '';
-  categoriaSelecionada = '';
-  zonaSelecionada = '';
-  ordenarPor: 'preco' | 'poupanca' | 'nome' = 'poupanca';
-
-  constructor(
-    public authService: AuthService,
-    private productService: ProductService,
-    private supermarketService: SupermarketService,
-    private router: Router,
-  ) { }
+  private supermarketService = inject(SupermarketService);
+  @ViewChild('productList') productList!: ProductListComponent;
+  
+  categories: CategoryDTO[] = [];
+  lojasPromocao: StorePromotionDTO[] = [];
+  cupoes: CouponDTO[] = [];
+  
+  searchQuery = '';
+  selectedCategory = '';
+  sortBy = 'discount'; 
 
   ngOnInit(): void {
-    this.supermarketService.getSupermarkets().subscribe((sms) => {
-      this.supermercados = sms;
-      this.todasZonas = Array.from(new Set(sms.map((s) => s.localizacao).filter(Boolean))).sort();
-    });
-
-    this.productService.getProducts().subscribe((produtos: ProductDTO[]) => {
-      this.produtosAgrupados = this.agrupar(produtos);
-      this.todasCategorias = Array.from(
-        new Set(produtos.map((p) => p.categoriaId?.nome).filter(Boolean)),
-      ).sort();
-      this.loading = false;
+    this.supermarketService.getCategorias().subscribe(data => this.categories = data);
+    
+    this.supermarketService.getPromocoes().subscribe({
+      next: (data) => {
+        this.lojasPromocao = data.lojas;
+        this.cupoes = data.cupoes;
+      },
+      error: (err) => console.error('Erro ao carregar promocoes:', err)
     });
   }
 
-  private agrupar(produtos: ProductDTO[]): ProdutoAgrupado[] {
-    const groups = new Map<string, ProductDTO[]>();
-    produtos.forEach((p) => {
-      const key = p.catalogProductId?._id || p.nome.toLowerCase().trim();
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key)!.push(p);
-    });
-
-    const agrupados: ProdutoAgrupado[] = [];
-    groups.forEach((grupo, chave) => {
-      const ordenado = grupo.slice().sort((a, b) => a.preco - b.preco);
-      const maisBarato = ordenado[0];
-      const maisCaro = ordenado[ordenado.length - 1];
-      const smNome =
-        typeof maisBarato.supermercadoId === 'string'
-          ? ''
-          : maisBarato.supermercadoId?.nome || '';
-
-      agrupados.push({
-        chave,
-        nome: maisBarato.nome,
-        imagem: maisBarato.imagem,
-        categoria: maisBarato.categoriaId?.nome || '',
-        precoMin: maisBarato.preco,
-        precoMax: maisCaro.preco,
-        poupanca: maisCaro.preco - maisBarato.preco,
-        numMercados: ordenado.length,
-        produtoIdMaisBarato: maisBarato._id,
-        supermercadoMaisBaratoNome: smNome,
-        stockTotal: ordenado.reduce((s, p) => s + (p.stockDisponivel || 0), 0),
+  onFilterChange(): void {
+    if (this.productList) {
+      this.productList.applyFilters({
+        query: this.searchQuery,
+        categoryId: this.selectedCategory,
+        sortBy: this.sortBy
       });
-    });
-
-    return agrupados;
-  }
-
-  get produtosFiltrados(): ProdutoAgrupado[] {
-    const q = this.pesquisa.trim().toLowerCase();
-    let lista = this.produtosAgrupados.filter((p) => {
-      if (q && !p.nome.toLowerCase().includes(q) && !p.categoria.toLowerCase().includes(q)) {
-        return false;
-      }
-      if (this.categoriaSelecionada && p.categoria !== this.categoriaSelecionada) return false;
-      return true;
-    });
-
-    if (this.ordenarPor === 'preco') {
-      lista = lista.slice().sort((a, b) => a.precoMin - b.precoMin);
-    } else if (this.ordenarPor === 'nome') {
-      lista = lista.slice().sort((a, b) => a.nome.localeCompare(b.nome));
-    } else {
-      lista = lista.slice().sort((a, b) => b.poupanca - a.poupanca);
     }
-
-    return lista;
   }
 
-  get melhoresOfertas(): ProdutoAgrupado[] {
-    return this.produtosAgrupados
-      .filter((p) => p.numMercados > 1 && p.poupanca > 0)
-      .slice()
-      .sort((a, b) => b.poupanca - a.poupanca)
-      .slice(0, 4);
-  }
-
-  verProduto(id: string): void {
-    this.router.navigate(['/product', id]);
+  limparFiltros(): void {
+    this.searchQuery = '';
+    this.selectedCategory = '';
+    this.sortBy = 'discount';
+    this.onFilterChange();
   }
 }

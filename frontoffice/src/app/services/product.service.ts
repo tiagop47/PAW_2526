@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ProductDTO, ProductComparacaoDTO } from '../models/product.dto';
 import { API_URL } from '../app.config';
 
@@ -14,11 +14,22 @@ export class ProductService {
 
   getProducts(supermarketId?: string): Observable<ProductDTO[]> {
     const url = supermarketId ? `${this.apiUrl}?supermercado=${supermarketId}` : this.apiUrl;
-    return this.http.get<ProductDTO[]>(url);
+    return this.http.get<ProductDTO[]>(url).pipe(
+      map(products => products.map(p => this.formatProduct(p)))
+    );
   }
 
   getProduct(id: string): Observable<ProductDTO> {
-    return this.http.get<ProductDTO>(`${this.apiUrl}/${id}`);
+    return this.http.get<ProductDTO>(`${this.apiUrl}/${id}`).pipe(
+      map(p => this.formatProduct(p))
+    );
+  }
+
+  private formatProduct(p: ProductDTO): ProductDTO {
+    if (p.imagem && !p.imagem.startsWith('http')) {
+      p.imagem = `http://localhost:3000${p.imagem}`;
+    }
+    return p;
   }
 
   compararPorNome(nome: string): Observable<ProductComparacaoDTO[]> {

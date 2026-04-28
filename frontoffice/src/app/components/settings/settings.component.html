@@ -1,56 +1,65 @@
-<div class="settings-container">
-  <div class="card border-dark rounded-0 p-4 shadow-sm">
-    <h2 class="fw-bold mb-4 border-bottom border-dark pb-2 text-uppercase">Configuração de Perfil</h2>
+<div class="container py-4">
+  <div class="mx-auto" style="max-width: 800px;">
+    <h2 class="h3 border-bottom pb-2 mb-4">Definições da Conta</h2>
 
-    <div *ngIf="initialLoading" class="text-center p-4">
-      <div class="spinner-border text-dark"></div>
-      <p class="small text-secondary mt-2">A CARREGAR DADOS...</p>
+    <div *ngIf="initialLoading" class="text-center py-5">
+      <div class="spinner-border" role="status"></div>
     </div>
 
     <div *ngIf="!initialLoading">
-      <div *ngIf="message" class="alert alert-success border-dark rounded-0 mb-4">{{ message }}</div>
-      <div *ngIf="error" class="alert alert-danger border-dark rounded-0 mb-4">{{ error }}</div>
+      <div *ngIf="message" class="alert alert-success small">{{ message }}</div>
+      <div *ngIf="error" class="alert alert-danger small">{{ error }}</div>
 
-      <form [formGroup]="settingsForm" (ngSubmit)="onSubmit()">
-      <div class="row">
-        <div class="col-12 col-md-6 mb-3">
-          <label class="form-label small fw-bold">Nome Completo</label>
-          <input type="text" class="form-control" formControlName="nome">
+      <div class="card border shadow-sm">
+        <div class="card-header bg-light fw-bold py-3">
+          Perfil do Utilizador
         </div>
-        <div class="col-12 col-md-6 mb-3">
-          <label class="form-label small fw-bold">Email (Não editável)</label>
-          <input type="email" class="form-control bg-light" formControlName="email">
+        <div class="card-body p-4">
+          <form [formGroup]="settingsForm" (ngSubmit)="onSubmit()">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label small fw-bold">Nome Completo</label>
+                <input type="text" class="form-control" formControlName="nome">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Email (Não editável)</label>
+                <input type="email" class="form-control bg-light" formControlName="email">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Telefone</label>
+                <input type="text" class="form-control" formControlName="telefone">
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-bold">Morada de Entrega Predefinida</label>
+                <input type="text" class="form-control" formControlName="morada">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">NIF</label>
+                <input type="text" class="form-control" formControlName="nif">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Supermercado Favorito</label>
+                <select class="form-select" formControlName="supermercadoFavorito">
+                  <option value="">Nenhum</option>
+                  <option *ngFor="let sm of supermercados" [value]="sm._id">{{ sm.nome }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mt-4 border-top pt-3 d-flex justify-content-end">
+              <button type="submit" class="btn btn-dark px-4 fw-bold" [disabled]="loading || settingsForm.invalid">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                Guardar Alterações
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-
-      <div class="row">
-        <div class="col-12 col-md-6 mb-3">
-          <label class="form-label small fw-bold">Telefone</label>
-          <input type="text" class="form-control" formControlName="telefone">
-        </div>
-        <div class="col-12 col-md-6 mb-3">
-          <label class="form-label small fw-bold">NIF</label>
-          <input type="text" class="form-control" formControlName="nif">
-        </div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label small fw-bold">Supermercado Favorito</label>
-        <select class="form-control" formControlName="supermercadoFavorito">
-          <option value="">Selecione um supermercado</option>
-          <option *ngFor="let s of supermercados" [value]="s._id">{{ s.nome | uppercase }} - {{ s.localizacao | uppercase }}</option>
-        </select>
-        <div class="form-text small text-secondary mt-1">Este supermercado será usado como referência de distância na página inicial.</div>
-      </div>
-
-      <div class="mb-4">
-        <label class="form-label small fw-bold">Morada de Entrega Padrão</label>
-        <input type="text" class="form-control" formControlName="morada">
-      </div>
-
-      <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" [disabled]="!settingsForm.valid || loading">
-        {{ loading ? 'A GUARDAR...' : 'GUARDAR ALTERAÇÕES' }}
-      </button>
-    </form>
+    </div>
   </div>
 </div>

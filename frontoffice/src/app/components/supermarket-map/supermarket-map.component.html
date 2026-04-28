@@ -1,1 +1,15 @@
-<div #mapContainer class="map-container"></div>
+<div class="map-wrapper border rounded shadow-sm overflow-hidden position-relative">
+  <div #mapContainer class="map-container" style="height: 400px; background: #eee;"></div>
+  
+  <!-- Overlay Sober Control -->
+  <div class="position-absolute bottom-0 start-0 m-3 z-3 bg-white border p-2 small shadow-sm rounded">
+    <div class="d-flex align-items-center gap-2">
+      <div style="width: 12px; height: 12px; background: #000; border-radius: 50%;"></div>
+      <span>Lojas Disponíveis</span>
+    </div>
+    <div class="d-flex align-items-center gap-2 mt-1">
+      <div style="width: 12px; height: 12px; border: 2px solid #000; border-radius: 50%;"></div>
+      <span>Raio de Entrega</span>
+    </div>
+  </div>
+</div>

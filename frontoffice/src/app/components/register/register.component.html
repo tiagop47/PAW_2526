@@ -1,57 +1,61 @@
-<div class="register-container">
-  <div class="card register-card">
-    <h2 class="text-center mb-4">Criar Conta</h2>
+<div class="container">
+  <div class="card register-container border shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-center fw-bold mb-4">Criar Nova Conta</h3>
 
-    <div *ngIf="errorMessage" class="alert alert-danger mb-4">{{ errorMessage }}</div>
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <div class="row g-3 mb-3">
+          <div class="col-12">
+            <label class="form-label small fw-bold">Nome Completo</label>
+            <input type="text" class="form-control" formControlName="nome" placeholder="João Silva">
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Email</label>
+            <input type="email" class="form-control" formControlName="email" placeholder="joao&#64;email.com">
+          </div>
 
-    <form [formGroup]="registerForm">
-      <div class="row">
-        <div class="col col-md-6 mb-3">
-          <label class="form-label">Nome Completo</label>
-          <input type="text" class="form-control" formControlName="nome" placeholder="João Silva">
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Telefone</label>
+            <input type="text" class="form-control" formControlName="telefone" placeholder="912345678">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label small fw-bold">Morada Principal</label>
+            <input type="text" class="form-control" formControlName="morada" placeholder="Rua das Flores, nº 10">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">NIF (Opcional)</label>
+            <input type="text" class="form-control" formControlName="nif" placeholder="123456789">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Palavra-passe</label>
+            <input type="password" class="form-control" formControlName="password" placeholder="********">
+          </div>
+
+          <div class="col-12" *ngIf="supermercados.length > 0">
+            <label class="form-label small fw-bold">Supermercado Favorito (Opcional)</label>
+            <select class="form-select" formControlName="supermercadoFavorito">
+              <option value="">Nenhum</option>
+              <option *ngFor="let sm of supermercados" [value]="sm._id">{{ sm.nome }}</option>
+            </select>
+          </div>
         </div>
-        <div class="col col-md-6 mb-3">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" formControlName="email" placeholder="exemplo@mail.com">
+
+        <div *ngIf="errorMessage" class="alert alert-danger small py-2">
+          {{ errorMessage }}
         </div>
+
+        <button type="submit" class="btn btn-dark w-100 fw-bold py-2 mt-2" [disabled]="registerForm.invalid">
+          Registar Conta
+        </button>
+      </form>
+
+      <div class="mt-4 text-center border-top pt-3">
+        <p class="text-muted small mb-0">Já tem conta? <a routerLink="/login" class="text-decoration-none">Inicie sessão</a></p>
       </div>
-
-      <div class="row">
-        <div class="col col-md-6 mb-3">
-          <label class="form-label">Palavra-passe</label>
-          <input type="password" class="form-control" formControlName="password">
-        </div>
-        <div class="col col-md-6 mb-3">
-          <label class="form-label">Telefone</label>
-          <input type="text" class="form-control" formControlName="telefone">
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col col-md-6 mb-3">
-          <label class="form-label">NIF</label>
-          <input type="text" class="form-control" formControlName="nif">
-        </div>
-        <div class="col col-md-6 mb-3">
-          <label class="form-label">Supermercado Favorito</label>
-          <select class="form-control" formControlName="supermercadoFavorito">
-            <option value="">Selecione um supermercado</option>
-            <option *ngFor="let s of supermercados" [value]="s._id">{{ s.nome }}</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="mb-4">
-        <label class="form-label">Morada</label>
-        <input type="text" class="form-control" formControlName="morada" placeholder="Rua, número, localidade...">
-      </div>
-
-      <button type="button" class="btn btn-primary w-100 mb-3" [disabled]="!registerForm.valid" (click)="onSubmit()">Criar Conta</button>
-
-      <div class="text-center">
-        <span class="text-secondary small">Já tem conta?</span><br>
-        <a routerLink="/login" class="small">Entrar aqui</a>
-      </div>
-    </form>
+    </div>
   </div>
 </div>

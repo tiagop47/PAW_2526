@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+/** ID: FIX_SUPERMARKETS_TEMPLATE_001 */
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import * as L from 'leaflet';
@@ -6,7 +7,11 @@ import { SupermarketService } from '../../services/supermarket.service';
 import { AuthService } from '../../services/auth.service';
 import { SupermarketDTO } from '../../models/supermarket.dto';
 import { SupermarketMapComponent } from '../supermarket-map/supermarket-map.component';
-import { NavbarComponent } from '../navbar/navbar.component';
+
+interface SupermarketDisplay extends SupermarketDTO {
+  isFavorito: boolean;
+  distanciaRef: number | null;
+}
 
 @Component({
   selector: 'app-supermarkets',
@@ -15,16 +20,14 @@ import { NavbarComponent } from '../navbar/navbar.component';
   templateUrl: './supermarkets.component.html',
 })
 export class SupermarketsComponent implements OnInit {
+  private supermarketService = inject(SupermarketService);
+  public authService = inject(AuthService);
+  private router = inject(Router);
+
   allSupermarkets: SupermarketDTO[] = [];
   availableZones: string[] = [];
   selectedZone: string = '';
   supermercadoNoMapa: string | null = null;
-
-  constructor(
-    public authService: AuthService,
-    private supermarketService: SupermarketService,
-    private router: Router,
-  ) {}
 
   get favoritoId(): string | null {
     const userStr = localStorage.getItem('currentUser');
@@ -33,7 +36,7 @@ export class SupermarketsComponent implements OnInit {
     return user?.supermercadoFavorito || null;
   }
 
-  get filteredSupermarkets(): any[] {
+  get filteredSupermarkets(): SupermarketDisplay[] {
     const favId = this.favoritoId;
 
     const filtered = this.allSupermarkets.filter((s) => {
@@ -56,7 +59,7 @@ export class SupermarketsComponent implements OnInit {
       return Object.assign({}, s, {
         isFavorito: s._id === favId,
         distanciaRef: distRef,
-      });
+      }) as SupermarketDisplay;
     });
   }
 
@@ -69,13 +72,21 @@ export class SupermarketsComponent implements OnInit {
     });
   }
 
+  onZoneChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.selectedZone = select.value;
+  }
+
   navigateToMercado(id: string): void {
-    this.router.navigate(['/supermercado', id]);
+    this.router.navigate(['/products', id]);
   }
 
   verNoMapa(id: string): void {
     this.supermercadoNoMapa = null;
     this.supermercadoNoMapa = id;
-    document.querySelector('.map-section')?.scrollIntoView({ behavior: 'instant' });
+    setTimeout(() => {
+      const el = document.querySelector('app-supermarket-map');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   }
 }

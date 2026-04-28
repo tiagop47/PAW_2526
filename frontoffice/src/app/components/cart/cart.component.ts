@@ -6,7 +6,6 @@ import { CartService } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
-import { CartItem } from '../../models/cart-item.dto';
 
 @Component({
   selector: 'app-cart',
@@ -23,131 +22,72 @@ export class CartComponent {
   private notificationService = inject(NotificationService);
 
   metodoEntrega: 'levantamento_loja' | 'entrega_domicilio' = 'levantamento_loja';
+  metodoPagamento: 'cartao' | 'mbway' | 'dinheiro' = 'cartao';
   moradaEntrega = '';
   codigoCupaoInput = '';
   processando = false;
-  validandoCupao = false;
 
   get isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
   }
 
-  incrementar(produtoId: string): void {
-    const item = this.cartService.items().find(i => i.produtoId === produtoId);
-    if (item) {
-      this.cartService.updateQuantity(produtoId, item.quantidade + 1);
-    }
-  }
-
-  decrementar(produtoId: string): void {
-    const item = this.cartService.items().find(i => i.produtoId === produtoId);
-    if (item) {
-      this.cartService.updateQuantity(produtoId, item.quantidade - 1);
-    }
-  }
-
-  removerItem(produtoId: string): void {
-    this.cartService.removeItem(produtoId);
-    this.notificationService.showSuccess('Item removido do carrinho.');
-  }
-
   limparCarrinho(): void {
-    if (confirm('Tem a certeza que deseja limpar este carrinho? ')) {
-      this.cartService.clearActiveCart();
+    if (confirm('Deseja esvaziar o carrinho?')) {
+      this.cartService.clearCart();
       this.codigoCupaoInput = '';
-      this.notificationService.showInfo('Carrinho vazio.');
     }
-  }
-
-  getSupermarketNameFromGroup(items: CartItem[]): string {
-    return items.length > 0 ? items[0].supermercadoNome : 'Supermercado';
-  }
-
-  expandirSupermercado(smId: string, event: Event): void {
-    event.preventDefault(); 
-    this.cartService.setActiveSupermarket(smId);
   }
 
   aplicarCupao(): void {
-    if (!this.isLoggedIn) {
-      this.notificationService.showInfo('Tem de iniciar sessão para utilizar cupões.');
-      this.router.navigate(['/login']);
-      return;
-    }
-
     const codigo = this.codigoCupaoInput.trim().toUpperCase();
-    if (!codigo) return;
-
     const smId = this.cartService.activeSupermarketId();
-    if (!smId) return;
+    if (!codigo || !smId) return;
 
-    this.validandoCupao = true;
     this.orderService.validarCupao(codigo, smId).subscribe({
       next: (res) => {
-        this.validandoCupao = false;
         if (res.sucesso) {
           this.cartService.applyCoupon(codigo, res.percentagemDesconto);
-          this.notificationService.showSuccess(`Cupão de ${res.percentagemDesconto}% aplicado com sucesso!`);
+          this.notificationService.showSuccess('Cupão aplicado!');
           this.codigoCupaoInput = '';
         }
       },
-      error: (err) => {
-        this.validandoCupao = false;
-        this.notificationService.showError(err.error?.erro || 'Cupão inválido.');
-      }
+      error: (err) => this.notificationService.showError(err.error?.erro || 'Cupão inválido.')
     });
-  }
-
-  removerCupao(): void {
-    this.cartService.removeCoupon();
-    this.notificationService.showInfo('Cupão removido.');
   }
 
   finalizarEncomenda(): void {
     if (!this.isLoggedIn) {
-      this.notificationService.showInfo('Por favor, faça login para finalizar a encomenda.');
+      this.notificationService.showInfo('Inicie sessão para comprar.');
       this.router.navigate(['/login']);
       return;
     }
 
-    const items = this.cartService.activeItems();
-    const supermercadoId = this.cartService.activeSupermarketId();
-
-    if (items.length === 0 || !supermercadoId) {
-      this.notificationService.showError('O carrinho está vazio.');
-      return;
-    }
+    const items = this.cartService.items();
+    if (items.length === 0) return;
 
     if (this.metodoEntrega === 'entrega_domicilio' && !this.moradaEntrega.trim()) {
-      this.notificationService.showError('A morada de entrega é obrigatória.');
+      this.notificationService.showError('A morada é obrigatória.');
       return;
     }
 
     this.processando = true;
-
     const dados = {
-      supermercadoId,
+      supermercadoId: this.cartService.activeSupermarketId()!,
       produtos: items.map(i => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
       metodoEntrega: this.metodoEntrega,
+      metodoPagamento: this.metodoPagamento,
       codigoCupao: this.cartService.cupao()?.codigo,
       moradaEntrega: this.metodoEntrega === 'entrega_domicilio' ? this.moradaEntrega : undefined
     };
 
     this.orderService.criarEncomenda(dados).subscribe({
       next: () => {
-        this.notificationService.showSuccess('Encomenda criada com sucesso!');
-        this.cartService.clearActiveCart();
-        this.processando = false;
-        
-        // Se ainda não houver nenhum supermercado activo, é pq esvaziámos tudo. 
-        if (!this.cartService.activeSupermarketId()) {
-             setTimeout(() => this.router.navigate(['/orders']), 1000);
-        } else {
-             this.notificationService.showInfo('O sub-carrinho desta loja foi liquidado. Podes verificar o carrinho seguinte!');
-        }
+        this.notificationService.showSuccess('Encomenda realizada!');
+        this.cartService.clearCart();
+        this.router.navigate(['/orders']);
       },
       error: (err) => {
-        this.notificationService.showError(err.error?.erro || 'Erro ao criar encomenda.');
+        this.notificationService.showError(err.error?.erro || 'Erro na finalização.');
         this.processando = false;
       }
     });

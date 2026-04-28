@@ -1,16 +1,4 @@
-.avaliacoes-list {
-  max-width: 800px;
-}
-
-.estrelas {
-  color: #ccc;
-  font-size: 1.2rem;
-}
-
-.estrela.ativa {
-  color: var(--warning);
-}
-
+/* Estilos Clean Bootstrap para Avaliações */
 .italic {
-  font-style: italic;
+    font-style: italic;
 }

@@ -62,21 +62,13 @@ export class PaginaMercado implements OnInit {
     );
   }
 
-  adicionar(p: ProductDTO): void {
-    const smId =
-      typeof p.supermercadoId === 'string' ? p.supermercadoId : p.supermercadoId?._id;
-    if (!smId) return;
+  onSearchChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.pesquisa = input.value;
+  }
 
-    const result = this.cartService.addItem({
-      produtoId: p._id,
-      nome: p.nome,
-      imagem: 'http://localhost:3000' + p.imagem,
-      preco: p.preco,
-      quantidade: 1,
-      stockDisponivel: p.stockDisponivel,
-      supermercadoId: smId,
-      supermercadoNome: this.supermercado?.nome || 'Supermercado'
-    });
+  adicionar(p: ProductDTO): void {
+    const result = this.cartService.addProduct(p, this.supermercado?.nome);
 
     if (result.sucesso) {
       this.notificationService.showSuccess('Adicionado ao carrinho.');

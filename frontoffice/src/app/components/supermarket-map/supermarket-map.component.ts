@@ -1,31 +1,23 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 import { SupermarketDTO } from '../../models/supermarket.dto';
-
-const iconDefault = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
-L.Marker.prototype.options.icon = iconDefault;
 
 @Component({
   selector: 'app-supermarket-map',
   standalone: true,
+  imports: [CommonModule],
   templateUrl: './supermarket-map.component.html',
   styleUrl: './supermarket-map.component.css'
 })
 export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
+  
   @Input() supermarkets: SupermarketDTO[] = [];
   @Input() favoritoId: string | null = null;
   @Input() set focarSupermercado(id: string | null) {
     if (!id || !this.map) return;
-    const s = this.supermarkets.find(s => s._id === id);
+    const s = this.supermarkets.find(item => item._id === id);
     if (s?.localizacaoGeo?.coordinates) {
       this.map.setView([s.localizacaoGeo.coordinates[1], s.localizacaoGeo.coordinates[0]], 15);
     }
@@ -34,13 +26,10 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
   private map?: L.Map;
   private mapaIniciado: boolean = false;
 
-  private readonly COORD_PADRAO: [number, number] = [41.2777, -8.2814];
-  private readonly ZOOM_PADRAO = 11;
+  private readonly COORD_PADRAO: [number, number] = [41.1579, -8.6291]; 
+  private readonly ZOOM_PADRAO = 12;
 
-  constructor() {}
-
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if ((changes['supermarkets'] || changes['favoritoId']) && this.mapaIniciado) {
@@ -49,11 +38,13 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   ngAfterViewInit(): void {
-    this.initMap();
-    this.mapaIniciado = true;
-    if (this.supermarkets && this.supermarkets.length > 0) {
-      this.adicionarMarcadores();
-    }
+    setTimeout(() => {
+      this.initMap();
+      this.mapaIniciado = true;
+      if (this.supermarkets.length > 0) {
+        this.adicionarMarcadores();
+      }
+    }, 200);
   }
 
   ngOnDestroy(): void {
@@ -61,12 +52,18 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private initMap(): void {
-    this.map = L.map(this.mapContainer.nativeElement).setView(this.COORD_PADRAO, this.ZOOM_PADRAO);
+    if (this.map) return;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 18,
+    this.map = L.map(this.mapContainer.nativeElement, {
+      zoomControl: false,
+      scrollWheelZoom: false 
+    }).setView(this.COORD_PADRAO, this.ZOOM_PADRAO);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; CartoDB'
     }).addTo(this.map);
+
+    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
   }
 
   private adicionarMarcadores(): void {
@@ -79,70 +76,70 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
       }
     });
 
-    const comCoordenadas = this.supermarkets.filter(s => s.localizacaoGeo?.coordinates);
+    // Marcador Normal (Mais visível)
+    const blackIcon = L.divIcon({
+      className: 'custom-marker',
+      html: `<div style="background-color: #333; width: 16px; height: 16px; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>`,
+      iconSize: [16, 16],
+      iconAnchor: [8, 8]
+    });
+
+    // Marcador de Referência (Azul)
+    const favoriteIcon = L.divIcon({
+      className: 'favorite-marker',
+      html: `<div style="background-color: #0d6efd; width: 20px; height: 20px; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(13,110,253,0.4);"></div>`,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
+    });
+
     const favorito = this.supermarkets.find(s => s._id === this.favoritoId);
-    const pFav = (favorito?.localizacaoGeo?.coordinates) 
+    const pFav = favorito?.localizacaoGeo?.coordinates 
       ? L.latLng(favorito.localizacaoGeo.coordinates[1], favorito.localizacaoGeo.coordinates[0]) 
       : null;
 
-    comCoordenadas.forEach(s => {
-      const coords = s.localizacaoGeo?.coordinates;
-      if (!coords) return;
+    const markers: L.LatLngExpression[] = [];
 
-      const currentLatLng = L.latLng(coords[1], coords[0]);
-      const raioM = (s.raioEntregaKm ?? 1) * 500;
-
-      // Distância ao favorito para o popup
-      let distFavHtml = '';
-      if (pFav && s._id !== this.favoritoId) {
-        const d = currentLatLng.distanceTo(pFav) / 1000;
-        distFavHtml = `<div style="color:#000; font-weight:bold; margin-top:5px; font-size:0.75rem;">A ${d.toFixed(1)} KM DO SEU FAVORITO</div>`;
-      } else if (s._id === this.favoritoId) {
-        distFavHtml = `<div style="background:#000; color:#fff; padding:2px 5px; margin-top:5px; font-size:0.7rem; text-align:center;">O MEU FAVORITO</div>`;
-      }
-
-      // Calcular distâncias para os outros vizinhos
-      const distancias = comCoordenadas
-        .filter(other => other._id !== s._id)
-        .map(other => {
-          const d = currentLatLng.distanceTo(L.latLng(other.localizacaoGeo!.coordinates[1], other.localizacaoGeo!.coordinates[0]));
-          return { nome: other.nome, dist: d / 1000 };
-        })
-        .sort((a, b) => a.dist - b.dist)
-        .slice(0, 2);
+    this.supermarkets.forEach(s => {
+      if (!s.localizacaoGeo?.coordinates) return;
+      
+      const lat = s.localizacaoGeo.coordinates[1];
+      const lng = s.localizacaoGeo.coordinates[0];
+      const pos = L.latLng(lat, lng);
+      const isFav = s._id === this.favoritoId;
+      markers.push([lat, lng]);
 
       let distHtml = '';
-      if (distancias.length > 0) {
-        distHtml = '<div style="margin-top:8px; border-top:1px solid #eee; padding-top:5px;"><small><strong>Mais próximos:</strong><br>';
-        distancias.forEach(d => {
-          distHtml += `• ${d.nome}: ${d.dist.toFixed(1)} km<br>`;
-        });
-        distHtml += '</small></div>';
+      if (pFav && !isFav) {
+        const d = pos.distanceTo(pFav) / 1000;
+        distHtml = `<div class="mt-1 mb-2 extra-small text-primary fw-bold">A ${d.toFixed(1)} KM DA REFERÊNCIA</div>`;
+      } else if (isFav) {
+        distHtml = `<div class="mt-1 mb-2 extra-small text-primary fw-bold">LOJA DE REFERÊNCIA</div>`;
       }
 
-      L.marker([coords[1], coords[0]])
-        .addTo(mapa!)
-        .bindPopup(`
-          <div style="text-transform:uppercase; font-family:sans-serif;">
-            <strong>${s.nome}</strong><br>
-            <span style="color:#666; font-size:0.75rem;">${s.localizacao}</span><br>
-            ${distFavHtml}
-            ${distHtml}
-          </div>
-        `);
+      const marker = L.marker(pos, { icon: isFav ? favoriteIcon : blackIcon }).addTo(mapa);
+      
+      const popupHtml = `
+        <div class="p-1 text-center" style="min-width: 130px;">
+          <div class="fw-bold extra-small text-uppercase mb-0">${s.nome}</div>
+          ${distHtml}
+          <a href="/supermercado/${s._id}" class="btn btn-dark btn-sm extra-small py-1 px-3 fw-bold w-100 mt-1">EXPLORAR</a>
+        </div>
+      `;
+      marker.bindPopup(popupHtml);
 
-      L.circle([coords[1], coords[0]], {
-        radius: raioM,
-        color: s._id === this.favoritoId ? '#000' : '#444',
-        fillColor: '#000',
-        fillOpacity: 0.08,
-        weight: s._id === this.favoritoId ? 2 : 1,
-      }).addTo(mapa!);
+      // Raio de Atuação (Reduzido para 30% da escala visual original para ser discreto)
+      L.circle(pos, {
+        radius: (s.raioEntregaKm || 2) * 300, 
+        color: isFav ? '#0d6efd' : '#999',
+        weight: 1,
+        dashArray: isFav ? '0' : '4, 4',
+        fillColor: isFav ? '#0d6efd' : '#666',
+        fillOpacity: 0.03
+      }).addTo(mapa);
     });
 
-    if (comCoordenadas.length > 0) {
-      const bounds = comCoordenadas.map(s => [s.localizacaoGeo!.coordinates[1], s.localizacaoGeo!.coordinates[0]] as [number, number]);
-      mapa.fitBounds(bounds, { padding: [40, 40] });
+    if (markers.length > 0) {
+      mapa.fitBounds(L.latLngBounds(markers), { padding: [50, 50] });
     }
   }
 }

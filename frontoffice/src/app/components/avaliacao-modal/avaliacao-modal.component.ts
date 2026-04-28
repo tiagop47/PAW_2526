@@ -43,15 +43,12 @@ export class AvaliacaoModalComponent {
     this.a_submeter = true;
     this.erro = null;
 
-    const dados: any = {
+    const dados = {
       encomendaId: this.order.id,
       notaSupermercado: this.notaSupermercado,
-      comentario: this.comentario
+      comentario: this.comentario,
+      notaEstafeta: this.order.temEstafeta() ? this.notaEstafeta : undefined
     };
-
-    if (this.order.temEstafeta()) {
-      dados.notaEstafeta = this.notaEstafeta;
-    }
 
     this.avaliacaoService.criarAvaliacao(dados).subscribe({
       next: () => {

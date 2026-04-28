@@ -1,112 +1,103 @@
-<div class="home-container py-4">
+<div class="container mt-4">
 
-  <!-- HERO -->
-  <section class="bg-light border border-dark p-4 mb-5">
-    <h1 class="fw-bold mb-2">MARKETPLACE FRESHMARKET</h1>
-    <p class="text-secondary mb-0">
-      Pesquisa produtos em <strong>{{ supermercados.length }}</strong> supermercados e compara preços num só lugar.
-    </p>
-  </section>
-
-  <!-- MELHORES OFERTAS -->
-  <section class="mb-5" *ngIf="melhoresOfertas.length > 0">
-    <h2 class="h4 fw-bold mb-4 border-bottom border-dark pb-2">MELHORES OFERTAS</h2>
-    <div class="row">
-      <div *ngFor="let item of melhoresOfertas" class="col-12 col-md-3 mb-3">
-        <div class="card h-100 border-dark rounded-0">
-          <div class="card-body">
-            <div class="text-center mb-3">
-              <img [src]="'http://localhost:3000' + item.imagem" [alt]="item.nome" class="img-fluid"
-                style="height: 100px; object-fit: contain;">
-            </div>
-            <h6 class="fw-bold mb-1 text-uppercase">{{ item.nome }}</h6>
-            <div class="h5 fw-bold mb-0 text-primary">desde {{ item.precoMin | currency:'EUR' }}</div>
-            <p class="text-secondary small mb-1">{{ item.numMercados }} supermercados</p>
-
-            <div class="bg-light p-2 small border border-dark mb-3">
-              Poupa até <strong>{{ item.poupanca | currency:'EUR' }}</strong>.
-            </div>
-
-            <button (click)="verProduto(item.produtoIdMaisBarato)" class="btn btn-primary w-100 btn-sm">
-              VER PRODUTO
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CATÁLOGO -->
-  <section class="mb-5">
-    <h2 class="h4 fw-bold mb-4 border-bottom border-dark pb-2">CATÁLOGO DE PRODUTOS</h2>
-
-    <div class="row mb-4 g-3">
-      <div class="col-12 col-md-5">
-        <input type="text" class="form-control" placeholder="Pesquisar por nome ou categoria..."
-          [(ngModel)]="pesquisa" name="pesquisa" />
-      </div>
-      <div class="col-6 col-md-3">
-        <select class="form-control" [(ngModel)]="categoriaSelecionada" name="categoria">
-          <option value="">Todas as categorias</option>
-          <option *ngFor="let c of todasCategorias" [value]="c">{{ c }}</option>
-        </select>
-      </div>
-      <div class="col-6 col-md-2">
-        <select class="form-control" [(ngModel)]="ordenarPor" name="ordenar">
-          <option value="poupanca">Maior poupança</option>
-          <option value="preco">Preço (mais barato)</option>
-          <option value="nome">Nome (A-Z)</option>
-        </select>
-      </div>
-      <div class="col-12 col-md-2 text-md-end">
-        <span class="badge bg-dark py-2 px-3">{{ produtosFiltrados.length }} produtos</span>
-      </div>
-    </div>
-
-    <div *ngIf="loading" class="text-center p-5">
-      <div class="spinner-border text-dark mb-3"></div>
-      <p class="text-secondary small">A CARREGAR PRODUTOS...</p>
-    </div>
-
-    <div *ngIf="!loading" class="row">
-      <div *ngFor="let p of produtosFiltrados" class="col-6 col-md-3 mb-4">
-        <div class="card h-100 border-dark rounded-0">
-          <div class="card-body d-flex flex-column">
-            <div class="text-center mb-3">
-              <img [src]="'http://localhost:3000' + p.imagem" [alt]="p.nome" class="img-fluid"
-                style="height: 120px; object-fit: contain;">
-            </div>
-            <div class="text-secondary small text-uppercase mb-1">{{ p.categoria }}</div>
-            <h6 class="fw-bold mb-2 text-uppercase">{{ p.nome }}</h6>
-
-            <div class="mb-2">
-              <div class="h5 fw-bold mb-0 text-primary">
-                desde {{ p.precoMin | currency:'EUR' }}
+  <!-- Promoções de Lojas e Cupões (Sóbrio) -->
+  <div class="row g-4 mb-5" *ngIf="lojasPromocao.length > 0 || cupoes.length > 0">
+    <!-- Coluna: Lojas com Maiores Descontos -->
+    <div class="col-lg-7">
+      <div class="card border shadow-sm h-100 bg-white">
+        <div class="card-body p-4">
+          <h6 class="fw-bold mb-4 extra-small text-uppercase text-muted border-bottom pb-2">Lojas com Maiores Descontos</h6>
+          <div class="row g-3">
+            <div *ngFor="let s of lojasPromocao" class="col-md-12">
+              <div class="bg-light border rounded p-3 d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-bold text-dark small text-uppercase">{{ s.nome }}</div>
+                  <div class="extra-small text-muted">{{ s.localizacao }}</div>
+                </div>
+                <div class="text-end">
+                  <div class="badge border text-dark fw-bold mb-1 small">MÉDIA DE -{{ s.mediaDescontoPercent.toFixed(0) }}%</div>
+                  <div><a [routerLink]="['/products', s._id]" class="extra-small fw-bold text-decoration-none text-dark border-bottom border-dark">VISITAR LOJA</a></div>
+                </div>
               </div>
-              <small class="text-secondary" *ngIf="p.numMercados > 1">
-                até {{ p.precoMax | currency:'EUR' }} · {{ p.numMercados }} mercados
-              </small>
-              <small class="text-secondary" *ngIf="p.numMercados === 1">
-                Só em {{ p.supermercadoMaisBaratoNome }}
-              </small>
             </div>
-
-            <div *ngIf="p.poupanca > 0" class="bg-light border border-dark p-1 small mb-2">
-              Poupa <strong>{{ p.poupanca | currency:'EUR' }}</strong>
-            </div>
-
-            <button (click)="verProduto(p.produtoIdMaisBarato)"
-              class="btn btn-primary btn-sm mt-auto"
-              [disabled]="p.stockTotal <= 0">
-              {{ p.stockTotal > 0 ? 'Ver detalhes' : 'ESGOTADO' }}
-            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <div *ngIf="!loading && produtosFiltrados.length === 0" class="text-center p-5 border border-dark">
-      <p class="text-secondary mb-0">Nenhum produto encontrado.</p>
+    <!-- Coluna: Cupões -->
+    <div class="col-lg-5">
+      <div class="card border shadow-sm h-100 border-start border-dark border-4 bg-white">
+        <div class="card-body p-4">
+          <h6 class="fw-bold mb-4 extra-small text-uppercase text-muted border-bottom pb-2">Cupões de Desconto Ativos</h6>
+          <div *ngIf="cupoes.length === 0" class="text-center py-4 text-muted extra-small">Sem cupões ativos de momento.</div>
+          <div class="list-group list-group-flush">
+            <div *ngFor="let c of cupoes" class="list-group-item px-0 py-2 border-0">
+              <div class="d-flex justify-content-between align-items-center bg-white border border-secondary border-dashed p-2 rounded">
+                <div>
+                  <div class="fw-bold font-monospace small text-dark">{{ c.codigo }}</div>
+                  <div class="extra-small text-muted text-uppercase">{{ c.supermercadoId?.nome }}</div>
+                </div>
+                <div class="h5 fw-bold text-dark mb-0">-{{ c.percentagemDesconto }}%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </section>
+  </div>
+
+  <!-- Barra de Filtros -->
+  <div class="bg-white border rounded shadow-sm p-4 mb-5">
+    <div class="row align-items-end g-3">
+      <div class="col-md-4">
+        <label class="form-label extra-small fw-bold text-muted text-uppercase">Pesquisar Produto</label>
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-dark"></i></span>
+          <input type="text" class="form-control border-start-0" 
+                 placeholder="Ex: Arroz, Leite..." 
+                 [(ngModel)]="searchQuery" 
+                 (input)="onFilterChange()">
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label extra-small fw-bold text-muted text-uppercase">Filtrar Categoria</label>
+        <select class="form-select form-select-sm border-secondary" [(ngModel)]="selectedCategory" (change)="onFilterChange()">
+          <option value="">Todas as Categorias</option>
+          <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.nome }}</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label extra-small fw-bold text-muted text-uppercase">Ordenar por</label>
+        <select class="form-select form-select-sm border-secondary" [(ngModel)]="sortBy" (change)="onFilterChange()">
+          <option value="discount">Melhores Descontos</option>
+          <option value="price_asc">Preço: Baixo para Alto</option>
+          <option value="price_desc">Preço: Alto para Baixo</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resultados -->
+  <div class="row mb-2 align-items-center">
+    <div class="col">
+      <h2 class="h6 fw-bold mb-0 text-uppercase text-muted">Produtos Disponíveis</h2>
+    </div>
+  </div>
+  <hr class="mt-1 mb-4 opacity-10">
+
+  <app-product-list #productList></app-product-list>
+
+  <!-- Rodapé -->
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="p-4 bg-white border rounded text-center shadow-sm">
+        <h6 class="fw-bold mb-2 text-uppercase small">Procura uma loja específica?</h6>
+        <p class="text-muted mb-3 extra-small">Localize os nossos parceiros no mapa interativo.</p>
+        <a routerLink="/supermercados" class="btn btn-outline-dark btn-sm px-4 fw-bold">REDE DE LOJAS</a>
+      </div>
+    </div>
+  </div>
 </div>

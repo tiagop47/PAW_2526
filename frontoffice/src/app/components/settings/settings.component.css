@@ -1,8 +1,5 @@
+/* Settings Clean Bootstrap */
 .settings-container {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.form-text {
-  font-style: italic;
+    max-width: 700px;
+    margin: 3rem auto;
 }

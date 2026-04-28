@@ -65,6 +65,19 @@ export class Order {
     return `${minutos}m ${segundos}s`;
   }
 
+  get tempoDecorrido(): string {
+    const diffMs = Date.now() - this.criadoEm.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    
+    if (diffMin < 1) return 'Agora mesmo';
+    if (diffMin < 60) return `Há ${diffMin} min`;
+    
+    const diffHoras = Math.floor(diffMin / 60);
+    if (diffHoras < 24) return `Há ${diffHoras} horas`;
+    
+    return `Há ${Math.floor(diffHoras / 24)} dias`;
+  }
+
   podeConfirmarRececao(): boolean {
     return this.estado === 'aguarda_validacao';
   }

@@ -1,62 +1,20 @@
-.cart-container {
-  max-width: 900px;
-  margin: 0 auto;
+.min-width-0 {
+  min-width: 0;
 }
 
-.cart-item-row {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-color);
-  gap: 1rem;
+.extra-small {
+  font-size: 0.75rem;
 }
 
-.cart-item-img {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  background: #f8f9fa;
-  border-radius: 0.25rem;
+.list-group-item {
+  transition: background-color 0.15s ease;
 }
 
-.cart-item-info {
-  flex: 1;
+.list-group-item:hover {
+  background-color: #f8f9fa;
 }
 
-.cart-item-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.qty-input {
-  width: 60px;
-  text-align: center;
-}
-
-.cart-summary {
-  background: #fff;
-  padding: 1.5rem;
-  border-radius: 0.25rem;
-  border: 1px solid var(--border-color);
-  position: sticky;
-  top: 80px;
-}
-
-/* Tira a borda azul e o brilho do input nos cupões (e no resto do carrinho) */
-.form-control:focus {
-  border-color: #000000;
-  box-shadow: none;
-}
-
-.btn-black {
-  background-color: #000000;
-  color: #ffffff;
-  border-color: #000000;
-}
-
-.btn-black:hover {
-  background-color: #333333;
-  color: #ffffff;
-  border-color: #333333;
+.btn-sm.rounded-circle {
+  padding: 0;
+  line-height: 1;
 }
