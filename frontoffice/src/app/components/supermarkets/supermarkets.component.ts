@@ -18,6 +18,7 @@ interface SupermarketDisplay extends SupermarketDTO {
   standalone: true,
   imports: [CommonModule, RouterModule, SupermarketMapComponent],
   templateUrl: './supermarkets.component.html',
+  styleUrl: './supermarkets.component.css'
 })
 export class SupermarketsComponent implements OnInit {
   private supermarketService = inject(SupermarketService);
@@ -84,6 +85,7 @@ export class SupermarketsComponent implements OnInit {
   verNoMapa(id: string): void {
     this.supermercadoNoMapa = null;
     this.supermercadoNoMapa = id;
+
     setTimeout(() => {
       const el = document.querySelector('app-supermarket-map');
       if (el) el.scrollIntoView({ behavior: 'smooth' });

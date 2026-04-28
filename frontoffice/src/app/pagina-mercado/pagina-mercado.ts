@@ -28,7 +28,7 @@ export class PaginaMercado implements OnInit {
     private produtoService: ProductService,
     private cartService: CartService,
     private notificationService: NotificationService,
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'] || this.route.snapshot.params['supermarketId'];
@@ -57,8 +57,7 @@ export class PaginaMercado implements OnInit {
     if (!q) return this.produtos;
     return this.produtos.filter(
       (p) =>
-        p.nome.toLowerCase().includes(q) ||
-        (p.categoriaId?.nome || '').toLowerCase().includes(q),
+        p.nome.toLowerCase().includes(q) || (p.categoriaId?.nome || '').toLowerCase().includes(q),
     );
   }
 
