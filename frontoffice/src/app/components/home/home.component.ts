@@ -8,6 +8,7 @@ import { ProductListComponent } from '../product-list/product-list.component';
 import { CategoryDTO } from '../../models/category.dto';
 import { CouponDTO } from '../../models/coupon.dto';
 import { StorePromotionDTO } from '../../models/home-promotions.dto';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -19,7 +20,7 @@ import { StorePromotionDTO } from '../../models/home-promotions.dto';
 export class HomeComponent implements OnInit {
   @ViewChild('productList') productList!: ProductListComponent;
 
-  constructor(private supermarketService: SupermarketService) {}
+  constructor(private supermarketService: SupermarketService, public authService: AuthService) {}
   
   categories: CategoryDTO[] = [];
   lojasPromocao: StorePromotionDTO[] = [];
@@ -30,6 +31,12 @@ export class HomeComponent implements OnInit {
   sortBy = 'discount'; 
 
   ngOnInit(): void {
+    if (this.authService.isLoggedIn()){
+      this.carregarDadosHome();
+    }
+  }
+
+  carregarDadosHome(): void {
     this.supermarketService.getCategorias().subscribe(data => this.categories = data);
     
     this.supermarketService.getPromocoes().subscribe({
@@ -40,6 +47,7 @@ export class HomeComponent implements OnInit {
       error: (err) => console.error('Erro ao carregar promocoes:', err)
     });
   }
+
 
   onFilterChange(): void {
     if (this.productList) {
