@@ -1,4 +1,3 @@
-/** ID: FIX_HOME_TEMPLATE_001 */
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -21,40 +20,34 @@ export class HomeComponent implements OnInit {
   @ViewChild('productList') productList!: ProductListComponent;
 
   constructor(private supermarketService: SupermarketService, public authService: AuthService) {}
-  
+
   categories: CategoryDTO[] = [];
   lojasPromocao: StorePromotionDTO[] = [];
   cupoes: CouponDTO[] = [];
-  
   searchQuery = '';
   selectedCategory = '';
-  sortBy = 'discount'; 
+  sortBy = 'discount';
 
   ngOnInit(): void {
-    if (this.authService.isLoggedIn()){
-      this.carregarDadosHome();
+    this.supermarketService.getCategorias().subscribe(data => this.categories = data);
+
+    if (this.authService.isLoggedIn()) {
+      this.supermarketService.getPromocoes().subscribe({
+        next: (data) => {
+          this.lojasPromocao = data.lojas;
+          this.cupoes = data.cupoes.filter(c => c.supermercadoId != null);
+        },
+        error: (err) => console.error('Erro ao carregar promocoes:', err),
+      });
     }
   }
-
-  carregarDadosHome(): void {
-    this.supermarketService.getCategorias().subscribe(data => this.categories = data);
-    
-    this.supermarketService.getPromocoes().subscribe({
-      next: (data) => {
-        this.lojasPromocao = data.lojas;
-        this.cupoes = data.cupoes;
-      },
-      error: (err) => console.error('Erro ao carregar promocoes:', err)
-    });
-  }
-
 
   onFilterChange(): void {
     if (this.productList) {
       this.productList.applyFilters({
         query: this.searchQuery,
         categoryId: this.selectedCategory,
-        sortBy: this.sortBy
+        sortBy: this.sortBy,
       });
     }
   }

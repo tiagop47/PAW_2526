@@ -1,4 +1,5 @@
 const estafetaService = require('../services/estafetaServices');
+const authService = require('../services/authService');
 const Avaliacao = require('../models/AvaliacaoModel');
 const mongoose = require('mongoose');
 
@@ -107,7 +108,7 @@ estafetaController.obterEntregasAPI = async function (req, res) {
  */
 estafetaController.exibirPerfil = async function (req, res) {
     try {
-        const utilizador = await estafetaService.getUserByIdSemPassword(req.user.id);
+        const utilizador = await authService.getUserByIdSemPassword(req.user.id);
         res.render('estafeta/perfil', {
             title: 'Meu Perfil',
             utilizador,

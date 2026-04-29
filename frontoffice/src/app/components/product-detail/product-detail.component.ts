@@ -42,7 +42,7 @@ export class ProductDetailComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
       const id = params['id'];
-      this.carregar(id);
+      if (id) this.carregar(id);
     });
   }
 
@@ -137,11 +137,6 @@ export class ProductDetailComponent implements OnInit {
   }
 
   adicionarAoCarrinho(oferta: OfertaMercado): void {
-    if (oferta.stockDisponivel <= 0) {
-      this.notificationService.showError('Sem stock neste supermercado.');
-      return;
-    }
-
     const resultado = this.cartService.addItem({
       produtoId: oferta.produtoId,
       nome: oferta.nome,

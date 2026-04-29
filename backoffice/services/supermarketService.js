@@ -275,9 +275,7 @@ supermarketService.atualizarSupermercado = async function (supermercadoId, dados
     return Supermarket.findByIdAndUpdate(supermercadoId, dadosSupermercado, { new: true, runValidators: true });
 };
 
-supermarketService.getUserByIdSemPassword = async function (userId) {
-    return authService.getUserByIdSemPassword(userId);
-};
+
 
 supermarketService.obterEncomendas = async function (supermercadoId, pagina = 1, limite = 5, filtroEstado = null) {
     const skip = (pagina - 1) * limite;
@@ -327,9 +325,7 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
     // Se estiver a cancelar, repor stock. Se for um estado que não tinha stock e agora tem (ex: de cancelada para confirmada), retirar.
     // Mas no nosso fluxo simplificado, apenas tratamos o cancelamento para repor.
     if (estado === 'cancelada' && estadoAnterior !== 'cancelada') {
-        for (const item of order.produtos) {
-            await Product.findByIdAndUpdate(item.produtoId, { $inc: { stockDisponivel: item.quantidade } });
-        }
+        await orderService.reporStock(order.produtos);
     }
 
     if (estado === 'confirmada') order.confirmadaEm = new Date();

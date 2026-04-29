@@ -12,15 +12,13 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { SupermarketsComponent } from './components/supermarkets/supermarkets.component';
 import { GuestGuard } from './guards/guest.guard';
 import { AuthGuard } from './guards/auth.guard';
-import { PaginaMercado } from './pagina-mercado/pagina-mercado';
-
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent, canActivate: [GuestGuard] },
   { path: 'register', component: RegisterComponent, canActivate: [GuestGuard] },
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'supermercados', component: SupermarketsComponent },
-  { path: 'supermercado/:id', component: PaginaMercado },
+  { path: 'supermercado/:supermarketId', component: ProductListComponent },
   { path: 'products', component: ProductListComponent },
   { path: 'products/:supermarketId', component: ProductListComponent },
   { path: 'product/:id', component: ProductDetailComponent },

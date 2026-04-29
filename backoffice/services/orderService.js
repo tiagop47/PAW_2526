@@ -11,6 +11,16 @@ const config = require('../config/config');
 const orderService = {};
 
 /**
+ * Repõe o stock dos produtos de uma encomenda cancelada.
+ * Centraliza a lógica usada por orderService e supermarketService.
+ */
+orderService.reporStock = async function (produtos) {
+    for (const item of produtos) {
+        await Product.findByIdAndUpdate(item.produtoId, { $inc: { stockDisponivel: item.quantidade } });
+    }
+};
+
+/**
  * Função auxiliar para gerir o utilizador em vendas de balcão (POS).
  */
 async function obterOuCriarConsumidorFinal(snapshot) {
@@ -203,9 +213,7 @@ orderService.cancelarEncomenda = async function (clienteId, encomendaId) {
         throw new Error('Já passaram mais de 5 minutos desde que realizou a encomenda. Não é possível cancelar.');
     }
 
-    for (const item of encomenda.produtos) {
-        await Product.findByIdAndUpdate(item.produtoId, { $inc: { stockDisponivel: item.quantidade } });
-    }
+    await orderService.reporStock(encomenda.produtos);
 
     encomenda.estado = 'cancelada';
     return encomenda.save();

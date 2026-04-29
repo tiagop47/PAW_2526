@@ -274,9 +274,7 @@ adminService.getEstafetasDocumentos = async function (pagina, limite) {
     };
 };
 
-adminService.getUserByIdSemPassword = async function (id) {
-    return authService.getUserByIdSemPassword(id);
-};
+
 
 adminService.atualizarUserById = async function (id, dados) {
     const user = await User.findById(id);

@@ -1,6 +1,7 @@
 const supermarketService = require('../services/supermarketService');
 const cupaoService = require('../services/cupaoService');
 const avaliacaoService = require('../services/avaliacaoService');
+const authService = require('../services/authService');
 
 var supermarketController = {};
 
@@ -190,7 +191,7 @@ supermarketController.atualizarSupermercado = async function (req, res) {
  */
 supermarketController.exibirPerfil = async function (req, res) {
     try {
-        const utilizador = await supermarketService.getUserByIdSemPassword(req.user.id);
+        const utilizador = await authService.getUserByIdSemPassword(req.user.id);
 
         res.render('supermercado/perfil', {
             title: 'Meu Perfil',

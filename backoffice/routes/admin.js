@@ -3,6 +3,7 @@ const router = express.Router();
 const adminController = require('../controllers/admin');
 const authMiddleware = require('../middlewares/authMiddleware');
 const adminService = require('../services/adminService');
+const authService = require('../services/authService');
 
 router.use(authMiddleware.verificarAutenticacao, authMiddleware.verificarRole(['administrador']));
 
@@ -41,7 +42,7 @@ router.post('/produtos/eliminar/:productId', adminController.eliminarProduto);
 
 router.param('userId', async (req, res, next, id) => {
     try {
-        const user = await adminService.getUserByIdSemPassword(id);
+        const user = await authService.getUserByIdSemPassword(id);
         if (!user) {
             return res.status(404).send('Utilizador não encontrado.');
         }

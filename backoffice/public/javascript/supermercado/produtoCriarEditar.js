@@ -8,6 +8,9 @@ const stockInput = document.getElementById('stockDisponivel');
 const precoAntigoInput = document.getElementById('precoAntigo');
 const imagemInput = document.getElementById('imagem');
 const codigoBarrasInput = document.getElementById('codigoBarras');
+const catalogProductIdSelect = document.getElementById('catalogProductId');
+const categoriaIdSelect = document.getElementById('categoriaId');
+const descricaoInput = document.getElementById('descricao');
 
 /**
  * Calcula a percentagem de desconto.
@@ -91,6 +94,56 @@ function validarFormularioProduto(form) {
 document.addEventListener('DOMContentLoaded', () => {
     preencherDescontosPagina();
 
+    if (catalogProductIdSelect) {
+        catalogProductIdSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (this.value) {
+                if (nomeInput) {
+                    nomeInput.value = selectedOption.getAttribute('data-nome');
+                    nomeInput.setAttribute('readonly', 'true');
+                }
+                if (codigoBarrasInput) {
+                    codigoBarrasInput.value = selectedOption.getAttribute('data-codigobarras');
+                    if (codigoBarrasInput.value) {
+                        codigoBarrasInput.setAttribute('readonly', 'true');
+                    } else {
+                        codigoBarrasInput.removeAttribute('readonly');
+                    }
+                }
+                if (categoriaIdSelect) {
+                    categoriaIdSelect.value = selectedOption.getAttribute('data-categoria');
+                    // Simular readonly desativando as outras opções
+                    Array.from(categoriaIdSelect.options).forEach(opt => {
+                        if (opt.value !== categoriaIdSelect.value) {
+                            opt.disabled = true;
+                        } else {
+                            opt.disabled = false;
+                        }
+                    });
+                }
+                if (descricaoInput) {
+                    descricaoInput.value = selectedOption.getAttribute('data-descricao');
+                }
+            } else {
+                if (nomeInput) {
+                    nomeInput.value = '';
+                    nomeInput.removeAttribute('readonly');
+                }
+                if (codigoBarrasInput) {
+                    codigoBarrasInput.value = '';
+                    codigoBarrasInput.removeAttribute('readonly');
+                }
+                if (categoriaIdSelect) {
+                    Array.from(categoriaIdSelect.options).forEach(opt => {
+                        opt.disabled = false;
+                    });
+                }
+                if (descricaoInput) {
+                    descricaoInput.value = '';
+                }
+            }
+        });
+    }
 
     if (formCriar) {
         formCriar.addEventListener('submit', (e) => {

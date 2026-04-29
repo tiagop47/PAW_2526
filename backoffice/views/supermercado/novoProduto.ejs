@@ -17,6 +17,19 @@
                     <form action="/supermercado/produtos" method="POST" id="formCriar" enctype="multipart/form-data" novalidate>
                         
                         <div class="mb-3">
+                            <label class="form-label fw-bold small">Produto do Catálogo (Opcional)</label>
+                            <select name="catalogProductId" id="catalogProductId" class="form-select">
+                                <option value="">-- Produto Personalizado (Preencha manualmente) --</option>
+                                <% catalogo.forEach(function(cat) { %>
+                                    <option value="<%= cat._id %>" data-nome="<%= cat.nome %>" data-categoria="<%= cat.categoriaId ? cat.categoriaId._id : '' %>" data-codigobarras="<%= cat.codigoBarras || '' %>" data-descricao="<%= cat.descricao || '' %>">
+                                        <%= cat.nome %>
+                                    </option>
+                                <% }) %>
+                            </select>
+                            <div class="form-text">Selecione um produto existente para pré-preencher os dados.</div>
+                        </div>
+
+                        <div class="mb-3">
                             <label class="form-label fw-bold small">Nome do Produto</label>
                             <input type="text" name="nome" id="nome" class="form-control" minlength="2" maxlength="100" placeholder="Ex: Arroz Cigala 1kg" required>
                             <div class="form-text">Se este produto já existir noutras lojas, o sistema irá associá-lo automaticamente para comparação de preços.</div>

@@ -42,6 +42,7 @@ export class AuthService {
 
   updateProfile(data: Partial<UserDTO>): Observable<UserDTO> {
     const userId = this.currentUserSubject.value?._id;
+
     return this.http.patch<UserResponseDTO>(`${API_URL}/users/${userId}`, data).pipe(
       map((res) => res.user),
       tap((updatedUser) => {

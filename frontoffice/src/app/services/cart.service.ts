@@ -1,6 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { CartItem } from '../models/cart-item.dto';
-import { ProductDTO } from '../models/product.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -126,34 +125,6 @@ export class CartService {
   removeCoupon() {
     this.cupao.set(null);
     this.saveToStorage();
-  }
-
-  /**
-   * Método centralizado para adicionar um ProductDTO ao carrinho.
-   * Evita duplicação de lógica de conversão nos componentes.
-   */
-  addProduct(product: ProductDTO, supermercadoNome?: string): { sucesso: boolean; erro?: string } {
-    const smId = typeof product.supermercadoId === 'string'
-      ? product.supermercadoId
-      : product.supermercadoId?._id;
-
-    if (!smId) {
-      return { sucesso: false, erro: 'Não foi possível identificar o supermercado deste produto.' };
-    }
-
-    const smNome = supermercadoNome
-      || (typeof product.supermercadoId === 'string' ? 'Supermercado' : product.supermercadoId?.nome || 'Supermercado');
-
-    return this.addItem({
-      produtoId: product._id,
-      nome: product.nome,
-      imagem: product.imagem,
-      preco: product.preco,
-      quantidade: 1,
-      stockDisponivel: product.stockDisponivel,
-      supermercadoId: smId,
-      supermercadoNome: smNome,
-    });
   }
 
   private saveToStorage(): void {

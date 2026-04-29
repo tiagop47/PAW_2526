@@ -1,7 +1,9 @@
 const Supermarket = require("../models/SupermarketModel");
 const Order = require("../models/OrderModel");
+const User = require("../models/UserModel");
 const Avaliacao = require("../models/AvaliacaoModel");
 const mongoose = require("mongoose");
+const authService = require('./authService');
 
 const estafetaService = {};
 
@@ -123,18 +125,9 @@ estafetaService.obterEncomendaPorId = async function (id) {
 };
 
 /**
- * Obtém os dados de um utilizador por ID sem a password.
- */
-estafetaService.getUserByIdSemPassword = async function (userId) {
-    const User = require('../models/UserModel');
-    return User.findById(userId).select('-password');
-};
-
-/**
  * Atualiza os dados de perfil do utilizador.
  */
 estafetaService.atualizarPerfil = async function (userId, dados) {
-    const User = require('../models/UserModel');
     const { nome, telefone, morada } = dados;
 
     const user = await User.findById(userId);

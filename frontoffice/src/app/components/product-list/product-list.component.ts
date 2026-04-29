@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { SupermarketService } from '../../services/supermarket.service';
-import { CartService } from '../../services/cart.service';
-import { NotificationService } from '../../services/notification.service';
 import { ProductDTO } from '../../models/product.dto';
 
 @Component({
@@ -19,8 +17,6 @@ export class ProductListComponent implements OnInit {
     private route: ActivatedRoute,
     private rest: ProductService,
     private supermarketService: SupermarketService,
-    public cartService: CartService,
-    private notificationService: NotificationService
   ) {}
 
   allProducts: ProductDTO[] = [];
@@ -74,15 +70,5 @@ export class ProductListComponent implements OnInit {
     }
 
     this.filteredProducts = list;
-  }
-
-  addToCart(product: ProductDTO): void {
-    const resultado = this.cartService.addProduct(product, this.supermarketNome);
-
-    if (resultado.sucesso) {
-      this.notificationService.showSuccess(`"${product.nome}" adicionado!`);
-    } else {
-      this.notificationService.showError(resultado.erro || 'Erro ao adicionar.');
-    }
   }
 }
