@@ -111,4 +111,20 @@ router.param('orderId', async (req, res, next, id) => {
     }
 });
 
+/**
+ * Middleware de Parâmetro: Carrega o cupão se :cupaoId estiver presente no URL.
+ */
+router.param('cupaoId', async (req, res, next, id) => {
+    try {
+        const cupao = await cupaoService.obterCupaoPorId(id, req.supermercado._id);
+        if (!cupao) {
+            return res.status(404).send('Cupão não encontrado');
+        }
+        req.cupao = cupao;
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
+
 module.exports = router;

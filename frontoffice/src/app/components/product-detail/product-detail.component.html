@@ -25,7 +25,6 @@
       </div>
     </div>
 
-    <!-- Tabela de Comparação Sóbria -->
     <div class="col-12 mt-4">
       <h5 class="fw-bold mb-3 border-bottom pb-2">Comparação de Preços</h5>
       <div class="table-responsive border">
@@ -43,7 +42,6 @@
             <tr *ngFor="let o of ofertas">
               <td class="ps-4">
                 <div class="fw-bold">{{ o.supermercadoNome }}</div>
-                <div *ngIf="o.isMaisBarato" class="extra-small fw-bold text-primary">OPÇÃO ECONÓMICA</div>
               </td>
               <td class="text-muted">{{ o.supermercadoLocalizacao }}</td>
               <td class="text-end fw-bold">

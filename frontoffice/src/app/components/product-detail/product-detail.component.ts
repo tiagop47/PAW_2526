@@ -37,12 +37,14 @@ export class ProductDetailComponent implements OnInit {
     private rest: ProductService,
     private cartService: CartService,
     private notificationService: NotificationService,
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
       const id = params['id'];
-      if (id) this.carregar(id);
+      if (id) {
+        this.carregar(id);
+      }
     });
   }
 
@@ -109,7 +111,10 @@ export class ProductDetailComponent implements OnInit {
 
     comparacao.forEach((c) => {
       const smId = c.supermercadoId?._id;
-      if (!smId || map.has(smId)) return;
+      if (!smId || map.has(smId)) {
+        return;
+      }
+
       map.set(smId, {
         produtoId: c._id,
         supermercadoId: smId,
@@ -125,12 +130,14 @@ export class ProductDetailComponent implements OnInit {
     });
 
     const lista = Array.from(map.values()).sort((a, b) => a.preco - b.preco);
-    if (lista.length === 0) return lista;
+    if (lista.length === 0) {
+      return lista;
+    }
 
     const precoMaisCaro = lista[lista.length - 1].preco;
     lista[0].isMaisBarato = true;
-    lista.forEach((o) => {
-      o.poupancaFaceMaisCaro = precoMaisCaro - o.preco;
+    lista.forEach((oferta) => {
+      oferta.poupancaFaceMaisCaro = precoMaisCaro - oferta.preco;
     });
 
     return lista;
@@ -161,7 +168,10 @@ export class ProductDetailComponent implements OnInit {
 
   get desconto(): number | null {
     const p = this.produtoBase;
-    if (!p || !p.precoAntigo || p.precoAntigo <= 0) return null;
+    if (!p || !p.precoAntigo || p.precoAntigo <= 0) {
+      return null;
+    }
+
     return Math.round((1 - p.preco / p.precoAntigo) * 100);
   }
 }

@@ -17,6 +17,7 @@ export class OrderService {
     supermercadoId: string;
     produtos: { produtoId: string; quantidade: number }[];
     metodoEntrega: string;
+    metodoPagamento: string;
     moradaEntrega?: string;
     codigoCupao?: string;
     coordenadasEntrega?: { lat: number; lng: number };
@@ -26,11 +27,42 @@ export class OrderService {
       .pipe(map((res) => new Order(this.formatOrder(res.encomenda))));
   }
 
-  validarCupao(codigo: string, supermercadoId: string): Observable<{ sucesso: boolean; percentagemDesconto: number; cupaoId: string }> {
-    return this.http.post<{ sucesso: boolean; percentagemDesconto: number; cupaoId: string }>(`${this.endpoint}/validar-cupao`, {
-      codigo,
-      supermercadoId
-    });
+  meusCupoes(): Observable<
+    {
+      _id: string;
+      codigo: string;
+      percentagemDesconto: number;
+      supermercadoId: string | null;
+      supermercado: string | null;
+      expirado: boolean;
+    }[]
+  > {
+    return this.http
+      .get<{
+        sucesso: boolean;
+        cupoes: {
+          _id: string;
+          codigo: string;
+          percentagemDesconto: number;
+          supermercadoId: string | null;
+          supermercado: string | null;
+          expirado: boolean;
+        }[];
+      }>(`${API_URL}/users/cupoes`)
+      .pipe(map((res) => res.cupoes));
+  }
+
+  validarCupao(
+    codigo: string,
+    supermercadoId: string,
+  ): Observable<{ sucesso: boolean; percentagemDesconto: number; cupaoId: string }> {
+    return this.http.post<{ sucesso: boolean; percentagemDesconto: number; cupaoId: string }>(
+      `${this.endpoint}/validar-cupao`,
+      {
+        codigo,
+        supermercadoId,
+      },
+    );
   }
 
   listarEncomendas(): Observable<Order[]> {
@@ -45,15 +77,15 @@ export class OrderService {
       .pipe(map((res) => new Order(this.formatOrder(res.encomenda))));
   }
 
-  private formatOrder(o: OrderDTO): OrderDTO {
-    if (o.produtos) {
-      o.produtos.forEach(item => {
+  private formatOrder(order: OrderDTO): OrderDTO {
+    if (order.produtos) {
+      order.produtos.forEach((item) => {
         if (item.produtoId) {
           item.produtoId.imagem = formatImageUrl(item.produtoId.imagem);
         }
       });
     }
-    return o;
+    return order;
   }
 
   cancelarEncomenda(id: string): Observable<Order> {

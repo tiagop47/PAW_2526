@@ -3,7 +3,7 @@ export interface SupermarketDTO {
   nome: string;
   descricao?: string;
   localizacao: string;
-  metodosEntrega?: string[];
+  custoEntregaMetodo?: string[];
   localizacaoGeo?: {
     type: 'Point';
     coordinates: [number, number]; // [longitude, latitude]

@@ -29,20 +29,6 @@ const OrderSchema = new mongoose.Schema({
     },
     cupaoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
     descontoValor: { type: Number, default: 0 },
-    /**
-     * Ciclo de vida da encomenda (7 estados):
-     *   pendente → em_preparacao → confirmada → entregue (levantamento em loja)
-     *   pendente → em_preparacao → confirmada → em_entrega → aguarda_validacao → entregue (entrega domicílio)
-     *   Qualquer estado (pendente/confirmada/em_preparacao) → cancelada (com restrições)
-     *
-     * - pendente:            Encomenda criada, aguarda processamento do supermercado
-     * - em_preparacao:       Supermercado está a preparar a encomenda
-     * - confirmada:          Encomenda pronta; disponível para estafeta ou levantamento
-     * - em_entrega:          Estafeta aceitou e está a caminho do cliente
-     * - aguarda_validacao:   Estafeta confirmou entrega, aguarda validação do cliente
-     * - entregue:            Encomenda entregue e confirmada
-     * - cancelada:           Encomenda cancelada (stock reposto)
-     */
     estado: {
         type: String,
         enum: ['pendente', 'confirmada', 'em_preparacao', 'em_entrega', 'aguarda_validacao', 'entregue', 'cancelada'],

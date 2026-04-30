@@ -23,13 +23,7 @@ productApiController.getAllProducts = async function (req, res) {
 };
 
 productApiController.getProductById = async function (req, res) {
-    try {
-        const p = await supermarketService.obterProdutoPorId(req.params.id);
-        if (!p) return res.status(404).json({ error: 'Não encontrado' });
-        res.json(p);
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao obter produto' });
-    }
+    res.json(req.produto);
 };
 
 /**

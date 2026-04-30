@@ -15,9 +15,7 @@ userApiController.obterEstatisticas = async function (req, res) {
 
 userApiController.atualizarPerfil = async function (req, res) {
     try {
-        const { id } = req.params;
-
-        if (req.user.id !== id) {
+        if (req.userPerfil !== req.userPerfil._id.toString()) {
             return res.status(403).json({ sucesso: false, erro: 'Sem permissão para editar este perfil.' });
         }
 
@@ -29,10 +27,9 @@ userApiController.atualizarPerfil = async function (req, res) {
             }
         }
 
-        const user = await Cliente.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
-        if (!user) {
-            return res.status(404).json({ sucesso: false, erro: 'Utilizador não encontrado.' });
-        }
+        // Atualizar usando o documento já carregado
+        Object.assign(req.userPerfil, updates);
+        const user = await req.userPerfil.save();
 
         const userObj = user.toObject();
         delete userObj.password;
@@ -60,7 +57,8 @@ userApiController.meusCupoes = async function (req, res) {
             _id: c._id,
             codigo: c.codigo,
             percentagemDesconto: c.percentagemDesconto,
-            supermercado: c.supermercadoId?.nome || 'Desconhecido',
+            supermercadoId: c.supermercadoId?._id?.toString() || null,
+            supermercado: c.supermercadoId?.nome || null,
             prazo: c.prazo,
             ativo: c.ativo,
             expirado: c.prazo < agora

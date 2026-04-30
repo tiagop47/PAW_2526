@@ -22,14 +22,16 @@ export class ProductListComponent implements OnInit {
   allProducts: ProductDTO[] = [];
   filteredProducts: ProductDTO[] = [];
   loading: boolean = true;
-  supermarketId: string = "";
-  supermarketNome: string = "";
+  supermarketId: string = '';
+  supermarketNome: string = '';
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      this.supermarketId = params['supermarketId'] || "";
+    this.route.params.subscribe((params) => {
+      this.supermarketId = params['supermarketId'] || '';
       if (this.supermarketId) {
-        this.supermarketService.getSupermarket(this.supermarketId).subscribe(s => this.supermarketNome = s.nome);
+        this.supermarketService
+          .getSupermarket(this.supermarketId)
+          .subscribe((s) => (this.supermarketNome = s.nome));
       }
       this.loadProducts();
     });
@@ -37,32 +39,34 @@ export class ProductListComponent implements OnInit {
 
   loadProducts(query?: string): void {
     this.loading = true;
+
     this.rest.getProducts(this.supermarketId).subscribe({
       next: (data: ProductDTO[]) => {
         this.allProducts = data;
         this.applyFilters({ query });
         this.loading = false;
       },
+
       error: () => {
         this.loading = false;
-      }
+      },
     });
   }
 
-  applyFilters(filters: { query?: string, categoryId?: string, sortBy?: string }): void {
+  applyFilters(filters: { query?: string; categoryId?: string; sortBy?: string }): void {
     let list = this.allProducts.slice();
 
     if (filters.query) {
       const q = filters.query.toLowerCase();
-      list = list.filter(p => p.nome.toLowerCase().includes(q));
+      list = list.filter((p) => p.nome.toLowerCase().includes(q));
     }
 
     if (filters.categoryId) {
-      list = list.filter(p => p.categoriaId?._id === filters.categoryId);
+      list = list.filter((p) => p.categoriaId?._id === filters.categoryId);
     }
 
     if (filters.sortBy === 'discount') {
-      list.sort((a, b) => ((b.precoAntigo || 0) - b.preco) - ((a.precoAntigo || 0) - a.preco));
+      list.sort((a, b) => (b.precoAntigo || 0) - b.preco - ((a.precoAntigo || 0) - a.preco));
     } else if (filters.sortBy === 'price_asc') {
       list.sort((a, b) => a.preco - b.preco);
     } else if (filters.sortBy === 'price_desc') {

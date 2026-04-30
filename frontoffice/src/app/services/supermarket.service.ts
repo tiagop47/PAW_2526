@@ -32,6 +32,18 @@ export class SupermarketService {
     return this.http.get<SupermarketDTO>(`${this.apiUrl}/${id}`);
   }
 
+  getMetodosCusto(id: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}/metodoPreco`);
+  }
+
+  getCupoes(
+    supermercadoId: string,
+  ): Observable<{ _id: string; codigo: string; percentagemDesconto: number; prazo: string }[]> {
+    return this.http.get<
+      { _id: string; codigo: string; percentagemDesconto: number; prazo: string }[]
+    >(`${this.apiUrl}/${supermercadoId}/cupoes`);
+  }
+
   selectSupermarket(id: string) {
     this.selectedSupermarketId.set(id);
   }

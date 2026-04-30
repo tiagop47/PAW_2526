@@ -13,6 +13,9 @@ export class CartService {
   /** Dados do cupão ativo */
   cupao = signal<{ codigo: string; percentagem: number } | null>(this.loadCupao());
 
+  /** Custo de entrega ou levantamento atual */
+  custoEntrega = signal<number>(0);
+
   /** Número total de itens no carrinho */
   totalItems = computed(() => this.items().reduce((sum, item) => sum + item.quantidade, 0));
 
@@ -40,7 +43,7 @@ export class CartService {
   });
 
   /** Valor total final */
-  totalPrice = computed(() => this.subtotalPrice() - this.discountValue());
+  totalPrice = computed(() => this.subtotalPrice() - this.discountValue() + this.custoEntrega());
 
   addItem(item: CartItem): { sucesso: boolean; erro?: string } {
     if (item.stockDisponivel <= 0) {
@@ -106,13 +109,17 @@ export class CartService {
   removeItem(produtoId: string): void {
     const updated = this.items().filter((i) => i.produtoId !== produtoId);
     this.items.set(updated);
-    if (updated.length === 0) this.cupao.set(null);
+    if (updated.length === 0) {
+      this.cupao.set(null);
+      this.custoEntrega.set(0);
+    }
     this.saveToStorage();
   }
 
   clearCart(): void {
     this.items.set([]);
     this.cupao.set(null);
+    this.custoEntrega.set(0);
     localStorage.removeItem(this.STORAGE_KEY);
     localStorage.removeItem(this.STORAGE_KEY + '_cupao');
   }

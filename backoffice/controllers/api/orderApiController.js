@@ -37,11 +37,11 @@ orderApiController.listarEncomendas = async function (req, res) {
  */
 orderApiController.obterEncomenda = async function (req, res) {
     try {
-        const clienteId = req.user.id;
-        const encomenda = await orderService.obterEncomendaCliente(clienteId, req.params.id);
-        if (!encomenda) {
-            return res.status(404).json({ sucesso: false, erro: 'Encomenda não encontrada.' });
-        }
+        const encomenda = await req.encomenda.populate([
+            { path: 'supermercadoId', select: 'nome localizacao' },
+            { path: 'produtos.produtoId', select: 'nome imagem' },
+            { path: 'estafetaId', select: 'nome telefone' }
+        ]);
         res.json({ sucesso: true, encomenda });
     } catch (err) {
         res.status(500).json({ sucesso: false, erro: err.message });
@@ -54,8 +54,7 @@ orderApiController.obterEncomenda = async function (req, res) {
  */
 orderApiController.cancelarEncomenda = async function (req, res) {
     try {
-        const clienteId = req.user.id;
-        const encomenda = await orderService.cancelarEncomenda(clienteId, req.params.id);
+        const encomenda = await orderService.cancelarEncomenda(req.encomenda);
         res.json({ sucesso: true, encomenda });
     } catch (err) {
         res.status(400).json({ sucesso: false, erro: err.message });
@@ -68,8 +67,7 @@ orderApiController.cancelarEncomenda = async function (req, res) {
  */
 orderApiController.confirmarRececao = async function (req, res) {
     try {
-        const clienteId = req.user.id;
-        const encomenda = await orderService.confirmarRececaoCliente(clienteId, req.params.id);
+        const encomenda = await orderService.confirmarRececaoCliente(req.encomenda);
         res.json({ sucesso: true, message: 'Receção confirmada com sucesso.', encomenda });
     } catch (err) {
         res.status(400).json({ sucesso: false, erro: err.message });

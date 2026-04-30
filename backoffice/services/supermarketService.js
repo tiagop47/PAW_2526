@@ -298,13 +298,13 @@ function transicoesPermitidasParaEncomenda(encomenda) {
     const eLoja = encomenda.metodoEntrega === 'levantamento_loja';
 
     return {
-        pendente:           ['em_preparacao', 'cancelada'],
-        em_preparacao:      ['confirmada', 'cancelada'],
-        confirmada:         eLoja ? ['entregue', 'cancelada'] : [], // Se for estafeta, o supermercado para aqui
-        em_entrega:         [],
-        aguarda_validacao:  [],
-        entregue:           [],
-        cancelada:          [],
+        pendente: ['em_preparacao', 'cancelada'],
+        em_preparacao: ['confirmada', 'cancelada'],
+        confirmada: eLoja ? ['entregue', 'cancelada'] : [], // Se for estafeta, o supermercado para aqui
+        em_entrega: [],
+        aguarda_validacao: [],
+        entregue: [],
+        cancelada: [],
     };
 }
 
@@ -338,16 +338,16 @@ supermarketService.atualizarEstadoEncomenda = async function (supermercadoId, or
  * Regista uma venda feita diretamente na caixa do supermercado (POS).
  */
 supermarketService.registarVenda = async function (supermercadoId, saleData) {
-    const { 
-        listaItens, 
-        metodoEntrega, 
-        moradaCliente, 
-        nifCliente, 
-        nomeCliente, 
-        telefoneCliente, 
+    const {
+        listaItens,
+        metodoEntrega,
+        moradaCliente,
+        nifCliente,
+        nomeCliente,
+        telefoneCliente,
         emailCliente,
         latitudeEntrega,
-        longitudeEntrega 
+        longitudeEntrega
     } = saleData;
 
     // Adaptar formato para o OrderService
@@ -405,19 +405,44 @@ supermarketService.obterPromocoesHome = async function () {
     ]);
 
     // 2. Obter cupões ativos
-    const cupoes = await Coupon.find({ ativo: true, prazo: { $gte: new Date() } })
+    const cupoes = await Coupon.find({ ativo: true, prazo: { $gte: new Date() }, supermercadoId: { $exists: true, $ne: null } })
         .populate('supermercadoId', 'nome')
         .limit(4);
 
     return { lojas, cupoes };
 };
 
+supermarketService.getCupoesSupermercado = async function (supermercadoId) {
+    if (!supermercadoId) {
+        return;
+    }
+
+    return Coupon.find({
+        supermercadoId,
+        ativo: true,
+        prazo: { $gte: new Date() }
+    }).select('_id codigo percentagemDesconto prazo');
+};
+
 supermarketService.listarCategorias = async function () {
     return Category.find().sort({ nome: 1 });
 };
 
-supermarketService.listarCatalogo = async function () {
-    return CatalogProduct.find().populate('categoriaId', 'nome').sort({ nome: 1 });
+supermarketService.getSupermercadoById = async function (id) {
+    return Supermarket.findById(id);
 };
+
+supermarketService.getMetodosCusto = async function (supermercado) {
+    return [
+        {
+            tipo: 'levantamento_loja',
+            custo: supermercado.custoEntregaPorMetodo.levantamento_loja || 0
+        },
+        {
+            tipo: 'entrega_domicilio',
+            custo: supermercado.custoEntregaPorMetodo.entrega_domicilio || 0
+        }
+    ];
+}
 
 module.exports = supermarketService;

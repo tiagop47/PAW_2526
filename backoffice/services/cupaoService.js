@@ -115,4 +115,8 @@ async function _verificarPosse(supermercadoId, cupaoId) {
     }
 }
 
+cupaoService.obterCupaoPorId = async function (id, supermercadoId) {
+    return Coupon.findOne({ _id: id, supermercadoId });
+};
+
 module.exports = cupaoService;

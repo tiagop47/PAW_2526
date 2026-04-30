@@ -1,93 +1,101 @@
 <div class="container mt-4">
 
-  @if (authService.isLoggedIn()){
-  <!-- Promoções de Lojas e Cupões (Sóbrio) -->
-  <div class="row g-4 mb-5" *ngIf="lojasPromocao.length > 0 || cupoes.length > 0">
-    <!-- Coluna: Lojas com Maiores Descontos -->
-    <div class="col-lg-7">
-      <div class="card border shadow-sm h-100 bg-white">
-        <div class="card-body p-4">
-          <h6 class="fw-bold mb-4 extra-small text-uppercase text-muted border-bottom pb-2">Lojas com Maiores Descontos</h6>
-          <div class="row g-3">
-            <div *ngFor="let s of lojasPromocao" class="col-md-12">
-              <div class="bg-light border rounded p-3 d-flex justify-content-between align-items-center">
-                <div>
-                  <div class="fw-bold text-dark small text-uppercase">{{ s.nome }}</div>
-                  <div class="extra-small text-muted">{{ s.localizacao }}</div>
+    @if (authService.isLoggedIn()){
+    <!-- Promoções de Lojas e Cupões (Sóbrio) -->
+    <div class="row g-4 mb-5" *ngIf="lojasPromocao.length > 0 || cupoes.length > 0">
+        <!-- Coluna: Lojas com Maiores Descontos -->
+        <div class="col-lg-7">
+            <div class="card border shadow-sm h-100 bg-white">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-4 extra-small text-uppercase text-muted border-bottom pb-2">Lojas com Maiores
+                        Descontos</h6>
+                    <div class="row g-3">
+                        <div *ngFor="let s of lojasPromocao" class="col-md-12">
+                            <div class="bg-light border rounded p-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-bold text-dark small text-uppercase">{{ s.nome }}</div>
+                                    <div class="extra-small text-muted">{{ s.localizacao }}</div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="badge border text-dark fw-bold mb-1 small">MÉDIA DE -{{
+                                        s.mediaDescontoPercent.toFixed(0) }}%</div>
+                                    <div><a [routerLink]="['/products', s._id]"
+                                            class="extra-small fw-bold text-decoration-none text-dark border-bottom border-dark">VISITAR
+                                            LOJA</a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-end">
-                  <div class="badge border text-dark fw-bold mb-1 small">MÉDIA DE -{{ s.mediaDescontoPercent.toFixed(0) }}%</div>
-                  <div><a [routerLink]="['/products', s._id]" class="extra-small fw-bold text-decoration-none text-dark border-bottom border-dark">VISITAR LOJA</a></div>
-                </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Coluna: Cupões -->
-    <div class="col-lg-5">
-      <div class="card border shadow-sm h-100 border-start border-dark border-4 bg-white">
-        <div class="card-body p-4">
-          <h6 class="fw-bold mb-4 extra-small text-uppercase text-muted border-bottom pb-2">Cupões de Desconto Ativos</h6>
-          <div *ngIf="cupoes.length === 0" class="text-center py-4 text-muted extra-small">Sem cupões ativos de momento.</div>
-          <div class="list-group list-group-flush">
-            <div *ngFor="let c of cupoes" class="list-group-item px-0 py-2 border-0">
-              <div class="d-flex justify-content-between align-items-center bg-white border border-secondary border-dashed p-2 rounded">
-                <div>
-                  <div class="fw-bold font-monospace small text-dark">{{ c.codigo }}</div>
-                  <div class="extra-small text-muted text-uppercase">{{ c.supermercadoId?.nome }}</div>
+        <!-- Coluna: Cupões -->
+        <div class="col-lg-5">
+            <div class="card border shadow-sm h-100 border-start border-dark border-4 bg-white">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-4 extra-small text-uppercase text-muted border-bottom pb-2">Cupões de Desconto
+                        Ativos</h6>
+                    <div *ngIf="cupoes.length === 0" class="text-center py-4 text-muted extra-small">Sem cupões ativos
+                        de momento.</div>
+                    <div class="list-group list-group-flush">
+                        <div *ngFor="let c of cupoes" class="list-group-item px-0 py-2 border-0">
+                            <div
+                                class="d-flex justify-content-between align-items-center bg-white border border-secondary border-dashed p-2 rounded">
+                                <div>
+                                    <div class="fw-bold font-monospace small text-dark">{{ c.codigo }}</div>
+                                    <div class="extra-small text-muted text-uppercase">{{ c.supermercadoId?.nome }}
+                                    </div>
+                                </div>
+                                <div class="h5 fw-bold text-dark mb-0">-{{ c.percentagemDesconto }}%</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="h5 fw-bold text-dark mb-0">-{{ c.percentagemDesconto }}%</div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
-  }
-  <div class="bg-white border rounded shadow-sm p-4 mb-5">
-    <div class="row align-items-end g-3">
-      <div class="col-md-4">
-        <label class="form-label extra-small fw-bold text-muted text-uppercase">Pesquisar Produto</label>
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-dark"></i></span>
-          <input type="text" class="form-control border-start-0" 
-                 placeholder="Ex: Arroz, Leite..." 
-                 [(ngModel)]="searchQuery" 
-                 (input)="onFilterChange()">
+    }
+    <div class="bg-white border rounded shadow-sm p-4 mb-5">
+        <div class="row align-items-end g-3">
+            <div class="col-md-4">
+                <label class="form-label extra-small fw-bold text-muted text-uppercase">Pesquisar Produto</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-dark"></i></span>
+                    <input type="text" class="form-control border-start-0" placeholder="Ex: Arroz, Leite..."
+                        [(ngModel)]="searchQuery" (input)="onFilterChange()">
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label extra-small fw-bold text-muted text-uppercase">Filtrar Categoria</label>
+                <select class="form-select form-select-sm border-secondary" [(ngModel)]="selectedCategory"
+                    (change)="onFilterChange()">
+                    <option value="">Todas as Categorias</option>
+                    <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.nome }}</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label extra-small fw-bold text-muted text-uppercase">Ordenar por</label>
+                <select class="form-select form-select-sm border-secondary" [(ngModel)]="sortBy"
+                    (change)="onFilterChange()">
+                    <option value="discount">Melhores Descontos</option>
+                    <option value="price_asc">Barato para Caro</option>
+                    <option value="price_desc">Caro para Barato</option>
+                </select>
+            </div>
         </div>
-      </div>
-
-      <div class="col-md-3">
-        <label class="form-label extra-small fw-bold text-muted text-uppercase">Filtrar Categoria</label>
-        <select class="form-select form-select-sm border-secondary" [(ngModel)]="selectedCategory" (change)="onFilterChange()">
-          <option value="">Todas as Categorias</option>
-          <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.nome }}</option>
-        </select>
-      </div>
-
-      <div class="col-md-3">
-        <label class="form-label extra-small fw-bold text-muted text-uppercase">Ordenar por</label>
-        <select class="form-select form-select-sm border-secondary" [(ngModel)]="sortBy" (change)="onFilterChange()">
-          <option value="discount">Melhores Descontos</option>
-          <option value="price_asc">Preço: Baixo para Alto</option>
-          <option value="price_desc">Preço: Alto para Baixo</option>
-        </select>
-      </div>
     </div>
-  </div>
 
-  <!-- Resultados -->
-  <div class="row mb-2 align-items-center">
-    <div class="col">
-      <h2 class="h6 fw-bold mb-0 text-uppercase text-muted">Produtos Disponíveis</h2>
+    <!-- Resultados -->
+    <div class="row mb-2 align-items-center">
+        <div class="col">
+            <h2 class="h6 fw-bold mb-0 text-uppercase text-muted">Produtos Disponíveis</h2>
+        </div>
     </div>
-  </div>
-  <hr class="mt-1 mb-4 opacity-10">
+    <hr class="mt-1 mb-4 opacity-10">
 
-  <app-product-list #productList></app-product-list>
+    <app-product-list #productList></app-product-list>
 
 </div>

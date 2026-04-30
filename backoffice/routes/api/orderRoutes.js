@@ -1,14 +1,35 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
+const Order = require('../../models/OrderModel');
 const authMiddleware = require('../../middlewares/authMiddleware');
 const orderApiController = require('../../controllers/api/orderApiController');
 
 // Todas as rotas requerem autenticação e role 'clientes'
 router.use(authMiddleware.verificarAutenticacao, authMiddleware.verificarRole(['clientes']));
 
+// Middleware para validar ID e carregar a encomenda automaticamente
+router.param('id', async (req, res, next, id) => {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ sucesso: false, erro: 'ID de encomenda inválido' });
+    }
+
+    try {
+        // Garantimos que a encomenda pertence ao cliente autenticado
+        const encomenda = await Order.findOne({ _id: id, clienteId: req.user.id });
+        if (!encomenda) {
+            return res.status(404).json({ sucesso: false, erro: 'Encomenda não encontrada.' });
+        }
+        req.encomenda = encomenda;
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
+
 /**
  * @swagger
- * /api/orders:
+...
  *   get:
  *     summary: Listar encomendas do cliente autenticado
  *     tags: [Encomendas]

@@ -424,7 +424,7 @@ supermarketController.criarCupao = async function (req, res) {
  */
 supermarketController.desativarCupao = async function (req, res) {
     try {
-        await cupaoService.desativarCupao(req.supermercado._id, req.params.cupaoId);
+        await cupaoService.desativarCupao(req.supermercado._id, req.cupao._id);
         res.redirect('/supermercado/cupoes');
     } catch (err) {
         res.redirect('/supermercado/cupoes?error=' + encodeURIComponent('Erro ao desativar cupão.'));
@@ -436,7 +436,7 @@ supermarketController.desativarCupao = async function (req, res) {
  */
 supermarketController.ativarCupao = async function (req, res) {
     try {
-        await cupaoService.ativarCupao(req.supermercado._id, req.params.cupaoId);
+        await cupaoService.ativarCupao(req.supermercado._id, req.cupao._id);
         res.redirect('/supermercado/cupoes');
     } catch (err) {
         res.redirect('/supermercado/cupoes?error=' + encodeURIComponent('Erro ao ativar cupão.'));
@@ -448,7 +448,7 @@ supermarketController.ativarCupao = async function (req, res) {
  */
 supermarketController.eliminarCupao = async function (req, res) {
     try {
-        await cupaoService.eliminarCupao(req.supermercado._id, req.params.cupaoId);
+        await cupaoService.eliminarCupao(req.supermercado._id, req.cupao._id);
         res.redirect('/supermercado/cupoes');
     } catch (err) {
         res.redirect('/supermercado/cupoes?error=' + encodeURIComponent('Erro ao eliminar cupão.'));

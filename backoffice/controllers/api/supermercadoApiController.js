@@ -29,4 +29,26 @@ supermercadoApiController.getPromocoes = async function (req, res) {
     }
 }
 
+supermercadoApiController.getCupoes = async function (req, res) {
+    try {
+        const cupoes = await supermarketService.getCupoesSupermercado(req.supermercado._id);
+        res.json(cupoes);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao carregar cupões' });
+    }
+}
+
+supermercadoApiController.getSupermercadoById = async function (req, res) {
+    res.json(req.supermercado);
+}
+
+supermercadoApiController.getMetodosCusto = async function (req, res) {
+    try {
+        const metodosPreco = await supermarketService.getMetodosCusto(req.supermercado);
+        res.json(metodosPreco);
+    } catch {
+        res.status(500).json({ error: 'Erro ao carregar métodos de preço' });
+    }
+}
+
 module.exports = supermercadoApiController;

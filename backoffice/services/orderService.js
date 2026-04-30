@@ -198,10 +198,9 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
     }
 };
 
-orderService.cancelarEncomenda = async function (clienteId, encomendaId) {
-    const encomenda = await Order.findOne({ _id: encomendaId, clienteId });
-    if (!encomenda || !['pendente', 'em_preparacao', 'confirmada'].includes(encomenda.estado)) {
-        throw new Error('Encomenda não encontrada ou cancelamento não permitido neste estado.');
+orderService.cancelarEncomenda = async function (encomenda) {
+    if (!['pendente', 'em_preparacao', 'confirmada'].includes(encomenda.estado)) {
+        throw new Error('Cancelamento não permitido neste estado.');
     }
 
     // Regra dos 5 minutos após FAZER a encomenda (criadoEm)
@@ -219,9 +218,10 @@ orderService.cancelarEncomenda = async function (clienteId, encomendaId) {
     return encomenda.save();
 };
 
-orderService.confirmarRececaoCliente = async function (clienteId, encomendaId) {
-    const encomenda = await Order.findOne({ _id: encomendaId, clienteId, estado: 'aguarda_validacao' });
-    if (!encomenda) throw new Error('Encomenda não disponível para confirmação.');
+orderService.confirmarRececaoCliente = async function (encomenda) {
+    if (encomenda.estado !== 'aguarda_validacao') {
+        throw new Error('Encomenda não disponível para confirmação de receção.');
+    }
     encomenda.estado = 'entregue';
     return encomenda.save();
 };
@@ -234,16 +234,6 @@ orderService.listarEncomendasCliente = async function (clienteId) {
             select: 'nome imagem'
         })
         .sort({ criadoEm: -1 });
-};
-
-orderService.obterEncomendaCliente = async function (clienteId, encomendaId) {
-    return Order.findOne({ _id: encomendaId, clienteId })
-        .populate('supermercadoId', 'nome localizacao')
-        .populate({
-            path: 'produtos.produtoId',
-            select: 'nome imagem preco'
-        })
-        .populate('estafetaId', 'nome telefone');
 };
 
 orderService.obterEstatisticasCliente = async function (clienteId) {
