@@ -1,6 +1,6 @@
 <div class="container mt-4">
 
-    @if (authService.isLoggedIn()){
+    
     <!-- Promoções de Lojas e Cupões (Sóbrio) -->
     <div class="row g-4 mb-5" *ngIf="lojasPromocao.length > 0 || cupoes.length > 0">
         <!-- Coluna: Lojas com Maiores Descontos -->
@@ -55,7 +55,7 @@
             </div>
         </div>
     </div>
-    }
+    
     <div class="bg-white border rounded shadow-sm p-4 mb-5">
         <div class="row align-items-end g-3">
             <div class="col-md-4">
