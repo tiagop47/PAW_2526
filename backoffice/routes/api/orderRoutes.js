@@ -29,7 +29,7 @@ router.param('id', async (req, res, next, id) => {
 
 /**
  * @swagger
-...
+ * /api/orders:
  *   get:
  *     summary: Listar encomendas do cliente autenticado
  *     tags: [Encomendas]
