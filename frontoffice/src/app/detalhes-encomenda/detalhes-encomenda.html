@@ -1,0 +1,152 @@
+<div class="container my-5 animate-fade-in">
+    <!-- Cabeçalho da Página -->
+    <div class="row mb-4">
+        <div class="col d-flex align-items-center">
+            <button class="btn btn-outline-dark btn-sm me-3" (click)="voltar()">
+                <i class="bi bi-arrow-left">Voltar</i>
+            </button>
+            <div>
+                <h2 class="mb-0">Detalhes da Encomenda</h2>
+                <p class="text-muted small mb-0" *ngIf="order">Pedido #{{ order.id.substring(18).toUpperCase() }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+    <!-- Conteúdo da Encomenda -->
+    <div *ngIf="!loading && order" class="card shadow-sm position-relative">
+        <div class="position-absolute top-0 end-0 m-3 z-1 d-flex gap-2">
+            <!-- Só mostra o botão da fatura se NÃO estiver pendente -->
+            @if (order.estado !== 'pendente') {
+                <button class="btn btn-outline-primary btn-sm d-flex align-items-center fw-bold" (click)="gerarFatura()" title="Descarregar Fatura">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>
+                    <span class="d-none d-sm-inline small">FATURA</span>
+                </button>
+            }
+            
+        </div>
+
+        <div class="card-header bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center me-5">
+                <div>
+                    <span class="badge" [ngClass]="{
+                        'bg-light text-dark border': order.estado === 'pendente' || order.estado === 'aguarda_validacao',
+                        'bg-dark text-white': order.estado === 'em_preparacao' || order.estado === 'confirmada' || order.estado === 'em_entrega' || order.estado === 'entregue',
+                        'bg-secondary text-white': order.estado === 'cancelada'
+                    }">
+                        {{ order.estadoLabel.toUpperCase() }}
+                    </span>
+                    <small class="text-muted ms-3">Realizada em {{ order.criadoEm | date:'dd/MM/yyyy HH:mm' }}</small>
+                </div>
+             
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-4">
+                <!-- Coluna da Logística e Entrega -->
+                <div class="col-md-6 border-end-md">
+                    <h6 class="text-uppercase fw-bold extra-small text-muted mb-3">
+                        <i class="bi bi-truck me-2 text-dark"></i>Logística e Entrega
+                    </h6>
+                    
+                    <div class="mb-4">
+                        <label class="extra-small text-uppercase fw-bold text-muted d-block mb-1">Morada de Entrega</label>
+                        <div class="small p-2 bg-white border rounded">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            {{ order.moradaEntrega || 'Levantamento em Loja (Supermercado)' }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="extra-small text-uppercase fw-bold text-muted d-block mb-2">Responsável pela Entrega</label>
+                        <div *ngIf="order.estafeta; else semEstafeta" class="d-flex align-items-center p-2 bg-white border rounded">
+                            <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                <i class="bi bi-person-vcard fs-5"></i>
+                            </div>
+                            <div>
+                                <span class="small fw-bold d-block">{{ order.estafeta.nome }}</span>
+                                <a [href]="'tel:' + order.estafeta.telefone" class="extra-small text-primary text-decoration-none">
+                                    <i class="bi bi-telephone-fill me-1"></i>{{ order.estafeta.telefone }}
+                                </a>
+                            </div>
+                        </div>
+                        <ng-template #semEstafeta>
+                            <div class="p-3 bg-white border rounded text-center">
+                                <div class="extra-small text-muted">
+                                    <i class="bi bi-clock-history me-1"></i>
+                                    {{ order.metodoEntrega === 'levantamento_loja' ? 'Disponível para levantamento no supermercado' : 'A aguardar atribuição de estafeta...' }}
+                                </div>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+
+                <!-- Coluna do Resumo e Itens -->
+                <div class="col-md-6 ps-md-4">
+                    <h6 class="text-uppercase fw-bold extra-small text-muted mb-3">
+                        <i class="bi bi-box-seam me-2 text-dark"></i>Itens da Encomenda
+                    </h6>
+                    
+                    <div class="list-group list-group-flush border rounded bg-white mb-3" style="max-height: 300px; overflow-y: auto;">
+                        <div *ngFor="let item of items" class="list-group-item py-3">
+                            <div class="d-flex align-items-center">
+                                  <img [src]="getProdutoImagem(item)" 
+                                     class="rounded border bg-white me-3" 
+                                     style="width: 45px; height: 45px; object-fit: contain;"
+                                      [alt]="getProdutoNome(item)">
+                                
+                                <div class="flex-grow-1">
+                                    <div class="small fw-bold text-truncate" style="max-width: 200px;" [title]="getProdutoNome(item)">
+                                        {{ getProdutoNome(item) }}
+                                    </div>
+                                    <div class="extra-small text-muted">Qtd: {{ item.quantidade }} × {{ item.precoUnitario | currency:'EUR' }}</div>
+                                </div>
+
+                                <div class="text-end ps-2">
+                                    <div class="small fw-bold text-dark">{{ (item.precoUnitario * item.quantidade) | currency:'EUR' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumo Financeiro -->
+                    <div class="p-3 bg-dark text-white rounded shadow-sm">
+                        <!-- Sub-total dos itens -->
+                        <div class="d-flex justify-content-between mb-1 extra-small opacity-75">
+                            <span>Sub-total (Produtos)</span>
+                            <span>{{ subtotal | currency:'EUR' }}</span>
+                        </div>
+
+                        <!-- Taxa de Entrega (se existir) -->
+                        <div *ngIf="taxaEntrega > 0" class="d-flex justify-content-between mb-1 extra-small opacity-75">
+                            <span>Taxa de Entrega</span>
+                            <span>{{ taxaEntrega | currency:'EUR' }}</span>
+                        </div>
+
+                        <!-- Desconto (se existir) -->
+                        <div *ngIf="valorDesconto > 0" class="d-flex justify-content-between mb-1 extra-small text-success fw-bold">
+                            <span>Desconto Aplicado</span>
+                            <span>-{{ valorDesconto | currency:'EUR' }}</span>
+                        </div>
+
+                        <!-- Taxa de Serviço Grátis se for levantamento -->
+                        <div *ngIf="order.metodoEntrega === 'levantamento_loja'" class="d-flex justify-content-between mb-1 extra-small opacity-75">
+                            <span>Taxa de Levantamento</span>
+                            <span class="text-success">Grátis</span>
+                        </div>
+
+                        <hr class="my-2 opacity-25">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small fw-bold text-uppercase">Total Pago</span>
+                            <span class="h5 mb-0 fw-bold">{{ order.valorTotal | currency:'EUR' }}</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

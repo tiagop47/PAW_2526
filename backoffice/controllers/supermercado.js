@@ -71,6 +71,7 @@ supermarketController.exibirProdutos = async function (req, res) {
 supermarketController.exibirFormularioNovo = async function (req, res) {
     const categorias = await supermarketService.listarCategorias();
     const catalogo = await supermarketService.listarCatalogo();
+
     res.render('supermercado/novoProduto', { title: 'Novo Produto', categorias, catalogo });
 };
 
@@ -148,11 +149,11 @@ supermarketController.atualizarProduto = async function (req, res) {
 supermarketController.pesquisarProdutos = async function (req, res) {
     try {
         const { q, categoriaId, pagina, limite } = req.query;
-        const resultado = await supermarketService.pesquisarProdutos(req.supermercado._id, { 
-            q, 
-            categoriaId, 
-            pagina: parseInt(pagina) || 1, 
-            limite: parseInt(limite) || 5 
+        const resultado = await supermarketService.pesquisarProdutos(req.supermercado._id, {
+            q,
+            categoriaId,
+            pagina: parseInt(pagina) || 1,
+            limite: parseInt(limite) || 5
         });
         res.json(resultado);
     } catch (err) {
@@ -211,7 +212,7 @@ supermarketController.listarEncomendas = async function (req, res) {
         const pagina = parseInt(req.query.pagina) || 1;
         const estadoFiltro = req.query.estado || null;
         const limite = 10; // Aumentei um pouco o limite por página
-        
+
         const dados = await supermarketService.obterEncomendas(req.supermercado._id, pagina, limite, estadoFiltro);
 
         res.render('supermercado/encomendas', {

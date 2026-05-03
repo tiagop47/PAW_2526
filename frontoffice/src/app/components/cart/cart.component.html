@@ -78,7 +78,27 @@
 
           <div *ngIf="metodoEntrega?.tipo?.includes('entrega') || metodoEntrega?.tipo?.includes('domicilio')" class="mb-3">
             <label class="form-label small fw-semibold">Morada de entrega</label>
-            <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="moradaEntrega" placeholder="Rua, nº, código postal, cidade..."></textarea>
+            <textarea class="form-control form-control-sm mb-2" rows="2" [(ngModel)]="moradaEntrega" placeholder="Rua, nº, código postal, cidade..."></textarea>
+            
+            <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-2" (click)="toggleMapa()">
+              <i class="bi bi-map me-1"></i>
+              {{ coordenadas ? 'Alterar Localização' : 'Selecionar no Mapa' }}
+            </button>
+
+            <div *ngIf="escolherNoMapa" class="border rounded mb-2 overflow-hidden" style="height: 300px;">
+              <app-supermarket-map 
+                [modoSelecao]="true"
+                [centroRaio]="supermarketCenter"
+                [raioMaximoKm]="supermercado?.raioEntregaKm || 2"
+                [coordenadasIniciais]="coordenadas"
+                (localizacaoSelecionada)="onLocalizacaoSelecionada($event)"
+                (erroSelecao)="onErroSelecao($event)">
+              </app-supermarket-map>
+            </div>
+            
+            <div *ngIf="coordenadas" class="extra-small text-success fw-bold">
+              <i class="bi bi-check-circle-fill me-1"></i>Localização selecionada
+            </div>
           </div>
 
           <!-- Pagamento -->

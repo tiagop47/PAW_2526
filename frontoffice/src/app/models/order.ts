@@ -45,9 +45,7 @@ export class Order {
   }
 
   get metodoEntregaLabel(): string {
-    return this.metodoEntrega === 'entrega_domicilio'
-      ? 'Entrega ao Domicílio'
-      : 'Levantamento em Loja';
+    return this.metodoEntrega === 'entrega_domicilio' ? 'Entrega ao Domicílio' : 'Levantamento em Loja';
   }
 
   podeCancelar(): boolean {
@@ -69,11 +67,17 @@ export class Order {
     const diffMs = Date.now() - this.criadoEm.getTime();
     const diffMin = Math.floor(diffMs / 60000);
 
-    if (diffMin < 1) return 'Agora mesmo';
-    if (diffMin < 60) return `Há ${diffMin} min`;
+    if (diffMin < 1) {
+      return 'Agora mesmo';
+    }
+    if (diffMin < 60) {
+      return `Há ${diffMin} min`;
+    }
 
     const diffHoras = Math.floor(diffMin / 60);
-    if (diffHoras < 24) return `Há ${diffHoras} horas`;
+    if (diffHoras < 24) {
+      return `Há ${diffHoras} horas`;
+    }
 
     return `Há ${Math.floor(diffHoras / 24)} dias`;
   }

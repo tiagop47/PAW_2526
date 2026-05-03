@@ -20,7 +20,7 @@ export class OrderService {
     metodoPagamento: string;
     moradaEntrega?: string;
     codigoCupao?: string;
-    coordenadasEntrega?: { lat: number; lng: number };
+    coordenadasEntrega?: [number, number]; // [longitude, latitude] para GeoJSON
   }): Observable<Order> {
     return this.http
       .post<OrderResponseDTO>(this.endpoint, dados)
@@ -77,10 +77,12 @@ export class OrderService {
       .pipe(map((res) => new Order(this.formatOrder(res.encomenda))));
   }
 
+ 
+
   private formatOrder(order: OrderDTO): OrderDTO {
     if (order.produtos) {
       order.produtos.forEach((item) => {
-        if (item.produtoId) {
+        if (item.produtoId && typeof item.produtoId !== 'string') {
           item.produtoId.imagem = formatImageUrl(item.produtoId.imagem);
         }
       });

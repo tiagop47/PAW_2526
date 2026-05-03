@@ -1,10 +1,12 @@
 export interface OrderItemDTO {
-  produtoId: {
-    _id: string;
-    nome: string;
-    imagem: string;
-    preco?: number;
-  };
+  produtoId:
+    | {
+        _id: string;
+        nome: string;
+        imagem: string;
+        preco?: number;
+      }
+    | string;
   quantidade: number;
   precoUnitario: number;
 }

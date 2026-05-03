@@ -8,6 +8,7 @@ import { SupermarketService } from '../../services/supermarket.service';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
 import { SupermarketDTO } from '../../models/supermarket.dto';
+import { SupermarketMapComponent } from '../supermarket-map/supermarket-map.component';
 
 interface CupaoDisponivel {
   codigo: string;
@@ -17,7 +18,7 @@ interface CupaoDisponivel {
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, SupermarketMapComponent],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.css',
 })
@@ -41,8 +42,17 @@ export class CartComponent implements OnInit {
   cupoesCliente: CupaoDisponivel[] = [];
   cupoesSupermercado: CupaoDisponivel[] = [];
 
+  // Dados do Mapa
+  coordenadas?: { lat: number; lng: number };
+  escolherNoMapa = false;
+
   get isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
+  }
+
+  get supermarketCenter(): [number, number] | undefined {
+    if (!this.supermercado?.localizacaoGeo?.coordinates) return undefined;
+    return [this.supermercado.localizacaoGeo.coordinates[1], this.supermercado.localizacaoGeo.coordinates[0]];
   }
 
   ngOnInit(): void {
@@ -63,7 +73,6 @@ export class CartComponent implements OnInit {
           this.metodosCusto = res || [];
         }
 
-        // Seleciona o primeiro disponível por defeito se nada estiver selecionado
         if (this.metodosCusto.length > 0 && !this.metodoEntrega) {
           this.metodoEntrega = this.metodosCusto[0];
         } else if (this.metodoEntrega) {
@@ -139,6 +148,18 @@ export class CartComponent implements OnInit {
     this.cupoesSupermercado = [];
   }
 
+  toggleMapa(): void {
+    this.escolherNoMapa = !this.escolherNoMapa;
+  }
+
+  onLocalizacaoSelecionada(coords: { lat: number, lng: number }): void {
+    this.coordenadas = coords;
+  }
+
+  onErroSelecao(mensagem: string): void {
+    this.notificationService.showError(mensagem);
+  }
+
   finalizarEncomenda(): void {
     if (!this.isLoggedIn) {
       this.notificationService.showInfo('Inicie sessão para comprar.');
@@ -149,29 +170,45 @@ export class CartComponent implements OnInit {
     const items = this.cartService.items();
     if (items.length === 0) return;
 
-    if (this.metodoEntrega?.tipo === 'entrega_domicilio' && !this.moradaEntrega.trim()) {
-      this.notificationService.showError('A morada é obrigatória.');
-      return;
+    if (this.metodoEntrega?.tipo === 'entrega_domicilio') {
+      if (!this.moradaEntrega.trim()) {
+        this.notificationService.showError('A morada é obrigatória.');
+        return;
+      }
+      if (!this.coordenadas) {
+        this.notificationService.showError('Selecione a localização exata no mapa.');
+        this.escolherNoMapa = true;
+        return;
+      }
     }
 
     this.processando = true;
-    this.orderService
-      .criarEncomenda({
-        supermercadoId: this.supermercadoId!,
-        produtos: items.map((i) => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
-        metodoEntrega: this.metodoEntrega?.tipo,
-        metodoPagamento: this.metodoPagamento,
-        codigoCupao: this.cartService.cupao()?.codigo,
-        moradaEntrega: this.metodoEntrega?.tipo === 'entrega_domicilio' ? this.moradaEntrega : undefined,
-      })
-      .subscribe({
+
+    const payload = {
+      supermercadoId: this.supermercadoId!,
+      produtos: items.map((i) => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
+      metodoEntrega: this.metodoEntrega?.tipo,
+      metodoPagamento: this.metodoPagamento,
+      coordenadas: this.coordenadas,
+      codigoCupao: this.cartService.cupao()?.codigo,
+      moradaEntrega: this.metodoEntrega?.tipo === 'entrega_domicilio' ? this.moradaEntrega : undefined,
+      coordenadasEntrega:
+        this.metodoEntrega?.tipo === 'entrega_domicilio' && this.coordenadas
+          ? ([this.coordenadas.lng, this.coordenadas.lat] as [number, number])
+          : undefined,
+    };
+
+
+    this.orderService.criarEncomenda(payload).subscribe({
         next: () => {
-          this.notificationService.showSuccess('Encomenda realizada!');
+          this.notificationService.showSuccess('Encomenda realizada com sucesso!');
           this.cartService.clearCart();
           this.router.navigate(['/orders']);
         },
         error: (err) => {
-          this.notificationService.showError(err.error?.erro || 'Erro na finalização.');
+          console.error('Erro no Servidor:', err);
+          const msg = err.error?.erro || err.error?.message || 'Erro na finalização da encomenda.';
+          this.notificationService.showError(msg);
           this.processando = false;
         },
       });

@@ -1,17 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { OrderService } from '../../services/order.service';
 import { AvaliacaoService } from '../../services/avaliacao.service';
 import { Order } from '../../models/order';
+import { DetalhesEncomenda } from '../../detalhes-encomenda/detalhes-encomenda';
+import { ProductDTO } from '../../models/product.dto';
+import { OrderItemDTO } from '../../models/order.dto';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, DetalhesEncomenda],
   templateUrl: './orders.component.html',
-  styleUrl: './orders.component.css'
+  styleUrl: './orders.component.css',
 })
 export class OrdersComponent implements OnInit {
   orders: Order[] = [];
@@ -20,8 +23,10 @@ export class OrdersComponent implements OnInit {
   mensagem: string | null = null;
   orderParaAvaliar: Order | null = null;
   jaAvaliadas = new Set<string>();
+  encomendaExpandida: string | null = null;
 
   constructor(
+    private router: Router,
     private orderService: OrderService,
     private avaliacaoService: AvaliacaoService,
   ) {}
@@ -29,6 +34,8 @@ export class OrdersComponent implements OnInit {
   ngOnInit(): void {
     this.carregarEncomendas();
   }
+
+ 
 
   carregarEncomendas(): void {
     this.loading = true;
@@ -48,10 +55,15 @@ export class OrdersComponent implements OnInit {
     });
   }
 
-  cancelarEncomenda(orderId: string): void {
+  cancelarEncomenda(order: Order): void {
+    if (!order.podeCancelar()) {
+      this.erro = 'O tempo limite de 5 minutos para cancelamento expirou.';
+      return;
+    }
+
     if (!confirm('Tem a certeza que deseja cancelar esta encomenda?')) return;
 
-    this.orderService.cancelarEncomenda(orderId).subscribe({
+    this.orderService.cancelarEncomenda(order.id).subscribe({
       next: () => {
         this.mensagem = 'Encomenda cancelada com sucesso.';
         this.carregarEncomendas();
@@ -91,4 +103,26 @@ export class OrdersComponent implements OnInit {
   podeAvaliar(order: Order): boolean {
     return order.podeAvaliar() && !this.jaAvaliadas.has(order.id);
   }
+
+
+  details(order: Order): void {
+    this.router.navigate(['/order', order.id]);
+  }
+
+  getProdutoNome(item: OrderItemDTO): string {
+    if (typeof item.produtoId === 'string') {
+      return item.produtoId;
+    }
+
+    return item.produtoId.nome;
+  }
+
+  getProdutoImagem(item: OrderItemDTO): string {
+    if (typeof item.produtoId === 'string') {
+      return '';
+    }
+
+    return item.produtoId.imagem;
+  }
+
 }

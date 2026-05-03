@@ -12,6 +12,8 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { SupermarketsComponent } from './components/supermarkets/supermarkets.component';
 import { GuestGuard } from './guards/guest.guard';
 import { AuthGuard } from './guards/auth.guard';
+import { DetalhesEncomenda } from './detalhes-encomenda/detalhes-encomenda';
+
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent, canActivate: [GuestGuard] },
@@ -24,6 +26,7 @@ export const routes: Routes = [
   { path: 'product/:id', component: ProductDetailComponent },
   { path: 'cart', component: CartComponent },
   { path: 'orders', component: OrdersComponent, canActivate: [AuthGuard] },
+  { path: 'order/:id', component: DetalhesEncomenda, canActivate: [AuthGuard] },
   { path: 'avaliacoes', component: AvaliacoesComponent, canActivate: [AuthGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' },

@@ -8,4 +8,8 @@ export interface CouponDTO {
     _id: string;
     nome: string;
   };
+  
+  supermercadoIdString?: string; 
+  expires?: boolean;
+  expirado: boolean;
 }

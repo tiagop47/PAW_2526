@@ -9,6 +9,7 @@ const CatalogProduct = require('../models/CatalogProductModel');
 const Coupon = require('../models/CupomModel');
 const authService = require('./authService');
 const orderService = require('./orderService');
+const CatalogProductModel = require('../models/CatalogProductModel');
 
 const supermarketService = {};
 
@@ -276,6 +277,11 @@ supermarketService.atualizarSupermercado = async function (supermercadoId, dados
 };
 
 
+supermarketService.listarCatalogo = async function () {
+    return CatalogProductModel.find()
+        .sort({ nome: 1 })
+        .populate('categoriaId', 'nome');
+};
 
 supermarketService.obterEncomendas = async function (supermercadoId, pagina = 1, limite = 5, filtroEstado = null) {
     const skip = (pagina - 1) * limite;

@@ -6,6 +6,8 @@ import {
   ElementRef,
   ViewChild,
   Input,
+  Output,
+  EventEmitter,
   OnChanges,
   SimpleChanges,
   NgZone,
@@ -27,6 +29,15 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
 
   @Input() supermarkets: SupermarketDTO[] = [];
   @Input() favoritoId: string | null = null;
+  
+  // Modo Seleção (para o carrinho)
+  @Input() modoSelecao: boolean = false;
+  @Input() centroRaio?: [number, number]; // [lat, lng]
+  @Input() raioMaximoKm: number = 2;
+  @Input() coordenadasIniciais?: { lat: number; lng: number };
+
+  @Output() localizacaoSelecionada = new EventEmitter<{ lat: number; lng: number }>();
+  @Output() erroSelecao = new EventEmitter<string>();
 
   @Input() set focarSupermercado(id: string | null) {
     if (!id || !this.map) {
@@ -40,6 +51,7 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private map?: L.Map;
+  private markerSelecao?: L.Marker;
   private mapaIniciado: boolean = false;
 
   private readonly COORD_PADRAO: [number, number] = [41.1579, -8.6291];
@@ -67,7 +79,7 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
   ngOnInit(): void {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if ((changes['supermarkets'] || changes['favoritoId']) && this.mapaIniciado) {
+    if ((changes['supermarkets'] || changes['favoritoId']) && this.mapaIniciado && !this.modoSelecao) {
       this.adicionarMarcadores();
     }
   }
@@ -76,7 +88,9 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
     setTimeout(() => {
       this.initMap();
       this.mapaIniciado = true;
-      if (this.supermarkets.length > 0) {
+      if (this.modoSelecao) {
+        this.configurarModoSelecao();
+      } else if (this.supermarkets.length > 0) {
         this.adicionarMarcadores();
       }
     }, 200);
@@ -90,15 +104,64 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.map) return;
 
     this.map = L.map(this.mapContainer.nativeElement, {
-      zoomControl: false,
-      scrollWheelZoom: false,
+      zoomControl: this.modoSelecao,
+      scrollWheelZoom: true,
+      minZoom: 12
     }).setView(this.COORD_PADRAO, this.ZOOM_PADRAO);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; CartoDB',
     }).addTo(this.map);
 
-    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+    if (!this.modoSelecao) {
+      L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+    }
+  }
+
+  private configurarModoSelecao(): void {
+    if (!this.map || !this.centroRaio) return;
+
+    const centro = L.latLng(this.centroRaio[0], this.centroRaio[1]);
+    this.map.setView(centro, 15);
+
+    // Círculo do raio de entrega
+    const circle = L.circle(centro, {
+      radius: this.raioMaximoKm * 1000,
+      color: '#0d6efd',
+      weight: 1,
+      fillColor: '#0d6efd',
+      fillOpacity: 0.1
+    }).addTo(this.map);
+
+    this.map.fitBounds(circle.getBounds(), { padding: [20, 20] });
+    this.map.setMaxBounds(circle.getBounds().pad(0.5));
+
+    // Carrega marcador inicial se existir
+    if (this.coordenadasIniciais) {
+      this.markerSelecao = L.marker([this.coordenadasIniciais.lat, this.coordenadasIniciais.lng]).addTo(this.map);
+    }
+
+    this.map.on('click', (e: L.LeafletMouseEvent) => {
+      this.zone.run(() => {
+        const clickPos = e.latlng;
+        const distanceKm = centro.distanceTo(clickPos) / 1000;
+
+        if (distanceKm > this.raioMaximoKm) {
+          this.erroSelecao.emit(`Fora do raio de entrega (${this.raioMaximoKm}km).`);
+          return;
+        }
+
+        if (this.markerSelecao) {
+          this.markerSelecao.setLatLng(clickPos);
+        } else {
+          this.markerSelecao = L.marker(clickPos).addTo(this.map!);
+        }
+
+        this.localizacaoSelecionada.emit({ lat: clickPos.lat, lng: clickPos.lng });
+      });
+    });
+
+    setTimeout(() => this.map?.invalidateSize(), 100);
   }
 
   private adicionarMarcadores(): void {
