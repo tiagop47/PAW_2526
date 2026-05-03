@@ -27,7 +27,7 @@ export class DetalhesEncomenda implements OnInit {
     private router: Router,
     private orderService: OrderService,
     private currencyPipe: CurrencyPipe,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
   ) {}
 
   ngOnInit(): void {
@@ -62,7 +62,7 @@ export class DetalhesEncomenda implements OnInit {
 
   // Getters para o resumo financeiro detalhado
   get subtotal(): number {
-    return this.items.reduce((acc, item) => acc + (item.precoUnitario * item.quantidade), 0);
+    return this.items.reduce((acc, item) => acc + item.precoUnitario * item.quantidade, 0);
   }
 
   get taxaEntrega(): number {
@@ -79,6 +79,22 @@ export class DetalhesEncomenda implements OnInit {
     return diff > 0 ? diff : 0;
   }
 
+  getProdutoNome(item: OrderItemDTO): string {
+    if (typeof item.produtoId === 'string') {
+      return item.produtoId;
+    }
+
+    return item.produtoId.nome;
+  }
+
+  getProdutoImagem(item: OrderItemDTO): string {
+    if (typeof item.produtoId === 'string') {
+      return '';
+    }
+
+    return item.produtoId.imagem;
+  }
+  
   gerarFatura(): void {
     if (!this.order) return;
 
@@ -128,21 +144,5 @@ export class DetalhesEncomenda implements OnInit {
     doc.text('Obrigado pela sua preferência!', doc.internal.pageSize.width / 2, 280, { align: 'center' });
 
     doc.save(`fatura_${this.order.id.substring(18)}.pdf`);
-  }
-
-  getProdutoNome(item: OrderItemDTO): string {
-    if (typeof item.produtoId === 'string') {
-      return item.produtoId;
-    }
-
-    return item.produtoId.nome;
-  }
-
-  getProdutoImagem(item: OrderItemDTO): string {
-    if (typeof item.produtoId === 'string') {
-      return '';
-    }
-
-    return item.produtoId.imagem;
   }
 }
