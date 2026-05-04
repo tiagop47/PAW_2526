@@ -27,7 +27,7 @@ export class Order {
 
   constructor(dto: OrderDTO) {
     this.id = dto._id;
-    this.supermercado = dto.supermercadoId;
+    this.supermercado = dto.supermercadoId || (dto as any).supermercado;
     this.clienteId = dto.clienteId;
     this.estafeta = dto.estafetaId;
     this.produtos = dto.produtos;

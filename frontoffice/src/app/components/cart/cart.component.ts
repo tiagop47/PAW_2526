@@ -38,6 +38,7 @@ export class CartComponent implements OnInit {
   processando = false;
   supermercadoId!: string;
   supermercado?: SupermarketDTO;
+  supermarketCenter?: [number, number];
   metodosCusto: { tipo: string; custo: number }[] = [];
   cupoesCliente: CupaoDisponivel[] = [];
   cupoesSupermercado: CupaoDisponivel[] = [];
@@ -46,13 +47,14 @@ export class CartComponent implements OnInit {
   coordenadas?: { lat: number; lng: number };
   escolherNoMapa = false;
 
-  get isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
+  get isEntregaDomicilio(): boolean {
+    const tipo = this.metodoEntrega?.tipo;
+    if (!tipo) return false;
+    return tipo.includes('entrega') || tipo.includes('domicilio');
   }
 
-  get supermarketCenter(): [number, number] | undefined {
-    if (!this.supermercado?.localizacaoGeo?.coordinates) return undefined;
-    return [this.supermercado.localizacaoGeo.coordinates[1], this.supermercado.localizacaoGeo.coordinates[0]];
+  get isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
   }
 
   ngOnInit(): void {
@@ -61,8 +63,10 @@ export class CartComponent implements OnInit {
     if (this.supermercadoId) {
       this.supermarketService.getSupermarket(this.supermercadoId).subscribe((s) => {
         this.supermercado = s;
+        if (s?.localizacaoGeo?.coordinates) {
+          this.supermarketCenter = [s.localizacaoGeo.coordinates[1], s.localizacaoGeo.coordinates[0]];
+        }
       });
-
       this.supermarketService.getMetodosCusto(this.supermercadoId).subscribe((res: any) => {
         if (res && !Array.isArray(res)) {
           this.metodosCusto = Object.entries(res).map(([tipo, custo]) => ({
@@ -109,6 +113,10 @@ export class CartComponent implements OnInit {
     return labels[tipo] || tipo.replace(/_/g, ' ');
   }
 
+  getMetodoEntregaLabel(tipo: string): string {
+    return this.getMetodoLabel(tipo);
+  }
+
   carregarCupoes(): void {
     this.orderService.meusCupoes().subscribe((cupoes) => {
       this.cupoesCliente = cupoes
@@ -152,7 +160,7 @@ export class CartComponent implements OnInit {
     this.escolherNoMapa = !this.escolherNoMapa;
   }
 
-  onLocalizacaoSelecionada(coords: { lat: number, lng: number }): void {
+  onLocalizacaoSelecionada(coords: { lat: number; lng: number }): void {
     this.coordenadas = coords;
   }
 
@@ -168,9 +176,11 @@ export class CartComponent implements OnInit {
     }
 
     const items = this.cartService.items();
-    if (items.length === 0) return;
+    if (items.length === 0) {
+      return;
+    }
 
-    if (this.metodoEntrega?.tipo === 'entrega_domicilio') {
+    if (this.isEntregaDomicilio) {
       if (!this.moradaEntrega.trim()) {
         this.notificationService.showError('A morada é obrigatória.');
         return;
@@ -189,28 +199,27 @@ export class CartComponent implements OnInit {
       produtos: items.map((i) => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
       metodoEntrega: this.metodoEntrega?.tipo,
       metodoPagamento: this.metodoPagamento,
-      coordenadas: this.coordenadas,
       codigoCupao: this.cartService.cupao()?.codigo,
-      moradaEntrega: this.metodoEntrega?.tipo === 'entrega_domicilio' ? this.moradaEntrega : undefined,
+      coordenadas: this.coordenadas, // Campo que o backend pode estar a validar
+      moradaEntrega: this.isEntregaDomicilio ? this.moradaEntrega : undefined,
       coordenadasEntrega:
-        this.metodoEntrega?.tipo === 'entrega_domicilio' && this.coordenadas
+        this.isEntregaDomicilio && this.coordenadas
           ? ([this.coordenadas.lng, this.coordenadas.lat] as [number, number])
           : undefined,
     };
 
-
     this.orderService.criarEncomenda(payload).subscribe({
-        next: () => {
-          this.notificationService.showSuccess('Encomenda realizada com sucesso!');
-          this.cartService.clearCart();
-          this.router.navigate(['/orders']);
-        },
-        error: (err) => {
-          console.error('Erro no Servidor:', err);
-          const msg = err.error?.erro || err.error?.message || 'Erro na finalização da encomenda.';
-          this.notificationService.showError(msg);
-          this.processando = false;
-        },
-      });
+      next: () => {
+        this.notificationService.showSuccess('Encomenda realizada com sucesso!');
+        this.cartService.clearCart();
+        this.router.navigate(['/orders']);
+      },
+      error: (err) => {
+        console.error('Erro no Servidor:', err);
+        const msg = err.error?.erro || err.error?.message || 'Erro na finalização da encomenda.';
+        this.notificationService.showError(msg);
+        this.processando = false;
+      },
+    });
   }
 }

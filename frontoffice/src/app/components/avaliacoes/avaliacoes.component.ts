@@ -14,7 +14,6 @@ export class AvaliacoesComponent implements OnInit {
   avaliacoes: AvaliacaoDTO[] = [];
   loading: boolean = true;
   error: string | null = null;
-  readonly estrelas = [1, 2, 3, 4, 5];
 
   constructor(private avaliacaoService: AvaliacaoService) {}
 

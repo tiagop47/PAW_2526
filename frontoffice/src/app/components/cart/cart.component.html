@@ -20,12 +20,11 @@
         <ul class="list-group list-group-flush">
           <li class="list-group-item px-3 py-3" *ngFor="let item of cartService.items()">
             <div class="d-flex align-items-center gap-3">
-              <!-- Imagem -->
+              
               <img [src]="item.imagem"
                    class="rounded bg-light border"
                    style="width: 56px; height: 56px; object-fit: contain; padding: 4px;">
-
-              <!-- Info -->
+                   
               <div class="flex-grow-1 min-width-0">
                 <div class="fw-semibold text-truncate">{{ item.nome }}</div>
                 <div class="text-muted small">{{ item.preco | currency:'EUR' }} / unid.</div>
@@ -76,7 +75,7 @@
             </select>
           </div>
 
-          <div *ngIf="metodoEntrega?.tipo?.includes('entrega') || metodoEntrega?.tipo?.includes('domicilio')" class="mb-3">
+          <div *ngIf="isEntregaDomicilio" class="mb-3">
             <label class="form-label small fw-semibold">Morada de entrega</label>
             <textarea class="form-control form-control-sm mb-2" rows="2" [(ngModel)]="moradaEntrega" placeholder="Rua, nº, código postal, cidade..."></textarea>
             
@@ -188,10 +187,7 @@
           <button (click)="finalizarEncomenda()" 
                   class="btn btn-dark w-100 py-2 fw-bold mt-4"
                   [disabled]="processando">
-            <ng-container *ngIf="!processando">
               <i class="bi bi-lock-fill me-1"></i>Confirmar Compra
-            </ng-container>
-            <span *ngIf="processando" class="spinner-border spinner-border-sm"></span>
           </button>
 
           <p *ngIf="!isLoggedIn" class="text-center text-muted extra-small mt-2 mb-0">

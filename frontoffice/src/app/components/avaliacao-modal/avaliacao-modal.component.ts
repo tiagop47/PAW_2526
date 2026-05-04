@@ -13,6 +13,7 @@ import { Order } from '../../models/order';
 })
 export class AvaliacaoModalComponent {
   @Input() order!: Order;
+  @Input() inline = false;
   @Output() fechado = new EventEmitter<void>();
   @Output() submetido = new EventEmitter<string>();
 

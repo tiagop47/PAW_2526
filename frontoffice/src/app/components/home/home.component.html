@@ -1,7 +1,6 @@
 <div class="container mt-4">
 
-    
-    <!-- Promoções de Lojas e Cupões (Sóbrio) -->
+    <!-- Promoções de Lojas e Cupões -->
     <div class="row g-4 mb-5" *ngIf="lojasPromocao.length > 0 || cupoes.length > 0">
         <!-- Coluna: Lojas com Maiores Descontos -->
         <div class="col-lg-7">
@@ -55,47 +54,8 @@
             </div>
         </div>
     </div>
-    
-    <div class="bg-white border rounded shadow-sm p-4 mb-5">
-        <div class="row align-items-end g-3">
-            <div class="col-md-4">
-                <label class="form-label extra-small fw-bold text-muted text-uppercase">Pesquisar Produto</label>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-dark"></i></span>
-                    <input type="text" class="form-control border-start-0" placeholder="Ex: Arroz, Leite..."
-                        [(ngModel)]="searchQuery" (input)="onFilterChange()">
-                </div>
-            </div>
 
-            <div class="col-md-3">
-                <label class="form-label extra-small fw-bold text-muted text-uppercase">Filtrar Categoria</label>
-                <select class="form-select form-select-sm border-secondary" [(ngModel)]="selectedCategory"
-                    (change)="onFilterChange()">
-                    <option value="">Todas as Categorias</option>
-                    <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.nome }}</option>
-                </select>
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label extra-small fw-bold text-muted text-uppercase">Ordenar por</label>
-                <select class="form-select form-select-sm border-secondary" [(ngModel)]="sortBy"
-                    (change)="onFilterChange()">
-                    <option value="discount">Melhores Descontos</option>
-                    <option value="price_asc">Barato para Caro</option>
-                    <option value="price_desc">Caro para Barato</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
-    <!-- Resultados -->
-    <div class="row mb-2 align-items-center">
-        <div class="col">
-            <h2 class="h6 fw-bold mb-0 text-uppercase text-muted">Produtos Disponíveis</h2>
-        </div>
-    </div>
-    <hr class="mt-1 mb-4 opacity-10">
-
-    <app-product-list #productList></app-product-list>
+    <!-- Reutilização do componente product-list (auto-contido com filtros) -->
+    <app-product-list></app-product-list>
 
 </div>

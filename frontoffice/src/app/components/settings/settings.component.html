@@ -2,9 +2,6 @@
   <div class="mx-auto" style="max-width: 800px;">
     <h2 class="h3 border-bottom pb-2 mb-4">Definições da Conta</h2>
 
-    <div *ngIf="initialLoading" class="text-center py-5">
-      <div class="spinner-border" role="status"></div>
-    </div>
 
     <div *ngIf="!initialLoading">
       <div *ngIf="message" class="alert alert-success small">{{ message }}</div>

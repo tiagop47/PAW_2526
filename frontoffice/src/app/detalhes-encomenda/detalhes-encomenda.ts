@@ -1,16 +1,17 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { OrderItemDTO } from '../models/order.dto';
 import { Order } from '../models/order';
 import { OrderService } from '../services/order.service';
+import { AvaliacaoModalComponent } from '../components/avaliacao-modal/avaliacao-modal.component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-detalhes-encomenda',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AvaliacaoModalComponent],
   templateUrl: './detalhes-encomenda.html',
   styleUrl: './detalhes-encomenda.css',
   providers: [CurrencyPipe, DatePipe],
@@ -18,7 +19,12 @@ import autoTable from 'jspdf-autotable';
 export class DetalhesEncomenda implements OnInit {
   @Input() items: OrderItemDTO[] = [];
   @Input() order: Order | null = null;
+  @Input() embedded = false;
+  @Input() jaAvaliou = false;
+  @Output() avaliouEncomenda = new EventEmitter<string>();
 
+  estafetaId: { nome: string; telefone: string } | undefined = undefined;
+  avaliouAgora = false;
   loading = false;
   erro: string | null = null;
 
@@ -31,13 +37,9 @@ export class DetalhesEncomenda implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (!this.order) {
-      const id = this.route.snapshot.paramMap.get('id');
-      if (id) {
-        this.carregarEncomenda(id);
-      }
-    } else {
-      this.items = this.order.produtos;
+    const id = this.order?.id ?? this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.carregarEncomenda(id);
     }
   }
 
@@ -46,6 +48,7 @@ export class DetalhesEncomenda implements OnInit {
     this.orderService.obterEncomenda(id).subscribe({
       next: (order) => {
         this.order = order;
+        this.estafetaId = order.estafeta;
         this.items = order.produtos;
         this.loading = false;
       },
@@ -54,6 +57,11 @@ export class DetalhesEncomenda implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  onAvaliouSubmetido(orderId: string): void {
+    this.avaliouAgora = true;
+    this.avaliouEncomenda.emit(orderId);
   }
 
   voltar(): void {
@@ -67,14 +75,14 @@ export class DetalhesEncomenda implements OnInit {
 
   get taxaEntrega(): number {
     if (!this.order) return 0;
-    // A diferença positiva entre o total e o subtotal dos produtos é a taxa de entrega
+
     const diff = this.order.valorTotal - this.subtotal;
     return diff > 0 ? diff : 0;
   }
 
   get valorDesconto(): number {
     if (!this.order) return 0;
-    // Se o subtotal (dos itens) for maior que o total pago, houve um desconto
+
     const diff = this.subtotal - this.order.valorTotal;
     return diff > 0 ? diff : 0;
   }
@@ -94,7 +102,7 @@ export class DetalhesEncomenda implements OnInit {
 
     return item.produtoId.imagem;
   }
-  
+
   gerarFatura(): void {
     if (!this.order) return;
 

@@ -51,8 +51,11 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private map?: L.Map;
+  private layersGroup = L.layerGroup();
   private markerSelecao?: L.Marker;
+  private circleRaio?: L.Circle;
   private mapaIniciado: boolean = false;
+  private centroAtual?: [number, number];
 
   private readonly COORD_PADRAO: [number, number] = [41.1579, -8.6291];
   private readonly ZOOM_PADRAO = 12;
@@ -79,12 +82,29 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
   ngOnInit(): void {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if ((changes['supermarkets'] || changes['favoritoId']) && this.mapaIniciado && !this.modoSelecao) {
-      this.adicionarMarcadores();
+    if (!this.mapaIniciado) return;
+
+    if (this.modoSelecao) {
+      if (changes['centroRaio'] || changes['modoSelecao']) {
+        const novoCentro = changes['centroRaio']?.currentValue;
+        if (
+          !this.centroAtual ||
+          !novoCentro ||
+          this.centroAtual[0] !== novoCentro[0] ||
+          this.centroAtual[1] !== novoCentro[1]
+        ) {
+          this.configurarModoSelecao();
+        }
+      }
+    } else {
+      if (changes['supermarkets'] || changes['favoritoId'] || changes['modoSelecao']) {
+        this.adicionarMarcadores();
+      }
     }
   }
 
   ngAfterViewInit(): void {
+    // Delay inicial um pouco maior para garantir que o DOM e as animações do Bootstrap/Angular estabilizem
     setTimeout(() => {
       this.initMap();
       this.mapaIniciado = true;
@@ -93,82 +113,108 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
       } else if (this.supermarkets.length > 0) {
         this.adicionarMarcadores();
       }
-    }, 200);
+      
+      // Forçar atualização do tamanho após tudo estar configurado
+      this.map?.invalidateSize();
+    }, 400);
   }
 
   ngOnDestroy(): void {
-    this.map?.remove();
+    if (this.map) {
+      this.layersGroup.clearLayers();
+      this.map.off();
+      this.map.remove();
+      this.map = undefined;
+    }
   }
 
   private initMap(): void {
     if (this.map) return;
 
+    const initialView = this.centroRaio ? L.latLng(this.centroRaio[0], this.centroRaio[1]) : L.latLng(this.COORD_PADRAO);
+
     this.map = L.map(this.mapContainer.nativeElement, {
-      zoomControl: this.modoSelecao,
+      zoomControl: false,
       scrollWheelZoom: true,
-      minZoom: 12
-    }).setView(this.COORD_PADRAO, this.ZOOM_PADRAO);
+      minZoom: 3,
+    }).setView(initialView, this.modoSelecao ? 15 : this.ZOOM_PADRAO);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; CartoDB',
     }).addTo(this.map);
 
-    if (!this.modoSelecao) {
-      L.control.zoom({ position: 'bottomright' }).addTo(this.map);
-    }
+    this.layersGroup.addTo(this.map);
+
+    // Zoom control sempre no mesmo sítio para consistência
+    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
   }
 
   private configurarModoSelecao(): void {
     if (!this.map || !this.centroRaio) return;
 
-    const centro = L.latLng(this.centroRaio[0], this.centroRaio[1]);
-    this.map.setView(centro, 15);
+    this.centroAtual = [...this.centroRaio];
 
+    // Limpa estado anterior garantindo que não há duplicados
+    this.layersGroup.clearLayers();
+    this.markerSelecao = undefined;
+
+    const centro = L.latLng(this.centroRaio[0], this.centroRaio[1]);
+    
     // Círculo do raio de entrega
-    const circle = L.circle(centro, {
+    this.circleRaio = L.circle(centro, {
       radius: this.raioMaximoKm * 1000,
       color: '#0d6efd',
       weight: 1,
       fillColor: '#0d6efd',
-      fillOpacity: 0.1
-    }).addTo(this.map);
+      fillOpacity: 0.1,
+      interactive: false,
+    }).addTo(this.layersGroup);
 
-    this.map.fitBounds(circle.getBounds(), { padding: [20, 20] });
-    this.map.setMaxBounds(circle.getBounds().pad(0.5));
+    // Ajusta vista para o círculo
+    this.map.fitBounds(this.circleRaio.getBounds(), { padding: [20, 20] });
 
     // Carrega marcador inicial se existir
     if (this.coordenadasIniciais) {
-      this.markerSelecao = L.marker([this.coordenadasIniciais.lat, this.coordenadasIniciais.lng]).addTo(this.map);
+      this.markerSelecao = L.marker([this.coordenadasIniciais.lat, this.coordenadasIniciais.lng], {
+        icon: this.favoriteIcon,
+        interactive: false,
+      }).addTo(this.layersGroup);
     }
 
+    // Listener de clique
+    this.map.off('click');
     this.map.on('click', (e: L.LeafletMouseEvent) => {
       this.zone.run(() => {
         const clickPos = e.latlng;
         const distanceKm = centro.distanceTo(clickPos) / 1000;
 
         if (distanceKm > this.raioMaximoKm) {
-          this.erroSelecao.emit(`Fora do raio de entrega (${this.raioMaximoKm}km).`);
+          this.erroSelecao.emit(`Fora do raio de entrega (${this.raioMaximoKm.toFixed(1)}km).`);
           return;
         }
 
         if (this.markerSelecao) {
           this.markerSelecao.setLatLng(clickPos);
         } else {
-          this.markerSelecao = L.marker(clickPos).addTo(this.map!);
+          this.markerSelecao = L.marker(clickPos, { 
+            icon: this.favoriteIcon,
+            interactive: false 
+          }).addTo(this.layersGroup);
         }
 
         this.localizacaoSelecionada.emit({ lat: clickPos.lat, lng: clickPos.lng });
       });
     });
 
+    // Invalidação múltipla para containers dinâmicos
     setTimeout(() => this.map?.invalidateSize(), 100);
+    setTimeout(() => this.map?.invalidateSize(), 500);
   }
 
   private adicionarMarcadores(): void {
-    const mapa = this.map;
-    if (!mapa) return;
+    if (!this.map) return;
 
-    this.limparMarcadores(mapa);
+    this.layersGroup.clearLayers();
 
     const favPos = this.supermarkets.find((s) => s._id === this.favoritoId)?.localizacaoGeo?.coordinates;
     const pFav = favPos ? L.latLng(favPos[1], favPos[0]) : null;
@@ -185,7 +231,7 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
 
       const marker = L.marker(pos, { icon: isFav ? this.favoriteIcon : this.blackIcon })
         .bindPopup(this.criarPopup(s, pos, pFav, isFav))
-        .addTo(mapa);
+        .addTo(this.layersGroup);
 
       marker.on('popupopen', () => {
         const btn = document.getElementById(`explorar-${s._id}`);
@@ -198,22 +244,16 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
         }
       });
 
-      this.criarRaio(pos, s.raioEntregaKm, isFav).addTo(mapa);
+      this.criarRaio(pos, s.raioEntregaKm, isFav).addTo(this.layersGroup);
     });
 
     if (bounds.length > 0) {
-      mapa.fitBounds(L.latLngBounds(bounds), { padding: [50, 50] });
+      this.map.fitBounds(L.latLngBounds(bounds), { padding: [50, 50] });
     }
   }
 
   private limparMarcadores(mapa: L.Map): void {
-    const toRemove: L.Layer[] = [];
-    mapa.eachLayer((layer) => {
-      if (layer instanceof L.Marker || layer instanceof L.Circle) {
-        toRemove.push(layer);
-      }
-    });
-    toRemove.forEach((layer) => mapa.removeLayer(layer));
+    this.layersGroup.clearLayers();
   }
 
   private criarPopup(s: SupermarketDTO, pos: L.LatLng, pFav: L.LatLng | null, isFav: boolean): string {

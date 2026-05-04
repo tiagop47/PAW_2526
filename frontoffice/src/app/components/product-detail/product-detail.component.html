@@ -1,9 +1,5 @@
 <div class="container py-5">
-  <div *ngIf="loading" class="text-center p-5">
-    <div class="spinner-border text-primary" role="status"></div>
-  </div>
-
-  <div *ngIf="produtoBase && !loading" class="row g-4">
+  <div *ngIf="produtoBase" class="row g-4">
     <!-- Imagem Sóbria -->
     <div class="col-md-5">
       <div class="card border rounded-0 p-4 text-center bg-white">

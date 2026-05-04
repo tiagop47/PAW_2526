@@ -1,3 +1,4 @@
+@if (!inline) {
 <div class="modal-overlay">
     <div class="modal-dialog shadow-lg" style="width: 100%; max-width: 500px;">
         <div class="modal-content border-0">
@@ -5,60 +6,66 @@
                 <h5 class="modal-title fw-bold">Avaliar Encomenda</h5>
                 <button type="button" class="btn-close" (click)="fechar()"></button>
             </div>
-
             <div class="modal-body p-4">
-                <div *ngIf="erro" class="alert alert-danger small py-2">{{ erro }}</div>
-
-                <form (ngSubmit)="submeter()">
-                    <!-- Nota Supermercado -->
-                    <div class="mb-4">
-                        <label class="form-label d-block fw-bold small text-uppercase mb-3">
-                            Supermercado: <span class="text-dark">{{ order.supermercado.nome }}</span>
-                        </label>
-                        <div class="d-flex justify-content-between">
-                            <div *ngFor="let n of notas" class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="notaSM" [id]="'sm'+n" [value]="n"
-                                    [(ngModel)]="notaSupermercado">
-                                <label class="form-check-label" [for]="'sm'+n">{{ n }}</label>
-                            </div>
-                        </div>
-                        <div class="form-text extra-small">Nota de 1 (Muito Mau) a 5 (Excelente)</div>
-                    </div>
-
-                    <!-- Nota Estafeta (Se aplicável) -->
-                    <div class="mb-4 pt-3 border-top" *ngIf="order.temEstafeta()">
-                        <label class="form-label d-block fw-bold small text-uppercase mb-3">
-                            Estafeta: <span class="text-dark">{{ order.estafeta?.nome }}</span>
-                        </label>
-                        <div class="d-flex justify-content-between">
-                            <div *ngFor="let n of notas" class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="notaEst" [id]="'est'+n" [value]="n"
-                                    [(ngModel)]="notaEstafeta">
-                                <label class="form-check-label" [for]="'est'+n">{{ n }}</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Comentário -->
-                    <div class="mb-4 pt-3 border-top">
-                        <label class="form-label fw-bold small text-uppercase">O seu comentário</label>
-                        <textarea class="form-control" name="comentario" [(ngModel)]="comentario" rows="3"
-                            placeholder="Escreva aqui a sua opinião sobre o serviço..."></textarea>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-secondary w-100 fw-bold" (click)="fechar()"
-                            [disabled]="a_submeter">
-                            FECHAR
-                        </button>
-                        <button type="submit" class="btn btn-dark w-100 fw-bold"
-                            [disabled]="a_submeter || !notaSupermercado || (order.temEstafeta() && !notaEstafeta)">
-                            <span *ngIf="a_submeter" class="spinner-border spinner-border-sm me-2"></span>
-                            SUBMETER
-                        </button>
-                    </div>
-                </form>
+                <ng-container *ngTemplateOutlet="corpo"></ng-container>
             </div>
         </div>
     </div>
 </div>
+} @else {
+<ng-container *ngTemplateOutlet="corpo"></ng-container>
+}
+
+<ng-template #corpo>
+    <div *ngIf="erro" class="alert alert-danger small py-2">{{ erro }}</div>
+
+    <form (ngSubmit)="submeter()">
+        <!-- Nota Supermercado -->
+        <div class="mb-4">
+            <label class="form-label d-block fw-bold small text-uppercase mb-3">
+                Supermercado: <span class="text-dark">{{ order.supermercado.nome }}</span>
+            </label>
+            <div class="d-flex justify-content-between">
+                <div *ngFor="let n of notas" class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="notaSM" [id]="'sm'+n" [value]="n"
+                        [(ngModel)]="notaSupermercado">
+                    <label class="form-check-label" [for]="'sm'+n">{{ n }}</label>
+                </div>
+            </div>
+            <div class="form-text extra-small">Nota de 1 (Muito Mau) a 5 (Excelente)</div>
+        </div>
+
+        <!-- Nota Estafeta (Se aplicável) -->
+        <div class="mb-4 pt-3 border-top" *ngIf="order.temEstafeta()">
+            <label class="form-label d-block fw-bold small text-uppercase mb-3">
+                Estafeta: <span class="text-dark">{{ order.estafeta?.nome }}</span>
+            </label>
+            <div class="d-flex justify-content-between">
+                <div *ngFor="let n of notas" class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="notaEst" [id]="'est'+n" [value]="n"
+                        [(ngModel)]="notaEstafeta">
+                    <label class="form-check-label" [for]="'est'+n">{{ n }}</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comentário -->
+        <div class="mb-4 pt-3 border-top">
+            <label class="form-label fw-bold small text-uppercase">O seu comentário</label>
+            <textarea class="form-control" name="comentario" [(ngModel)]="comentario" rows="3"
+                placeholder="Escreva aqui a sua opinião sobre o serviço..."></textarea>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button *ngIf="!inline" type="button" class="btn btn-outline-secondary w-100 fw-bold" (click)="fechar()"
+                [disabled]="a_submeter">
+                FECHAR
+            </button>
+            <button type="submit" class="btn btn-dark w-100 fw-bold"
+                [disabled]="a_submeter || !notaSupermercado || (order.temEstafeta() && !notaEstafeta)">
+                <span *ngIf="a_submeter" class="spinner-border spinner-border-sm me-2"></span>
+                SUBMETER AVALIAÇÃO
+            </button>
+        </div>
+    </form>
+</ng-template>

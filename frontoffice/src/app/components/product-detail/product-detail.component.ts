@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
@@ -26,7 +26,9 @@ interface OfertaMercado {
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.css',
 })
-export class ProductDetailComponent implements OnInit {
+export class ProductDetailComponent implements OnInit, OnChanges {
+  @Input() productId?: string;
+
   produtoBase: ProductDTO | null = null;
   ofertas: OfertaMercado[] = [];
   loading = true;
@@ -40,12 +42,22 @@ export class ProductDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    if (this.productId) {
+      this.carregar(this.productId);
+      return;
+    }
     this.route.params.subscribe((params) => {
       const id = params['id'];
       if (id) {
         this.carregar(id);
       }
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['productId'] && !changes['productId'].firstChange && this.productId) {
+      this.carregar(this.productId);
+    }
   }
 
   private carregar(id: string): void {
@@ -160,18 +172,5 @@ export class ProductDetailComponent implements OnInit {
     } else {
       this.notificationService.showError(resultado.erro || 'Erro ao adicionar.');
     }
-  }
-
-  get melhorPreco(): number {
-    return this.ofertas.length > 0 ? this.ofertas[0].preco : 0;
-  }
-
-  get desconto(): number | null {
-    const p = this.produtoBase;
-    if (!p || !p.precoAntigo || p.precoAntigo <= 0) {
-      return null;
-    }
-
-    return Math.round((1 - p.preco / p.precoAntigo) * 100);
   }
 }
