@@ -77,18 +77,4 @@
     <a *ngIf="supermarketId" routerLink="/" class="btn btn-sm btn-dark px-4 fw-bold mt-2">VER TODA A REDE</a>
   </div>
 
-  <!-- Modal reutilizando app-product-detail -->
-  <div *ngIf="selectedProductId" class="modal d-block" tabindex="-1" (click)="fecharDetalhe()">
-    <div class="modal-backdrop show position-fixed top-0 start-0 w-100 h-100" style="z-index: -1;"></div>
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" (click)="$event.stopPropagation()">
-      <div class="modal-content">
-        <div class="modal-header border-0 pb-0">
-          <button type="button" class="btn-close" (click)="fecharDetalhe()"></button>
-        </div>
-        <div class="modal-body p-0">
-          <app-product-detail [productId]="selectedProductId"></app-product-detail>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>

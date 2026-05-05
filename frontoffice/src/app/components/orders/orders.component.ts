@@ -1,43 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { Router, RouterModule } from '@angular/router';
 import { OrderService } from '../../services/order.service';
-import { AvaliacaoService } from '../../services/avaliacao.service';
 import { NotificationService } from '../../services/notification.service';
 import { Order } from '../../models/order';
-import { DetalhesEncomenda } from '../../detalhes-encomenda/detalhes-encomenda';
 import { OrderItemDTO } from '../../models/order.dto';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, RouterModule, DetalhesEncomenda],
+  imports: [CommonModule, RouterModule],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css',
 })
 export class OrdersComponent implements OnInit {
   orders: Order[] = [];
   loading = true;
-  jaAvaliadas = new Set<string>();
-  selectedOrder: Order | null = null;
 
-  abrirDetalhes(order: Order): void {
-    this.selectedOrder = order;
-  }
-
-  onAvaliouEncomenda(orderId: string): void {
-    this.jaAvaliadas = new Set([...this.jaAvaliadas, orderId]);
-  }
-
-  fecharDetalhes(): void {
-    this.selectedOrder = null;
+  verDetalhes(orderId: string): void {
+    this.router.navigate(['/order', orderId]);
   }
 
   constructor(
     private orderService: OrderService,
-    private avaliacaoService: AvaliacaoService,
     private notificationService: NotificationService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -46,13 +33,9 @@ export class OrdersComponent implements OnInit {
 
   carregarEncomendas(): void {
     this.loading = true;
-    forkJoin({
-      encomendas: this.orderService.listarEncomendas(),
-      avaliacoes: this.avaliacaoService.getMinhasAvaliacoes(),
-    }).subscribe({
-      next: ({ encomendas, avaliacoes }) => {
+    this.orderService.listarEncomendas().subscribe({
+      next: (encomendas) => {
         this.orders = encomendas;
-        this.jaAvaliadas = new Set(avaliacoes.map((a) => a.encomendaId));
         this.loading = false;
       },
       error: () => {
@@ -99,4 +82,3 @@ export class OrdersComponent implements OnInit {
     return item.produtoId.imagem;
   }
 }
-

@@ -1,23 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { SupermarketService } from '../../services/supermarket.service';
-import { ProductDetailComponent } from '../product-detail/product-detail.component';
 import { ProductDTO } from '../../models/product.dto';
 import { CategoryDTO } from '../../models/category.dto';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ProductDetailComponent],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css',
 })
 export class ProductListComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private rest: ProductService,
     private supermarketService: SupermarketService,
   ) {}
@@ -26,7 +26,6 @@ export class ProductListComponent implements OnInit {
   filteredProducts: ProductDTO[] = [];
   loading: boolean = true;
   supermarketId: string = '';
-  selectedProductId: string | null = null;
 
   categories: CategoryDTO[] = [];
   searchQuery = '';
@@ -34,11 +33,7 @@ export class ProductListComponent implements OnInit {
   sortBy = 'discount';
 
   abrirDetalhe(productId: string): void {
-    this.selectedProductId = productId;
-  }
-
-  fecharDetalhe(): void {
-    this.selectedProductId = null;
+    this.router.navigate(['/product', productId]);
   }
 
   ngOnInit(): void {

@@ -11,7 +11,7 @@ router.param('id', async (req, res, next, id) => {
     }
 
     try {
-        const produto = await Product.findById(id).populate('categoriaId');
+        const produto = await Product.findById(id).populate('supermercadoId', 'nome localizacao').populate('categoriaId');
         if (!produto) {
             return res.status(404).json({ error: 'Produto não encontrado' });
         }

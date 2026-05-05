@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { NotificationService } from '../../services/notification.service';
@@ -36,10 +36,15 @@ export class ProductDetailComponent implements OnInit, OnChanges {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private rest: ProductService,
     private cartService: CartService,
     private notificationService: NotificationService,
   ) {}
+
+  voltar(): void {
+    this.router.navigate(['/products']);
+  }
 
   ngOnInit(): void {
     if (this.productId) {
@@ -85,72 +90,34 @@ export class ProductDetailComponent implements OnInit, OnChanges {
     });
   }
 
-  private construirOfertas(
-    produto: ProductDTO,
-    comparacao: ProductComparacaoDTO[],
-  ): OfertaMercado[] {
-    const map = new Map<string, OfertaMercado>();
-
-    const smBaseId =
-      typeof produto.supermercadoId === 'string'
-        ? produto.supermercadoId
-        : produto.supermercadoId?._id;
-
-    const smFromComparacao = comparacao.find((c) => c.supermercadoId?._id === smBaseId);
-    const smBaseNome =
-      typeof produto.supermercadoId === 'string'
-        ? smFromComparacao?.supermercadoId?.nome || ''
-        : produto.supermercadoId?.nome || '';
-    const smBaseLoc =
-      typeof produto.supermercadoId === 'string'
-        ? smFromComparacao?.supermercadoId?.localizacao || ''
-        : produto.supermercadoId?.localizacao || '';
-
-    if (smBaseId) {
-      map.set(smBaseId, {
-        produtoId: produto._id,
-        supermercadoId: smBaseId,
-        supermercadoNome: smBaseNome,
-        supermercadoLocalizacao: smBaseLoc,
-        preco: produto.preco,
-        stockDisponivel: produto.stockDisponivel,
-        imagem: produto.imagem,
-        nome: produto.nome,
-        isMaisBarato: false,
-        poupancaFaceMaisCaro: 0,
-      });
-    }
-
-    comparacao.forEach((c) => {
-      const smId = c.supermercadoId?._id;
-      if (!smId || map.has(smId)) {
-        return;
-      }
-
-      map.set(smId, {
-        produtoId: c._id,
-        supermercadoId: smId,
-        supermercadoNome: c.supermercadoId.nome,
-        supermercadoLocalizacao: c.supermercadoId.localizacao,
-        preco: c.preco,
-        stockDisponivel: c.stockDisponivel,
-        imagem: c.imagem,
-        nome: c.nome,
-        isMaisBarato: false,
-        poupancaFaceMaisCaro: 0,
-      });
+  private construirOfertas(produto: ProductDTO, comparacao: ProductComparacaoDTO[]): OfertaMercado[] {
+    const toOferta = (p: ProductDTO | ProductComparacaoDTO): OfertaMercado => ({
+      produtoId: p._id,
+      supermercadoId: p.supermercadoId._id,
+      supermercadoNome: p.supermercadoId.nome,
+      supermercadoLocalizacao: p.supermercadoId.localizacao,
+      preco: p.preco,
+      stockDisponivel: p.stockDisponivel,
+      imagem: p.imagem,
+      nome: p.nome,
+      isMaisBarato: false,
+      poupancaFaceMaisCaro: 0,
     });
 
-    const lista = Array.from(map.values()).sort((a, b) => a.preco - b.preco);
-    if (lista.length === 0) {
-      return lista;
-    }
+    const vistos = new Set<string>();
+    const lista = [produto, ...comparacao]
+      .filter((p) => {
+        const id = p.supermercadoId._id;
+        return vistos.has(id) ? false : !!vistos.add(id);
+      })
+      .map(toOferta)
+      .sort((a, b) => a.preco - b.preco);
 
-    const precoMaisCaro = lista[lista.length - 1].preco;
-    lista[0].isMaisBarato = true;
-    lista.forEach((oferta) => {
-      oferta.poupancaFaceMaisCaro = precoMaisCaro - oferta.preco;
-    });
+    if (lista.length > 0) {
+      const precoMaisCaro = lista[lista.length - 1].preco;
+      lista[0].isMaisBarato = true;
+      lista.forEach((o) => (o.poupancaFaceMaisCaro = precoMaisCaro - o.preco));
+    }
 
     return lista;
   }
