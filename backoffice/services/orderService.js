@@ -70,7 +70,7 @@ async function gerarNumeroFatura(supermercadoId) {
 
 orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
     let { supermercadoId, produtos, metodoEntrega, moradaEntrega, coordenadasEntrega, codigoCupao, origem, metodoPagamento } = dadosEncomenda;
-    
+
     origem = origem || 'online';
 
     if (origem === 'caixa' && !clienteId) {
@@ -82,15 +82,13 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
 
     // Validação de Raio de Entrega
     if (metodoEntrega === 'entrega_domicilio') {
-        if (!coordenadasEntrega?.lat || !coordenadasEntrega?.lng) {
+        if (!coordenadasEntrega[0] || !coordenadasEntrega[1]) {
             throw new Error('Coordenadas de entrega são obrigatórias para entrega ao domicílio.');
         }
 
         const dist = calcularDistancia(
             supermercado.localizacaoGeo.coordinates[1],
             supermercado.localizacaoGeo.coordinates[0],
-            coordenadasEntrega.lat,
-            coordenadasEntrega.lng
         );
 
         if (dist > supermercado.raioEntregaKm) {
@@ -98,7 +96,9 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
         }
     }
 
-    if (!produtos || produtos.length === 0) throw new Error('A encomenda deve ter pelo menos um produto.');
+    if (!produtos || produtos.length === 0) {
+        throw new Error('A encomenda deve ter pelo menos um produto.');
+    }
 
     const produtoIds = produtos.map(p => p.produtoId);
     const produtosDB = await Product.find({ _id: { $in: produtoIds }, supermercadoId });
@@ -118,14 +118,14 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
         const precoComIVA = produto.preco;
         const taxaIVA = produto.iva || 23;
         const valorIVAUnitario = precoComIVA - (precoComIVA / (1 + taxaIVA / 100));
-        
+
         produtosEncomenda.push({
             produtoId: produto._id,
             quantidade: item.quantidade,
             precoUnitario: precoComIVA,
             ivaTaxa: taxaIVA
         });
-        
+
         valorSubtotal += precoComIVA * item.quantidade;
         valorTotalIVA += valorIVAUnitario * item.quantidade;
     }
@@ -141,7 +141,7 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
     }
 
     const valorProdutosFinal = Math.max(0, valorSubtotal - descontoValor);
-    const taxaEntrega = metodoEntrega === 'entrega_domicilio' 
+    const taxaEntrega = metodoEntrega === 'entrega_domicilio'
         ? (supermercado.custoEntregaPorMetodo?.entrega_domicilio || 0)
         : 0;
 
@@ -239,18 +239,20 @@ orderService.listarEncomendasCliente = async function (clienteId) {
 orderService.obterEstatisticasCliente = async function (clienteId) {
     const stats = await Order.aggregate([
         { $match: { clienteId: new mongoose.Types.ObjectId(clienteId) } },
-        { $facet: {
-            total: [{ $count: 'count' }],
-            maisComprados: [
-                { $unwind: '$produtos' },
-                { $group: { _id: '$produtos.produtoId', total: { $sum: '$produtos.quantidade' } } },
-                { $sort: { total: -1 } },
-                { $limit: 5 },
-                { $lookup: { from: 'products', localField: '_id', foreignField: '_id', as: 'info' } },
-                { $unwind: '$info' },
-                { $project: { nome: '$info.nome', imagem: '$info.imagem', totalQuantidade: '$total' } }
-            ]
-        }}
+        {
+            $facet: {
+                total: [{ $count: 'count' }],
+                maisComprados: [
+                    { $unwind: '$produtos' },
+                    { $group: { _id: '$produtos.produtoId', total: { $sum: '$produtos.quantidade' } } },
+                    { $sort: { total: -1 } },
+                    { $limit: 5 },
+                    { $lookup: { from: 'products', localField: '_id', foreignField: '_id', as: 'info' } },
+                    { $unwind: '$info' },
+                    { $project: { nome: '$info.nome', imagem: '$info.imagem', totalQuantidade: '$total' } }
+                ]
+            }
+        }
     ]);
 
     return {
