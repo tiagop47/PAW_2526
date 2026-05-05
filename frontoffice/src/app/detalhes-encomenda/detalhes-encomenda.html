@@ -1,6 +1,5 @@
-<div [class]="embedded ? 'p-3' : 'container my-5'">
-    <!-- Cabeçalho da Página (oculto quando embutido) -->
-    <div *ngIf="!embedded" class="row mb-4">
+<div class="container my-5">
+    <div class="row mb-4">
         <div class="col">
             <h2 class="mb-0">Detalhes da Encomenda</h2>
             <p class="text-muted small mb-0" *ngIf="order">Pedido #{{ order.id.substring(18).toUpperCase() }}</p>
@@ -158,7 +157,7 @@
                 <app-avaliacao-modal
                     [order]="order"
                     [inline]="true"
-                    (submetido)="onAvaliouSubmetido($event)">
+                    (submetido)="onAvaliouSubmetido()">
                 </app-avaliacao-modal>
                 } @else {
                 <div class="text-center py-3 text-muted small border rounded bg-light">

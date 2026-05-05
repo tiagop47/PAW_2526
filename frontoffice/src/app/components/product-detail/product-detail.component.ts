@@ -1,6 +1,6 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { NotificationService } from '../../services/notification.service';
@@ -26,9 +26,7 @@ interface OfertaMercado {
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.css',
 })
-export class ProductDetailComponent implements OnInit, OnChanges {
-  @Input() productId?: string;
-
+export class ProductDetailComponent implements OnInit {
   produtoBase: ProductDTO | null = null;
   ofertas: OfertaMercado[] = [];
   loading = true;
@@ -36,33 +34,16 @@ export class ProductDetailComponent implements OnInit, OnChanges {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private rest: ProductService,
     private cartService: CartService,
     private notificationService: NotificationService,
   ) {}
 
-  voltar(): void {
-    this.router.navigate(['/products']);
-  }
-
   ngOnInit(): void {
-    if (this.productId) {
-      this.carregar(this.productId);
-      return;
-    }
     this.route.params.subscribe((params) => {
       const id = params['id'];
-      if (id) {
-        this.carregar(id);
-      }
+      if (id) this.carregar(id);
     });
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['productId'] && !changes['productId'].firstChange && this.productId) {
-      this.carregar(this.productId);
-    }
   }
 
   private carregar(id: string): void {

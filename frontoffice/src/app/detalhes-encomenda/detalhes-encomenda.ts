@@ -1,9 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { OrderItemDTO } from '../models/order.dto';
 import { Order } from '../models/order';
 import { OrderService } from '../services/order.service';
+import { AvaliacaoService } from '../services/avaliacao.service';
 import { AvaliacaoModalComponent } from '../components/avaliacao-modal/avaliacao-modal.component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -17,39 +19,36 @@ import autoTable from 'jspdf-autotable';
   providers: [CurrencyPipe, DatePipe],
 })
 export class DetalhesEncomenda implements OnInit {
-  @Input() items: OrderItemDTO[] = [];
-  @Input() order: Order | null = null;
-  @Input() embedded = false;
-  @Input() jaAvaliou = false;
-  @Output() avaliouEncomenda = new EventEmitter<string>();
-
-  estafetaId: { nome: string; telefone: string } | undefined = undefined;
+  order: Order | null = null;
+  items: OrderItemDTO[] = [];
+  jaAvaliou = false;
   avaliouAgora = false;
   loading = false;
   erro: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private orderService: OrderService,
+    private avaliacaoService: AvaliacaoService,
     private currencyPipe: CurrencyPipe,
     private datePipe: DatePipe,
   ) {}
 
   ngOnInit(): void {
-    const id = this.order?.id ?? this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.carregarEncomenda(id);
-    }
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) this.carregarEncomenda(id);
   }
 
   carregarEncomenda(id: string): void {
     this.loading = true;
-    this.orderService.obterEncomenda(id).subscribe({
-      next: (order) => {
+    forkJoin({
+      order: this.orderService.obterEncomenda(id),
+      avaliacoes: this.avaliacaoService.getMinhasAvaliacoes(),
+    }).subscribe({
+      next: ({ order, avaliacoes }) => {
         this.order = order;
-        this.estafetaId = order.estafeta;
         this.items = order.produtos;
+        this.jaAvaliou = avaliacoes.some((a) => a.encomendaId === id);
         this.loading = false;
       },
       error: () => {
@@ -59,48 +58,32 @@ export class DetalhesEncomenda implements OnInit {
     });
   }
 
-  onAvaliouSubmetido(orderId: string): void {
+  onAvaliouSubmetido(): void {
     this.avaliouAgora = true;
-    this.avaliouEncomenda.emit(orderId);
   }
 
-  voltar(): void {
-    this.router.navigate(['/orders']);
-  }
-
-  // Getters para o resumo financeiro detalhado
   get subtotal(): number {
     return this.items.reduce((acc, item) => acc + item.precoUnitario * item.quantidade, 0);
   }
 
   get taxaEntrega(): number {
     if (!this.order) return 0;
-
     const diff = this.order.valorTotal - this.subtotal;
     return diff > 0 ? diff : 0;
   }
 
   get valorDesconto(): number {
     if (!this.order) return 0;
-
     const diff = this.subtotal - this.order.valorTotal;
     return diff > 0 ? diff : 0;
   }
 
   getProdutoNome(item: OrderItemDTO): string {
-    if (typeof item.produtoId === 'string') {
-      return item.produtoId;
-    }
-
-    return item.produtoId.nome;
+    return typeof item.produtoId === 'string' ? item.produtoId : item.produtoId.nome;
   }
 
   getProdutoImagem(item: OrderItemDTO): string {
-    if (typeof item.produtoId === 'string') {
-      return '';
-    }
-
-    return item.produtoId.imagem;
+    return typeof item.produtoId === 'string' ? '' : item.produtoId.imagem;
   }
 
   gerarFatura(): void {

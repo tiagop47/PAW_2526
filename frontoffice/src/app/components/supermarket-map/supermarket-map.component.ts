@@ -252,11 +252,7 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
-  private limparMarcadores(mapa: L.Map): void {
-    this.layersGroup.clearLayers();
-  }
-
-  private criarPopup(s: SupermarketDTO, pos: L.LatLng, pFav: L.LatLng | null, isFav: boolean): string {
+private criarPopup(s: SupermarketDTO, pos: L.LatLng, pFav: L.LatLng | null, isFav: boolean): string {
     let distHtml = '';
     if (isFav) {
       distHtml = `<div class="mt-1 mb-2 extra-small text-primary fw-bold">LOJA DE REFERÊNCIA</div>`;
