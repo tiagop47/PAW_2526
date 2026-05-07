@@ -28,6 +28,25 @@ const swaggerOptions = {
             description: 'Documentação da API do projeto PAW',
         },
         servers: [{ url: 'http://localhost:3000' }],
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                },
+            },
+            schemas: {
+                Error: {
+                    type: 'object',
+                    properties: {
+                        error: {
+                            type: 'string',
+                        },
+                    },
+                },
+            },
+        },
     },
     apis: ['./routes/*.js', './routes/api/*.js'],
 };

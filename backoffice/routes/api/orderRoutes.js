@@ -5,6 +5,13 @@ const Order = require('../../models/OrderModel');
 const authMiddleware = require('../../middlewares/authMiddleware');
 const orderApiController = require('../../controllers/api/orderApiController');
 
+/**
+ * @swagger
+ * tags:
+ *   name: Orders
+ *   description: Gestão de encomendas e pagamentos
+ */
+
 // Todas as rotas requerem autenticação e role 'clientes'
 router.use(authMiddleware.verificarAutenticacao, authMiddleware.verificarRole(['clientes']));
 
@@ -32,7 +39,7 @@ router.param('id', async (req, res, next, id) => {
  * /api/orders:
  *   get:
  *     summary: Listar encomendas do cliente autenticado
- *     tags: [Encomendas]
+ *     tags: [Orders]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -46,7 +53,7 @@ router.get('/', orderApiController.listarEncomendas);
  * /api/orders:
  *   post:
  *     summary: Criar uma nova encomenda
- *     tags: [Encomendas]
+ *     tags: [Orders]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -86,7 +93,7 @@ router.post('/', orderApiController.criarEncomenda);
  * /api/orders/validar-cupao:
  *   post:
  *     summary: Validar um cupão promocional
- *     tags: [Encomendas]
+ *     tags: [Orders]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -114,7 +121,7 @@ router.post('/validar-cupao', orderApiController.validarCupao);
  * /api/orders/{id}:
  *   get:
  *     summary: Obter detalhes de uma encomenda
- *     tags: [Encomendas]
+ *     tags: [Orders]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -136,13 +143,15 @@ router.get('/:id', orderApiController.obterEncomenda);
  * /api/orders/{id}/cancelar:
  *   post:
  *     summary: Cancelar uma encomenda (até 5 min após confirmação)
- *     tags: [Encomendas]
+ *     tags: [Orders]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Encomenda cancelada
@@ -156,13 +165,15 @@ router.post('/:id/cancelar', orderApiController.cancelarEncomenda);
  * /api/orders/{id}/confirmar-rececao:
  *   post:
  *     summary: Confirmar receção de uma encomenda entregue pelo estafeta
- *     tags: [Encomendas]
+ *     tags: [Orders]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Receção confirmada
