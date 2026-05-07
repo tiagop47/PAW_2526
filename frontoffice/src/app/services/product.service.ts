@@ -15,20 +15,16 @@ export class ProductService {
   getProducts(supermarketId?: string): Observable<ProductDTO[]> {
     const url = supermarketId ? `${this.apiUrl}?supermercado=${supermarketId}` : this.apiUrl;
 
-    return this.http
-      .get<ProductDTO[]>(url)
-      .pipe(map((products) => products.map((p) => this.formatProduct(p))));
+    return this.http.get<ProductDTO[]>(url).pipe(map((products) => products.map((p) => this.formatProduct(p))));
   }
 
   getProduct(id: string): Observable<ProductDTO> {
-    return this.http
-      .get<ProductDTO>(`${this.apiUrl}/${id}`)
-      .pipe(map((p) => this.formatProduct(p)));
+    return this.http.get<ProductDTO>(`${this.apiUrl}/${id}`).pipe(map((product) => this.formatProduct(product)));
   }
 
-  private formatProduct(p: ProductDTO): ProductDTO {
-    p.imagem = formatImageUrl(p.imagem);
-    return p;
+  private formatProduct(product: ProductDTO): ProductDTO {
+    product.imagem = formatImageUrl(product.imagem);
+    return product;
   }
 
   compararPorNome(nome: string): Observable<ProductComparacaoDTO[]> {
