@@ -4,12 +4,7 @@ export interface CouponDTO {
   percentagemDesconto: number;
   prazo: string;
   ativo: boolean;
-  supermercadoId?: {
-    _id: string;
-    nome: string;
-  };
-  
-  supermercadoIdString?: string; 
-  expires?: boolean;
+  supermercadoId?: string; 
+  supermercado?: string;  
   expirado: boolean;
 }

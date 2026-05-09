@@ -32,7 +32,24 @@ supermercadoApiController.getPromocoes = async function (req, res) {
 supermercadoApiController.getCupoes = async function (req, res) {
     try {
         const cupoes = await supermarketService.getCupoesSupermercado(req.supermercado._id);
-        res.json(cupoes);
+        
+        // Formatar os cupões para terem a mesma estrutura que o userApiController.meusCupoes
+        const agora = new Date();
+        const cupoesFormatados = (cupoes || []).map(c => ({
+            _id: c._id,
+            codigo: c.codigo,
+            percentagemDesconto: c.percentagemDesconto,
+            supermercadoId: req.supermercado._id.toString(),
+            supermercado: req.supermercado.nome,
+            prazo: c.prazo,
+            ativo: true, // Já vêm filtrados por ativo:true do service
+            expirado: c.prazo < agora
+        }));
+
+        res.json({
+            nome: req.supermercado.nome,
+            cupoes: cupoesFormatados
+        });
     } catch (err) {
         res.status(500).json({ error: 'Erro ao carregar cupões' });
     }

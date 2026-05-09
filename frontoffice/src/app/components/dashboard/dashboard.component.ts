@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { UserStatsService, UserStats, Cupao } from '../../services/user-stats.service';
+import { UserStatsService, UserStats } from '../../services/user-stats.service';
 import { AuthService } from '../../services/auth.service';
 import { RouterModule } from '@angular/router';
+import { CouponDTO } from '../../models/coupon.dto';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,7 +19,7 @@ export class DashboardComponent implements OnInit {
   ) {}
   
   stats: UserStats | null = null;
-  cupoes: Cupao[] = [];
+  cupoes: CouponDTO[] = [];
   userName = '';
   loading = true;
 

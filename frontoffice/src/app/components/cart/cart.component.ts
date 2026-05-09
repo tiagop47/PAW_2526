@@ -124,8 +124,9 @@ export class CartComponent implements OnInit {
         .map((c) => ({ codigo: c.codigo, percentagemDesconto: c.percentagemDesconto }));
 
       if (this.supermercadoId) {
-        this.supermarketService.getCupoes(this.supermercadoId).subscribe((sCupoes) => {
-          this.cupoesSupermercado = sCupoes
+        this.supermarketService.getCupoes(this.supermercadoId).subscribe((res) => {
+          // 'res' agora é { nome: string, cupoes: [] }
+          this.cupoesSupermercado = (res.cupoes || [])
             .filter((c) => !this.cupoesCliente.some((cc) => cc.codigo === c.codigo))
             .map((c) => ({
               codigo: c.codigo,

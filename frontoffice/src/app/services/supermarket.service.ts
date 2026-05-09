@@ -38,10 +38,8 @@ export class SupermarketService {
 
   getCupoes(
     supermercadoId: string,
-  ): Observable<{ _id: string; codigo: string; percentagemDesconto: number; prazo: string }[]> {
-    return this.http.get<
-      { _id: string; codigo: string; percentagemDesconto: number; prazo: string }[]
-    >(`${this.apiUrl}/${supermercadoId}/cupoes`);
+  ): Observable<{ nome: string; cupoes: any[] }> {
+    return this.http.get<{ nome: string; cupoes: any[] }>(`${this.apiUrl}/${supermercadoId}/cupoes`);
   }
 
   selectSupermarket(id: string) {

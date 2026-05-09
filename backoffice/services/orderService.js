@@ -134,7 +134,24 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
     let cupaoAplicado = null;
     if (codigoCupao) {
         const cupao = await Coupon.findOne({ codigo: codigoCupao.toUpperCase().trim(), ativo: true });
+        
         if (cupao && new Date(cupao.prazo) >= new Date() && (!cupao.supermercadoId || cupao.supermercadoId.toString() === supermercadoId)) {
+            
+            // Verificar se o cliente já utilizou este cupão anteriormente numa encomenda não cancelada
+            // Ignoramos esta verificação se for o "Consumidor Final" genérico (venda de caixa sem identificação)
+            const cliente = await User.findById(clienteId);
+            if (cliente && cliente.email !== 'consumidor.final@paw.com') {
+                const jaUsou = await Order.findOne({ 
+                    clienteId, 
+                    cupaoId: cupao._id, 
+                    estado: { $ne: 'cancelada' } 
+                });
+
+                if (jaUsou) {
+                    throw new Error('Este cupão já foi utilizado por si.');
+                }
+            }
+
             descontoValor = (valorSubtotal * cupao.percentagemDesconto) / 100;
             cupaoAplicado = cupao;
         }
@@ -255,6 +272,13 @@ orderService.cancelarEncomenda = async function (encomenda) {
     }
 
     await orderService.reporStock(encomenda.produtos);
+
+    // Se a encomenda tinha um cupão, devolvê-lo ao cliente
+    if (encomenda.cupaoId && encomenda.clienteId) {
+        await User.findByIdAndUpdate(encomenda.clienteId, {
+            $addToSet: { cupoes: encomenda.cupaoId } // Usa $addToSet para evitar duplicados acidentais
+        });
+    }
 
     encomenda.estado = 'cancelada';
     const guardada = await encomenda.save();
