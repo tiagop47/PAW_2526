@@ -33,7 +33,7 @@ supermercadoApiController.getCupoes = async function (req, res) {
     try {
         const cupoes = await supermarketService.getCupoesSupermercado(req.supermercado._id);
         
-        // Formatar os cupões para terem a mesma estrutura que o userApiController.meusCupoes
+        // Respeitar o DTO
         const agora = new Date();
         const cupoesFormatados = (cupoes || []).map(c => ({
             _id: c._id,
@@ -42,7 +42,7 @@ supermercadoApiController.getCupoes = async function (req, res) {
             supermercadoId: req.supermercado._id.toString(),
             supermercado: req.supermercado.nome,
             prazo: c.prazo,
-            ativo: true, // Já vêm filtrados por ativo:true do service
+            ativo: true,
             expirado: c.prazo < agora
         }));
 
