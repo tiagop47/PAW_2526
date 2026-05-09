@@ -13,6 +13,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -24,6 +25,77 @@
         if (urlParams.has('success')) {
             alert(urlParams.get('success'));
             window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // Configuração do Socket.io
+        const socket = io();
+
+        <% if (locals.user) { %>
+            socket.on('connect', () => {
+                console.log('Conectado ao Socket.io as <%= user.role %>');
+
+                <% if (user.role === 'supermercados' && locals.supermercadoId) { %>
+                    socket.emit('join-room', 'supermarket_<%= supermercadoId %>');
+                <% } %>
+
+                <% if (user.role === 'administrador') { %>
+                    socket.emit('join-room', 'admins');
+                <% } %>
+
+                socket.emit('join-room', 'user_<%= user.id %>');
+            });
+        <% } %>
+
+        socket.on('nova-encomenda', (data) => {
+            console.log('Nova encomenda recebida:', data);
+            exibirNotificacao(`Nova encomenda de ${data.cliente}! Valor: ${data.valorTotal}€`, 'success');
+
+            // Opcionalmente recarregar se estiver na página de encomendas
+            if (window.location.pathname.includes('encomendas')) {
+                setTimeout(() => window.location.reload(), 3000);
+            }
+        });
+
+        socket.on('encomenda-cancelada', (data) => {
+            console.log('Encomenda cancelada:', data);
+            exibirNotificacao(data.mensagem, 'danger');
+
+            if (window.location.pathname.includes('encomendas')) {
+                setTimeout(() => window.location.reload(), 3000);
+            }
+        });
+        socket.on('notificacao-geral', (data) => {
+            exibirNotificacao(data.message, 'info');
+        });
+
+        function exibirNotificacao(mensagem, tipo = 'info') {
+            const toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                // Fallback para alert se não houver container
+                alert(mensagem);
+                return;
+            }
+
+            const toastId = 'toast-' + Date.now();
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-white bg-${tipo === 'success' ? 'success' : (tipo === 'danger' ? 'danger' : 'primary')} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${mensagem}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
         }
     });
 </script>

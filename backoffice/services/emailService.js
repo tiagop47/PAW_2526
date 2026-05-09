@@ -1,5 +1,5 @@
-const nodemailer = require('nodemailer');
-const config = require('../config/config');
+const nodemailer = require("nodemailer");
+const config = require("../config/config");
 
 const emailService = {};
 
@@ -7,43 +7,45 @@ const emailService = {};
  * Cria o transportador de email (Mailgun ou Ethereal)
  */
 const criarTransporter = async () => {
-    if (config.EMAIL_USER && config.EMAIL_PASS) {
-        return nodemailer.createTransport({
-            host: config.EMAIL_HOST,
-            port: config.EMAIL_PORT,
-            secure: config.EMAIL_PORT === 465,
-            auth: {
-                user: config.EMAIL_USER,
-                pass: config.EMAIL_PASS
-            }
-        });
-    }
-
-    // Fallback para Ethereal (Desenvolvimento)
-    const testAccount = await nodemailer.createTestAccount();
-    console.warn("AVISO: A usar Ethereal para testes. Link de visualização no terminal.");
+  if (config.EMAIL_USER && config.EMAIL_PASS) {
     return nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false,
-        auth: { user: testAccount.user, pass: testAccount.pass }
+      host: config.EMAIL_HOST,
+      port: config.EMAIL_PORT,
+      secure: config.EMAIL_PORT === 465,
+      auth: {
+        user: config.EMAIL_USER,
+        pass: config.EMAIL_PASS,
+      },
     });
+  }
+
+  // Fallback para Ethereal (Desenvolvimento)
+  const testAccount = await nodemailer.createTestAccount();
+  console.warn(
+    "AVISO: A usar Ethereal para testes. Link de visualização no terminal.",
+  );
+  return nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false,
+    auth: { user: testAccount.user, pass: testAccount.pass },
+  });
 };
 
 /**
  * Envia o email de recuperação de password
  */
 emailService.enviarEmailRecuperacao = async (email, token, host) => {
-    const link = `http://${host}/auth/reset-password/${token}`;
+  const link = `http://${host}/auth/reset-password/${token}`;
 
-    try {
-        const transporter = await criarTransporter();
-        const info = await transporter.sendMail({
-            from: `"Suporte PAW" <${config.EMAIL_USER || 'suporte@paw.com'}>`,
-            to: email,
-            subject: "Recuperação de Palavra-passe",
-            text: `Olá! Pediste para redefinir a tua password. Clica no link para continuar: ${link}`,
-            html: `
+  try {
+    const transporter = await criarTransporter();
+    const info = await transporter.sendMail({
+      from: `"Suporte PAW" <${config.EMAIL_USER || "suporte@paw.com"}>`,
+      to: email,
+      subject: "Recuperação de Palavra-passe",
+      text: `Olá! Pediste para redefinir a tua password. Clica no link para continuar: ${link}`,
+      html: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
                     <h2 style="color: #007bff; text-align: center;">Recuperação de Password</h2>
                     <p>Olá,</p>
@@ -57,35 +59,39 @@ emailService.enviarEmailRecuperacao = async (email, token, host) => {
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
                     <p style="font-size: 0.8rem; color: #999; text-align: center;">Equipa PAW 2026</p>
                 </div>
-            `
-        });
+            `,
+    });
 
-        if (!config.EMAIL_USER) {
-            console.log("Clica aqui para ver o email:");
-            console.log(nodemailer.getTestMessageUrl(info));
-        } else {
-            console.log("Email real enviado para %s", email);
-        }
-        return info;
-
-    } catch (err) {
-        console.log("LINK DE RECUPERAÇÃO PARA O UTILIZADOR (%s):", email);
-        console.log(link);
-
-        // Retornamos um objeto que simula sucesso para que o controlador não rebente
-        return { messageId: 'fallback-console-id' };
+    if (!config.EMAIL_USER) {
+      console.log("Clica aqui para ver o email:");
+      console.log(nodemailer.getTestMessageUrl(info));
+    } else {
+      console.log("Email real enviado para %s", email);
     }
+    return info;
+  } catch (err) {
+    console.log("LINK DE RECUPERAÇÃO PARA O UTILIZADOR (%s):", email);
+    console.log(link);
+
+    // Retornamos um objeto que simula sucesso para que o controlador não rebente
+    return { messageId: "fallback-console-id" };
+  }
 };
 
-emailService.enviarEmailBoasVindas = async (email, nome, codigoCupao, nomeSupermercado) => {
-    try {
-        const transporter = await criarTransporter();
-        const info = await transporter.sendMail({
-            from: `"${nomeSupermercado} via PAW" <${config.EMAIL_USER || 'geral@paw.com'}>`,
-            to: email,
-            subject: `Bem-vindo ao ${nomeSupermercado}! Aqui tens o teu presente 🎁`,
-            text: `Olá ${nome}! Obrigado pelo teu registo no ${nomeSupermercado}. Tens 10% de desconto com o código: ${codigoCupao}`,
-            html: `
+emailService.enviarEmailBoasVindas = async (
+  email,
+  nome,
+  codigoCupao,
+  nomeSupermercado,
+) => {
+  try {
+    const transporter = await criarTransporter();
+    const info = await transporter.sendMail({
+      from: `"${nomeSupermercado} via PAW" <${config.EMAIL_USER || "geral@paw.com"}>`,
+      to: email,
+      subject: `Bem-vindo ao ${nomeSupermercado}! Aqui tens o teu presente 🎁`,
+      text: `Olá ${nome}! Obrigado pelo teu registo no ${nomeSupermercado}. Tens 10% de desconto com o código: ${codigoCupao}`,
+      html: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
                     <h2 style="color: #007bff; text-align: center;">Bem-vindo ao ${nomeSupermercado}, ${nome}!</h2>
                     <p>Ficamos muito felizes por te juntares a nós.</p>
@@ -95,36 +101,36 @@ emailService.enviarEmailBoasVindas = async (email, nome, codigoCupao, nomeSuperm
                     </div>
                     <p style="font-size: 0.9rem; color: #666;">Basta inserir este código no checkout. Válido apenas para compras no ${nomeSupermercado}.</p>
                 </div>
-            `
-        });
+            `,
+    });
 
-        if (!config.EMAIL_USER) {
-            console.log("CUPÃO DE BOAS VINDAS ENVIADO PARA: ", email);
-            console.log("CÓDIGO:", codigoCupao);
-            console.log(nodemailer.getTestMessageUrl(info));
-        }
-        return info;
-    } catch (err) {
-        console.error("ERRO NO ENVIO DO EMAIL DE BOAS VINDAS:", err.message);
-        return { messageId: 'fallback-console-id' };
+    if (!config.EMAIL_USER) {
+      console.log("CUPÃO DE BOAS VINDAS ENVIADO PARA: ", email);
+      console.log("CÓDIGO:", codigoCupao);
+      console.log(nodemailer.getTestMessageUrl(info));
     }
+    return info;
+  } catch (err) {
+    console.error("ERRO NO ENVIO DO EMAIL DE BOAS VINDAS:", err.message);
+    return { messageId: "fallback-console-id" };
+  }
 };
 
 /**
-* Envia o email de novo cupão para uma lista de utilizadores via BCC.
-*/
+ * Envia o email de novo cupão para uma lista de utilizadores via BCC.
+ */
 emailService.enviarEmailNovoCupao = async (emails, dadosCupao) => {
-    if (!emails || emails.length === 0) return;
+  if (!emails || emails.length === 0) return;
 
-    try {
-        const transporter = await criarTransporter();
-        const info = await transporter.sendMail({
-            from: `"Promoções PAW" <${config.EMAIL_USER || 'promo@paw.com'}>`,
-            to: config.EMAIL_USER || 'marketing@paw.com',
-            bcc: emails,
-            subject: `Novo Cupão Disponível: ${dadosCupao.codigo}`,
-            text: `Olá! Temos um novo cupão para ti: ${dadosCupao.codigo}. Desconto de ${dadosCupao.desconto}%.`,
-            html: `
+  try {
+    const transporter = await criarTransporter();
+    const info = await transporter.sendMail({
+      from: `"Promoções PAW" <${config.EMAIL_USER || "promo@paw.com"}>`,
+      to: config.EMAIL_USER || "marketing@paw.com",
+      bcc: emails,
+      subject: `Novo Cupão Disponível: ${dadosCupao.codigo}`,
+      text: `Olá! Temos um novo cupão para ti: ${dadosCupao.codigo}. Desconto de ${dadosCupao.desconto}%.`,
+      html: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
                     <h2 style="color: #28a745; text-align: center;">🎉 Novo Desconto para Ti!</h2>
                     <p>Olá,</p>
@@ -137,18 +143,63 @@ emailService.enviarEmailNovoCupao = async (emails, dadosCupao) => {
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
                     <p style="font-size: 0.8rem; color: #999; text-align: center;">Equipa PAW 2026</p>
                 </div>
-            `
-        });
+            `,
+    });
 
-        console.log("Email de novo cupão enviado para %d destinatários.", emails.length);
-        if (!config.EMAIL_USER) {
-            console.log(nodemailer.getTestMessageUrl(info));
-        }
-        return info;
-    } catch (err) {
-        console.error("ERRO NO ENVIO DO EMAIL DE NOVO CUPÃO:", err.message);
-        return { messageId: 'fallback-console-id' };
+    console.log(
+      "Email de novo cupão enviado para %d destinatários.",
+      emails.length,
+    );
+    if (!config.EMAIL_USER) {
+      console.log(nodemailer.getTestMessageUrl(info));
     }
+    return info;
+  } catch (err) {
+    console.error("ERRO NO ENVIO DO EMAIL DE NOVO CUPÃO:", err.message);
+    return { messageId: "fallback-console-id" };
+  }
+};
+
+/**
+ * Envia o código de levantamento ao cliente.
+ */
+emailService.enviarEmailCodigoLevantamento = async (email,nome,codigo,supermercadoNome) => {
+  try {
+    const transporter = await criarTransporter();
+    const info = await transporter.sendMail({
+      from: `"Encomendas PAW" <${config.EMAIL_USER || "encomendas@paw.com"}>`,
+      to: email,
+      subject: `O teu código de levantamento: ${codigo} `,
+      text: `Olá ${nome}! A tua encomenda no ${supermercadoNome} está pronta para ser levantada. O teu código é: ${codigo}`,
+      html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                    <h2 style="color: #007bff; text-align: center;">Tudo Pronto para o Levantamento!</h2>
+                    <p>Olá <strong>${nome}</strong>,</p>
+                    <p>A tua encomenda no <strong>${supermercadoNome}</strong> está à tua espera.</p>
+                    <p>Para levantares os teus produtos, apresenta o seguinte código na loja:</p>
+                    <div style="text-align: center; margin: 30px 0; background-color: #f8f9fa; padding: 25px; border-radius: 10px; border: 2px solid #007bff;">
+                        <span style="font-size: 2rem; font-weight: bold; letter-spacing: 5px; color: #333;">${codigo}</span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #666; text-align: center;">Este código é único e garante que a tua encomenda te é entregue em segurança.</p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 0.8rem; color: #999; text-align: center;">Equipa PAW 2026</p>
+                </div>
+            `,
+    });
+
+    if (!config.EMAIL_USER) {
+      console.log("CÓDIGO DE LEVANTAMENTO ENVIADO PARA: ", email);
+      console.log("CÓDIGO:", codigo);
+      console.log(nodemailer.getTestMessageUrl(info));
+    }
+    return info;
+  } catch (err) {
+    console.error(
+      "ERRO NO ENVIO DO EMAIL DE CÓDIGO DE LEVANTAMENTO:",
+      err.message,
+    );
+    return { messageId: "fallback-console-id" };
+  }
 };
 
 module.exports = emailService;

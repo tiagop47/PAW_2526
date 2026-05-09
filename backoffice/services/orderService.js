@@ -143,7 +143,7 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
     const valorProdutosFinal = Math.max(0, valorSubtotal - descontoValor);
     const taxaEntrega = metodoEntrega === 'entrega_domicilio'
         ? (supermercado.custoEntregaPorMetodo?.entrega_domicilio || 0)
-        : 0;
+        : (supermercado.custoEntregaPorMetodo?.levantamento_loja || 0);
 
     const valorTotalFinal = valorProdutosFinal + taxaEntrega;
 
@@ -188,7 +188,49 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
         const guardada = await novaEncomenda.save({ session });
         if (cupaoAplicado) await User.findByIdAndUpdate(clienteId, { $pull: { cupoes: cupaoAplicado._id } }, { session });
 
+        // Gerar código de levantamento se for levantamento em loja
+        if (guardada.metodoEntrega === 'levantamento_loja') {
+            const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+            guardada.codigoLevantamento = codigo;
+            await guardada.save({ session });
+
+            // Enviar email com o código
+            const emailService = require('./emailService');
+            emailService.enviarEmailCodigoLevantamento(
+                guardada.clienteSnapshot.email,
+                guardada.clienteSnapshot.nome,
+                codigo,
+                supermercado.nome
+            ).catch(err => console.error('Erro ao enviar email de levantamento:', err));
+        }
+
         await session.commitTransaction();
+
+        // Emitir notificação via Socket.io
+        try {
+            const socketModule = require('../config/socket');
+            const io = socketModule.getIO();
+
+            // Notifica o cliente sobre o código via Socket
+            if (guardada.metodoEntrega === 'levantamento_loja') {
+                io.to(`user_${clienteId}`).emit('codigo-levantamento', {
+                    encomendaId: guardada._id,
+                    codigo: guardada.codigoLevantamento,
+                    mensagem: `O teu código para levantamento no ${supermercado.nome} é: ${guardada.codigoLevantamento}`
+                });
+            }
+            // Notifica o supermercado específico
+            io.to(`supermarket_${supermercadoId}`).emit('nova-encomenda', {
+                encomendaId: guardada._id,
+                cliente: guardada.clienteSnapshot.nome,
+                valorTotal: guardada.valorTotal
+            });
+            // Notifica também o admin se necessário, ou emite globalmente
+            io.emit('notificacao-geral', { message: `Nova encomenda realizada para o supermercado ${supermercado.nome}` });
+        } catch (socketErr) {
+            console.error('Erro ao emitir socket:', socketErr);
+        }
+
         return guardada;
     } catch (err) {
         await session.abortTransaction();
@@ -215,7 +257,21 @@ orderService.cancelarEncomenda = async function (encomenda) {
     await orderService.reporStock(encomenda.produtos);
 
     encomenda.estado = 'cancelada';
-    return encomenda.save();
+    const guardada = await encomenda.save();
+
+    // Notificar o supermercado que a encomenda foi cancelada
+    try {
+        const socketModule = require('../config/socket');
+        const io = socketModule.getIO();
+        io.to(`supermarket_${encomenda.supermercadoId}`).emit('encomenda-cancelada', {
+            encomendaId: encomenda._id,
+            mensagem: `A encomenda de ${encomenda.clienteSnapshot.nome} foi cancelada pelo cliente.`
+        });
+    } catch (socketErr) {
+        console.error('Erro ao emitir socket de cancelamento:', socketErr);
+    }
+
+    return guardada;
 };
 
 orderService.confirmarRececaoCliente = async function (encomenda) {

@@ -10,6 +10,7 @@ export class Order {
   readonly estado: OrderDTO['estado'];
   readonly metodoEntrega: OrderDTO['metodoEntrega'];
   readonly moradaEntrega?: string;
+  readonly codigoLevantamento?: string;
   readonly confirmadaEm?: Date;
   readonly criadoEm: Date;
 
@@ -35,6 +36,7 @@ export class Order {
     this.estado = dto.estado;
     this.metodoEntrega = dto.metodoEntrega;
     this.moradaEntrega = dto.moradaEntrega;
+    this.codigoLevantamento = dto.codigoLevantamento;
     this.confirmadaEm = dto.confirmadaEm ? new Date(dto.confirmadaEm) : undefined;
     this.criadoEm = new Date(dto.criadoEm);
   }
@@ -42,6 +44,31 @@ export class Order {
   get estadoLabel(): string {
     if (this.estado === 'em_entrega' && !this.estafeta) return 'Aguarda Estafeta';
     return Order.ESTADO_LABELS[this.estado];
+  }
+
+  get mensagemEstado(): string {
+    const isLoja = this.metodoEntrega === 'levantamento_loja';
+
+    switch (this.estado) {
+      case 'pendente':
+        return 'O supermercado recebeu o seu pedido.';
+      case 'em_preparacao':
+        return 'Os seus produtos estão a ser cuidadosamente preparados.';
+      case 'confirmada':
+        return isLoja
+          ? 'Pronto para levantamento! Pode dirigir-se à loja.'
+          : 'Aguardando que um estafeta aceite o serviço de entrega.';
+      case 'em_entrega':
+        return 'O estafeta já tem a sua encomenda e está a caminho!';
+      case 'aguarda_validacao':
+        return 'A encomenda foi entregue. Por favor, confirme a receção.';
+      case 'entregue':
+        return isLoja ? 'Encomenda levantada com sucesso.' : 'Encomenda entregue com sucesso.';
+      case 'cancelada':
+        return 'Esta encomenda foi cancelada.';
+      default:
+        return 'A processar o estado da sua encomenda...';
+    }
   }
 
   get metodoEntregaLabel(): string {

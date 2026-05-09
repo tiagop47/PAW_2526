@@ -240,11 +240,12 @@ supermarketController.exibirAjudaEncomendas = function (req, res) {
  */
 supermarketController.atualizarEstadoEncomenda = async function (req, res, next) {
     try {
-        const { estado } = req.body;
+        const { estado, codigoVerificacao } = req.body;
         await supermarketService.atualizarEstadoEncomenda(
             req.supermercado._id,
             req.encomenda._id,
-            estado
+            estado,
+            codigoVerificacao
         );
 
         res.redirect('/supermercado/encomendas?success=1');

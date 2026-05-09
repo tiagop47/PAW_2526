@@ -7,4 +7,5 @@ export interface CartItem {
   stockDisponivel: number;
   supermercadoId: string;
   supermercadoNome: string;
+  iva: number;
 }

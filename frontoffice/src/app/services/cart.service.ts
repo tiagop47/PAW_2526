@@ -42,6 +42,16 @@ export class CartService {
     return cupaoAtual ? subtotal * (cupaoAtual.percentagem / 100) : 0;
   });
 
+  /** Valor total do IVA incluído */
+  totalIVA = computed(() => {
+    return this.items().reduce((sum, item) => {
+      // O preço já inclui IVA. Para extrair: Preço - (Preço / (1 + taxa/100))
+      const taxa = item.iva || 23;
+      const valorIVAUnitario = item.preco - (item.preco / (1 + taxa / 100));
+      return sum + (valorIVAUnitario * item.quantidade);
+    }, 0);
+  });
+
   /** Valor total final */
   totalPrice = computed(() => this.subtotalPrice() - this.discountValue() + this.custoEntrega());
 

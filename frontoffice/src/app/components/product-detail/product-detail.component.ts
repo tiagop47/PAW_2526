@@ -15,6 +15,7 @@ interface OfertaMercado {
   stockDisponivel: number;
   imagem: string;
   nome: string;
+  iva: number;
   isMaisBarato: boolean;
   poupancaFaceMaisCaro: number;
 }
@@ -81,6 +82,7 @@ export class ProductDetailComponent implements OnInit {
       stockDisponivel: p.stockDisponivel,
       imagem: p.imagem,
       nome: p.nome,
+      iva: p.iva,
       isMaisBarato: false,
       poupancaFaceMaisCaro: 0,
     });
@@ -113,6 +115,7 @@ export class ProductDetailComponent implements OnInit {
       stockDisponivel: oferta.stockDisponivel,
       supermercadoId: oferta.supermercadoId,
       supermercadoNome: oferta.supermercadoNome,
+      iva: oferta.iva,
     });
 
     if (resultado.sucesso) {

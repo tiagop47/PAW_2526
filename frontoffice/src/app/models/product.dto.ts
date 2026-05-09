@@ -16,4 +16,4 @@ export interface ProductDTO {
   criadoEm?: string;
 }
 
-export type ProductComparacaoDTO = Pick<ProductDTO, '_id' | 'nome' | 'preco' | 'stockDisponivel' | 'imagem' | 'supermercadoId'>;
+export type ProductComparacaoDTO = Pick<ProductDTO, '_id' | 'nome' | 'preco' | 'stockDisponivel' | 'imagem' | 'supermercadoId' | 'iva'>;

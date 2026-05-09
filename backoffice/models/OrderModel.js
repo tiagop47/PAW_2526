@@ -63,6 +63,7 @@ const OrderSchema = new mongoose.Schema({
         email: { type: String },
         telefone: { type: String }
     },
+    codigoLevantamento: { type: String },
     confirmadaEm: { type: Date },
     criadoEm: { type: Date, default: Date.now }
 });

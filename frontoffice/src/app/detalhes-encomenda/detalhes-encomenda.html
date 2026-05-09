@@ -53,12 +53,20 @@
                         </div>
                     </div>
 
+                    <!-- Código de Levantamento -->
+                    <div *ngIf="order.metodoEntrega === 'levantamento_loja' && order.estado !== 'entregue' && order.estado !== 'cancelada'" class="mb-4 p-3 bg-light border border-primary border-dashed rounded text-center">
+                        <label class="extra-small text-uppercase fw-bold text-primary d-block mb-2">Código de Levantamento</label>
+                        <div class="h3 fw-bold font-monospace mb-1 tracking-widest text-dark">{{ order.codigoLevantamento }}</div>
+                        <p class="extra-small text-muted mb-0">Apresente este código no supermercado para levantar a sua encomenda.</p>
+                    </div>
+
                     <div>
                         <label class="extra-small text-uppercase fw-bold text-muted">Responsável pela
                             Entrega</label>
                         <div *ngIf="order.estafeta?.nome; else semEstafeta"
                             class="d-flex align-items-center p-2 bg-white border rounded">
                             <div>
+                                <span class="extra-small text-muted d-block mb-1">Entregue por:</span>
                                 <span class="small fw-bold d-block">{{ order.estafeta?.nome }}</span>
                                 <a [href]="'tel:' + order.estafeta?.telefone"
                                     class="extra-small text-primary text-decoration-none">
@@ -69,9 +77,8 @@
                         <ng-template #semEstafeta>
                             <div class="p-3 bg-white border rounded text-center">
                                 <div class="extra-small text-muted">
-                                    <i class="bi bi-clock-history me-1"></i>
-                                    {{ order.metodoEntrega === 'levantamento_loja' ? 'Levantamento no supermercado' :
-                                    'Entrega por estafeta...' }}
+                                    <i class="bi me-2" [ngClass]="order.metodoEntrega === 'levantamento_loja' ? 'bi-shop' : 'bi-info-circle'"></i>
+                                    {{ order.mensagemEstado }}
                                 </div>
                             </div>
                         </ng-template>

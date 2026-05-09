@@ -179,6 +179,11 @@
             <span>{{ cartService.custoEntrega() | currency:'EUR' }}</span>
           </div>
 
+          <div class="d-flex justify-content-between small mb-2">
+            <span class="text-muted">Total de IVA (incluído)</span>
+            <span>{{ cartService.totalIVA() | currency:'EUR' }}</span>
+          </div>
+
           <div class="d-flex justify-content-between fw-bold fs-5 mt-3 pt-3 border-top">
             <span>Total</span>
             <span class="text-dark">{{ cartService.totalPrice() | currency:'EUR' }}</span>

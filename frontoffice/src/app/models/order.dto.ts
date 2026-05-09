@@ -28,6 +28,7 @@ export interface OrderDTO {
   estado: 'pendente' | 'confirmada' | 'em_preparacao' | 'em_entrega' | 'aguarda_validacao' | 'entregue' | 'cancelada';
   metodoEntrega: 'levantamento_loja' | 'entrega_domicilio';
   moradaEntrega?: string;
+  codigoLevantamento?: string;
   confirmadaEm?: string;
   criadoEm: string;
 }

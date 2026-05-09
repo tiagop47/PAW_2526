@@ -48,8 +48,20 @@ authMiddleware.descodificarToken = function (req, res) {
 /**
  * Middleware global — injeta `res.locals.user` em todas as views.
  */
-authMiddleware.injetarUserNasViews = function (req, res, next) {
-    res.locals.user = authMiddleware.descodificarToken(req, res);
+authMiddleware.injetarUserNasViews = async function (req, res, next) {
+    const user = authMiddleware.descodificarToken(req, res);
+    res.locals.user = user;
+    
+    if (user && user.role === 'supermercados') {
+        try {
+            const supermercado = await supermarketService.getSupermercado(user.id);
+            if (supermercado) {
+                res.locals.supermercadoId = supermercado._id.toString();
+            }
+        } catch (err) {
+            console.error('Erro ao injetar supermercadoId nas views:', err);
+        }
+    }
     next();
 };
 

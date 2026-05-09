@@ -87,17 +87,22 @@
                         </div>
 
                         <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small">Custo - Entrega ao Domicílio (€)</label>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small">Custo - Levantamento (€)</label>
+                                <input type="number" step="0.01" name="custoEntregaPorMetodo[levantamento_loja]"
+                                    class="form-control"
+                                    value="<%= supermercado.custoEntregaPorMetodo?.levantamento_loja ?? 0 %>" min="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small">Custo - Domicílio (€)</label>
                                 <input type="number" step="0.01" name="custoEntregaPorMetodo[entrega_domicilio]"
                                     class="form-control"
                                     value="<%= supermercado.custoEntregaPorMetodo?.entrega_domicilio ?? 0 %>" min="0">
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small">Raio de Entrega (km)</label>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small">Alcance (km)</label>
                                 <input type="number" step="1" name="raioEntregaKm" class="form-control"
                                     value="<%= supermercado.raioEntregaKm ?? 5 %>" min="1" max="10">
-                                <small class="text-muted">Define o alcance máximo das entregas ao domicílio.</small>
                             </div>
                         </div>
 

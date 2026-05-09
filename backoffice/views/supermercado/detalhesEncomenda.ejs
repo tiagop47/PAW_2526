@@ -65,18 +65,6 @@
                         </div>
                         <% if (encomenda.metodoEntrega === 'entrega_domicilio') { %>
                             <div class="small text-muted mb-3"><%= encomenda.moradaEntrega %></div>
-                            
-                            <div class="alert alert-light border small p-2 mb-3">
-                                <% if (encomenda.estado === 'confirmada' && !encomenda.estafetaId) { %>
-                                    Aguarda aceitação por um estafeta.
-                                <% } else if (encomenda.estado === 'em_entrega') { %>
-                                    A encomenda está em trânsito com o estafeta.
-                                <% } else if (encomenda.estado === 'aguarda_validacao') { %>
-                                    Entregue pelo estafeta. Aguarda confirmação do cliente.
-                                <% } else if (encomenda.estado === 'entregue') { %>
-                                    Processo de entrega concluído.
-                                <% } %>
-                            </div>
                         <% } %>
                         <div>
                             <span class="badge bg-secondary py-2 px-3">Estado: <%= encomenda.estado.replace('_', ' ') %></span>
@@ -150,7 +138,7 @@
                 </div>
 
                 <!-- Botões de Ação (Apenas para Supermercado) -->
-                <div class="mt-4 pt-3 border-top d-flex gap-2 justify-content-end">
+                <div class="mt-4 pt-3 border-top d-flex gap-2 justify-content-end align-items-center">
 
                     <% 
                     // Só mostramos transições se NÃO for admin e se houver transições definidas
@@ -159,25 +147,32 @@
                         const labelsAcoes = {
                             confirmada: { label: 'Confirmar pedido', classe: 'btn-light border' },
                             em_preparacao: { label: 'Iniciar preparação', classe: 'btn-light border' },
-                            entregue: { label: 'Marcar como entregue', classe: 'btn-light border' },
-                            cancelada: { label: 'Cancelar encomenda', classe: 'btn-light border' }
+                            entregue: { label: 'Marcar como entregue', classe: 'btn-success text-white' },
+                            cancelada: { label: 'Cancelar encomenda', classe: 'btn-outline-danger' }
                         };
                         permitidos.forEach(function(proximoEstado) { 
                             const config = labelsAcoes[proximoEstado] || { label: 'Mudar para ' + proximoEstado, classe: 'btn-light border' };
+                            const idForm = 'form-' + proximoEstado;
                         %>
-                            <form action="/supermercado/encomendas/<%= encomenda._id %>/estado" method="POST" onsubmit="return confirm('Tem a certeza que deseja mudar para <%= proximoEstado.replace('_', ' ') %>?')">
+                            <form id="<%= idForm %>" action="/supermercado/encomendas/<%= encomenda._id %>/estado" method="POST" class="m-0">
                                 <input type="hidden" name="estado" value="<%= proximoEstado %>">
-                                <button type="submit" class="btn btn-sm <%= config.classe %> px-3">
-                                    <%= config.label %>
-                                </button>
+                                <% if (proximoEstado === 'entregue' && encomenda.metodoEntrega === 'levantamento_loja') { %>
+                                    <button type="button" class="btn btn-sm <%= config.classe %> px-3" onclick="verificarCodigoLevantamento('<%= idForm %>')">
+                                        <%= config.label %>
+                                    </button>
+                                <% } else { %>
+                                    <button type="submit" class="btn btn-sm <%= config.classe %> px-3" onclick="return confirm('Tem a certeza que deseja mudar para <%= proximoEstado.replace('_', ' ') %>?')">
+                                        <%= config.label %>
+                                    </button>
+                                <% } %>
                             </form>
                         <% }) 
                     } %>
 
-                    <% if (encomenda.faturaNumero) { %>
-                        <% const linkFatura = isAdmin ? `/admin/encomendas/${encomenda._id}/fatura` : `/supermercado/encomendas/${encomenda._id}/fatura`; %>
+                    <% if (encomenda.faturaNumero) { 
+                        const linkFatura = isAdmin ? `/admin/encomendas/${encomenda._id}/fatura` : `/supermercado/encomendas/${encomenda._id}/fatura`; %>
                         <a href="<%= linkFatura %>" target="_blank" class="btn btn-sm btn-light border px-3">
-                            Ver fatura
+                            <i class="bi bi-file-earmark-pdf me-1"></i>Ver fatura
                         </a>
                     <% } %>
                 </div>
@@ -187,6 +182,8 @@
         </div>
 
     </main>
+
+    <script src="/javascript/supermercado/detalhesEncomenda.js"></script>
 
 </body>
 

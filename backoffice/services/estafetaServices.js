@@ -104,6 +104,18 @@ estafetaService.aceitarEntrega = async function (encomendaId, estafetaId) {
         throw new Error('Esta entrega já não está disponível ou ainda não foi preparada pelo supermercado.');
     }
 
+    // Notificar o cliente via socket
+    try {
+        const socketModule = require('../config/socket');        const io = socketModule.getIO();
+        io.to(`user_${encomenda.clienteId}`).emit('status-encomenda', {
+            encomendaId: encomenda._id,
+            novoEstado: 'em_entrega',
+            mensagem: `Um estafeta aceitou a sua encomenda e está a caminho!`
+        });
+    } catch (socketErr) {
+        console.error('Erro ao emitir socket de estafeta:', socketErr);
+    }
+
     return encomenda;
 };
 
@@ -114,8 +126,21 @@ estafetaService.confirmarEntrega = async function (encomendaId, estafetaId) {
     }
 
     encomenda.estado = 'aguarda_validacao';
+    const guardada = await encomenda.save();
 
-    return encomenda.save();
+    // Notificar o cliente via socket
+    try {
+        const socketModule = require('../config/socket');        const io = socketModule.getIO();
+        io.to(`user_${encomenda.clienteId}`).emit('status-encomenda', {
+            encomendaId: encomenda._id,
+            novoEstado: 'aguarda_validacao',
+            mensagem: `A sua encomenda foi entregue! Por favor, confirme a receção.`
+        });
+    } catch (socketErr) {
+        console.error('Erro ao emitir socket de confirmação de entrega:', socketErr);
+    }
+
+    return guardada;
 };
 
 estafetaService.obterEncomendaPorId = async function (id) {

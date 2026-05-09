@@ -210,14 +210,11 @@ export class CartComponent implements OnInit {
 
     this.orderService.criarEncomenda(payload).subscribe({
       next: () => {
-        this.notificationService.showSuccess('Encomenda realizada com sucesso!');
         this.cartService.clearCart();
         this.router.navigate(['/orders']);
       },
       error: (err) => {
         console.error('Erro no Servidor:', err);
-        const msg = err.error?.erro || err.error?.message || 'Erro na finalização da encomenda.';
-        this.notificationService.showError(msg);
         this.processando = false;
       },
     });

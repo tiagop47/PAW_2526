@@ -62,6 +62,10 @@ const ProductSchema = new mongoose.Schema({
         type: String,
         required: [true, "A imagem do produto é obrigatória"]
     },
+    ativo: {
+        type: Boolean,
+        default: true
+    },
     criadoEm: { type: Date, default: Date.now }
 });
 

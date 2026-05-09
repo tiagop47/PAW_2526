@@ -1,87 +1,103 @@
 <!DOCTYPE html>
 <html lang="pt">
+
 <head>
     <%- include('../partials/head') %>
 </head>
+
 <body class="bg-light">
     <%- include('../partials/navbar') %>
 
-    <main class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h4 text-dark mb-0">Moderação de Produtos</h1>
-        </div>
-
-        <!-- Filtros Estilo Admin -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body py-3">
-                <form action="/admin/produtos" method="GET" class="row g-2 align-items-end">
-                    <div class="col-md-9">
-                        <label for="supermercadoId" class="small fw-bold text-muted text-uppercase mb-1" style="font-size: 0.65rem;">Filtrar por Supermercado</label>
-                        <select name="supermercadoId" id="supermercadoId" class="form-select form-select-sm border">
-                            <option value="">Todos os Supermercados</option>
-                            <% supermercados.forEach(s => { %>
-                                <option value="<%= s._id %>" <%= supermercadoSelecionado == s._id ? 'selected' : '' %>>
-                                    <%= s.nome %>
-                                </option>
-                            <% }) %>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-sm btn-light border text-dark">Aplicar Filtro</button>
-                    </div>
-                </form>
+        <main class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h4 text-dark mb-0">Moderação de Produtos</h1>
             </div>
-        </div>
 
-        <div class="card border-0 shadow-sm">
-            <div class="table-responsive">
-                <table class="tabela-limpa mb-0">
-                    <thead>
-                        <tr>
-                            <th>Produto</th>
-                            <th>Código</th>
-                            <th>Supermercado</th>
-                            <th>Categoria</th>
-                            <th>Preço</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (locals.produtos && produtos.length > 0) { %>
-                            <% produtos.forEach(function(produto) { %>
-                                <tr>
-                                    <td class="fw-bold"><%= produto.nome %></td>
-                                    <td class="text-muted small"><%= produto.codigoBarras %></td>
-                                    <td class="fw-bold"><%= produto.supermercadoId ? produto.supermercadoId.nome : '—' %></td>
-                                    <td>
-                                        <span class="badge bg-secondary opacity-75 fw-normal">
-                                            <%= produto.categoriaId ? produto.categoriaId.nome : '—' %>
-                                        </span>
-                                    </td>
-                                    <td class="fw-bold"><%= produto.preco.toFixed(2) %>€</td>
-                                    <td>
-                                        <div class="d-flex gap-1">
-                                            <!-- Botão Ver Detalhes (encaminha para a vista de detalhes do supermercado) -->
-                                            <a href="/admin/produtos/detalhes/<%= produto._id %>" class="btn btn-sm btn-light border text-dark">Detalhes</a>
-                                            
-                                            <form action="/admin/produtos/eliminar/<%= produto._id %>" method="POST" onsubmit="return confirm('Confirmar eliminação definitiva do produto?')">
-                                                <button type="submit" class="btn btn-sm btn-light border text-dark">Eliminar</button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        <% } else { %>
+            <!-- Filtros Estilo Admin -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body py-3">
+                    <form action="/admin/produtos" method="GET" class="row g-2 align-items-end">
+                        <div class="col-md-9">
+                            <label for="supermercadoId" class="small fw-bold text-muted text-uppercase mb-1"
+                                style="font-size: 0.65rem;">Filtrar por Supermercado</label>
+                            <select name="supermercadoId" id="supermercadoId" class="form-select form-select-sm border">
+                                <option value="">Todos os Supermercados</option>
+                                <% supermercados.forEach(s=> { %>
+                                    <option value="<%= s._id %>" <%=supermercadoSelecionado==s._id ? 'selected' : '' %>>
+                                        <%= s.nome %>
+                                    </option>
+                                    <% }) %>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-sm btn-light border text-dark">Aplicar Filtro</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="table-responsive">
+                    <table class="tabela-limpa mb-0">
+                        <thead>
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">Nenhum produto listado no sistema.</td>
+                                <th>Produto</th>
+                                <th>Código</th>
+                                <th>Supermercado</th>
+                                <th>Categoria</th>
+                                <th>Preço</th>
+                                <th>Ações</th>
                             </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                        </thead>
+                        <tbody>
+                            <% if (locals.produtos && produtos.length> 0) { %>
+                                <% produtos.forEach(function(produto) { %>
+                                    <tr>
+                                        <td class="fw-bold">
+                                            <%= produto.nome %>
+                                        </td>
+                                        <td class="text-muted small">
+                                            <%= produto.codigoBarras %>
+                                        </td>
+                                        <td class="fw-bold">
+                                            <%= produto.supermercadoId ? produto.supermercadoId.nome : '—' %>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary opacity-75 fw-normal">
+                                                <%= produto.categoriaId ? produto.categoriaId.nome : '—' %>
+                                            </span>
+                                        </td>
+                                        <td class="fw-bold">
+                                            <%= produto.preco.toFixed(2) %>€
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <!-- Botão Ver Detalhes (encaminha para a vista de detalhes do supermercado) -->
+                                                <a href="/admin/produtos/detalhes/<%= produto._id %>"
+                                                    class="btn btn-sm btn-light border text-dark">Detalhes</a>
 
-        <%- include('../partials/paginacao', { paginaUrl: paginaUrl }) %>
-    </main>
+                                                <form action="/admin/produtos/eliminar/<%= produto._id %>" method="POST"
+                                                    onsubmit="return confirm('Confirmar eliminação definitiva do produto?')">
+                                                    <button type="submit"
+                                                        class="btn btn-sm btn-light border text-dark">Eliminar</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4 text-muted">Nenhum produto
+                                                    listado no sistema.</td>
+                                            </tr>
+                                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <%- include('../partials/paginacao', { paginaUrl: paginaUrl }) %>
+        </main>
 </body>
+
 </html>

@@ -22,6 +22,20 @@ app.set('port', port);
 var server = http.createServer(app);
 
 /**
+ * Initialize Socket.io
+ */
+const socketModule = require('../config/socket');
+socketModule.init(server);
+
+/**
+ * Data Migration: Set 'ativo: true' for all existing products.
+ */
+const Product = require('../models/ProductModel');
+Product.updateMany({ ativo: { $exists: false } }, { ativo: true })
+    .then(res => console.log(`Migração: ${res.modifiedCount} produtos antigos marcados como ativos.`))
+    .catch(err => console.error('Erro na migração de produtos:', err));
+
+/**
  * Listen on provided port, on all network interfaces.
  */
 

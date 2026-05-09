@@ -394,10 +394,10 @@ adminService.getProdutoById = async function (id) {
 };
 
 /**
- * Elimina um produto do sistema.
+ * Desativa um produto do sistema (Soft Delete).
  */
 adminService.eliminarProduto = async function (id) {
-    return Product.findByIdAndDelete(id);
+    return Product.findByIdAndUpdate(id, { ativo: false });
 };
 
 adminService.getSupermercadoById = async function (id) {
@@ -637,3 +637,4 @@ adminService.getFaturacaoPorZona = async function () {
 };
 
 module.exports = adminService;
+

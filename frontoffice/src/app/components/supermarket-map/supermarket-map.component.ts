@@ -272,12 +272,13 @@ private criarPopup(s: SupermarketDTO, pos: L.LatLng, pFav: L.LatLng | null, isFa
 
   private criarRaio(pos: L.LatLng, raioKm: number = 2, isFav: boolean): L.Circle {
     return L.circle(pos, {
-      radius: raioKm * 300,
+      radius: raioKm * 1000,
       color: isFav ? '#0d6efd' : '#999',
       weight: 1,
       dashArray: isFav ? '0' : '4, 4',
       fillColor: isFav ? '#0d6efd' : '#666',
       fillOpacity: 0.03,
+      interactive: false
     });
   }
 }
