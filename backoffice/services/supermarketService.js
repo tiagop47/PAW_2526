@@ -543,13 +543,24 @@ supermarketService.obterPromocoesHome = async function () {
   ]);
 
   // 2. Obter cupões ativos
-  const cupoes = await Coupon.find({
+  const cupoesBD = await Coupon.find({
     ativo: true,
     prazo: { $gte: new Date() },
     supermercadoId: { $exists: true, $ne: null },
   })
-    .populate("supermercadoId", "nome")
+    .populate("supermercadoId", "nome localizacao")
     .limit(4);
+
+  const cupoes = cupoesBD.map(c => ({
+    _id: c._id,
+    codigo: c.codigo,
+    percentagemDesconto: c.percentagemDesconto,
+    prazo: c.prazo,
+    ativo: c.ativo,
+    supermercadoId: c.supermercadoId ? c.supermercadoId._id : null,
+    supermercado: c.supermercadoId ? c.supermercadoId.nome : null,
+    sLocalizacao: c.supermercadoId ? c.supermercadoId.localizacao : null
+  }));
 
   return { lojas, cupoes };
 };

@@ -40,7 +40,6 @@
                                 <th class="ps-4">Supermercado</th>
                                 <th>Localização</th>
                                 <th class="text-end">Preço</th>
-                                <th class="text-center">Estado</th>
                                 <th class="text-end pe-4">Ação</th>
                             </tr>
                         </thead>
@@ -52,13 +51,6 @@
                                 <td class="text-muted">{{ o.supermercadoLocalizacao }}</td>
                                 <td class="text-end fw-bold">
                                     <span class="h6 mb-0 fw-bold">{{ o.preco | currency:'EUR' }}</span>
-                                </td>
-                                <td class="text-center">
-                                    <span *ngIf="o.stockDisponivel > 0"
-                                        class="badge bg-white text-dark border fw-normal">{{
-                                        o.stockDisponivel }} un.</span>
-                                    <span *ngIf="o.stockDisponivel <= 0"
-                                        class="badge bg-light text-muted border fw-normal">Esgotado</span>
                                 </td>
                                 <td class="text-end pe-4">
                                     <button class="btn btn-outline-primary btn-sm px-4 fw-bold"

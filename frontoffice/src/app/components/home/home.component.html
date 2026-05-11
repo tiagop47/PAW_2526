@@ -44,7 +44,9 @@
                                 <div>
                                     <div class="fw-bold font-monospace small text-dark">{{ c.codigo }}</div>
                                     <div *ngIf="c.supermercado !== null;  else semSupermercado"
-                                        class="extra-small text-muted text-uppercase">{{ c.supermercado}}
+                                        class="extra-small text-muted">
+                                        <p>Dísponivel em {{ c.sLocalizacao }}</p>
+                                        <p>Até {{ c.prazo | date:'dd/MM/yyyy HH:mm' }}</p>
                                     </div>
                                     <ng-template #semSupermercado>
                                         <div class="extra-small text-muted text-uppercase">Sem supermercado</div>

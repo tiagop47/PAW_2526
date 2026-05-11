@@ -5,6 +5,7 @@ import { SupermarketDTO } from '../models/supermarket.dto';
 import { API_URL } from '../app.config';
 import { CategoryDTO } from '../models/category.dto';
 import { HomePromotionsDTO } from '../models/home-promotions.dto';
+import { CouponDTO } from '../models/coupon.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -32,14 +33,12 @@ export class SupermarketService {
     return this.http.get<SupermarketDTO>(`${this.apiUrl}/${id}`);
   }
 
-  getMetodosCusto(id: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}/metodoPreco`);
+  getMetodosCusto(id: string): Observable<string> {
+    return this.http.get<string>(`${this.apiUrl}/${id}/metodoPreco`);
   }
 
-  getCupoes(
-    supermercadoId: string,
-  ): Observable<{ nome: string; cupoes: any[] }> {
-    return this.http.get<{ nome: string; cupoes: any[] }>(`${this.apiUrl}/${supermercadoId}/cupoes`);
+  getCupoes(supermercadoId: string): Observable<{ nome: string; cupoes: CouponDTO[] }> {
+    return this.http.get<{ nome: string; cupoes: CouponDTO[] }>(`${this.apiUrl}/${supermercadoId}/cupoes`);
   }
 
   selectSupermarket(id: string) {

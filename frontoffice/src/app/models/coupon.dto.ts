@@ -6,5 +6,6 @@ export interface CouponDTO {
   ativo: boolean;
   supermercadoId?: string; 
   supermercado?: string;  
+  sLocalizacao: string;
   expirado: boolean;
 }
