@@ -15,7 +15,10 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './home.component.css',
 })
 export class HomeComponent implements OnInit {
-  constructor(private supermarketService: SupermarketService, public authService: AuthService) {}
+  constructor(
+    private supermarketService: SupermarketService,
+    public authService: AuthService,
+  ) {}
 
   lojasPromocao: StorePromotionDTO[] = [];
   cupoes: CouponDTO[] = [];
@@ -25,7 +28,7 @@ export class HomeComponent implements OnInit {
       this.supermarketService.getPromocoes().subscribe({
         next: (data) => {
           this.lojasPromocao = data.lojas;
-          this.cupoes = data.cupoes.filter(c => c.supermercadoId != null);
+          this.cupoes = data.cupoes.filter((c) => c.supermercadoId != null);
         },
         error: (err) => console.error('Erro ao carregar promocoes:', err),
       });

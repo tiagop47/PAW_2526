@@ -43,9 +43,14 @@
                                 class="d-flex justify-content-between align-items-center bg-white border border-secondary border-dashed p-2 rounded">
                                 <div>
                                     <div class="fw-bold font-monospace small text-dark">{{ c.codigo }}</div>
-                                    <div class="extra-small text-muted text-uppercase">{{ c.supermercadoId?.nome }}
+                                    <div *ngIf="c.supermercado !== null;  else semSupermercado"
+                                        class="extra-small text-muted text-uppercase">{{ c.supermercado}}
                                     </div>
+                                    <ng-template #semSupermercado>
+                                        <div class="extra-small text-muted text-uppercase">Sem supermercado</div>
+                                    </ng-template>
                                 </div>
+
                                 <div class="h5 fw-bold text-dark mb-0">-{{ c.percentagemDesconto }}%</div>
                             </div>
                         </div>

@@ -12,7 +12,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { SupermarketsComponent } from './components/supermarkets/supermarkets.component';
 import { GuestGuard } from './guards/guest.guard';
 import { AuthGuard } from './guards/auth.guard';
-import { DetalhesEncomenda } from './detalhes-encomenda/detalhes-encomenda';
+import { DetalhesEncomenda } from './components/detalhes-encomenda/detalhes-encomenda';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },

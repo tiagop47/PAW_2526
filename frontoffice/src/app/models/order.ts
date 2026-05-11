@@ -83,7 +83,9 @@ export class Order {
 
   tempoRestanteCancelamento(): string | null {
     const restante = Order.CANCEL_WINDOW_MS - (Date.now() - this.criadoEm.getTime());
-    if (restante <= 0) return null;
+    if (restante <= 0) {
+      return null;
+    }
 
     const minutos = Math.floor(restante / 60000);
     const segundos = Math.floor((restante % 60000) / 1000);

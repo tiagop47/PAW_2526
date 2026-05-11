@@ -2,11 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { OrderItemDTO } from '../models/order.dto';
-import { Order } from '../models/order';
-import { OrderService } from '../services/order.service';
-import { AvaliacaoService } from '../services/avaliacao.service';
-import { AvaliacaoModalComponent } from '../components/avaliacao-modal/avaliacao-modal.component';
+import { OrderItemDTO } from '../../models/order.dto';
+import { Order } from '../../models/order';
+import { OrderService } from '../../services/order.service';
+import { AvaliacaoService } from '../../services/avaliacao.service';
+import { AvaliacaoModalComponent } from '../avaliacao-modal/avaliacao-modal.component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
