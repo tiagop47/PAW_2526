@@ -104,7 +104,6 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   ngAfterViewInit(): void {
-    // Delay inicial um pouco maior para garantir que o DOM e as animações do Bootstrap/Angular estabilizem
     setTimeout(() => {
       this.initMap();
       this.mapaIniciado = true;
@@ -113,10 +112,8 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
       } else if (this.supermarkets.length > 0) {
         this.adicionarMarcadores();
       }
-      
-      // Forçar atualização do tamanho após tudo estar configurado
       this.map?.invalidateSize();
-    }, 400);
+    }, 300);
   }
 
   ngOnDestroy(): void {
@@ -136,7 +133,9 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
     this.map = L.map(this.mapContainer.nativeElement, {
       zoomControl: false,
       scrollWheelZoom: true,
+      dragging: true,
       minZoom: 3,
+      maxZoom: 19,
     }).setView(initialView, this.modoSelecao ? 15 : this.ZOOM_PADRAO);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -144,9 +143,6 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
     }).addTo(this.map);
 
     this.layersGroup.addTo(this.map);
-
-    // Zoom control sempre no mesmo sítio para consistência
-    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
   }
 
   private configurarModoSelecao(): void {
