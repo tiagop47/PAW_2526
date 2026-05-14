@@ -2,6 +2,7 @@ const supermarketService = require('../services/supermarketService');
 const cupaoService = require('../services/cupaoService');
 const avaliacaoService = require('../services/avaliacaoService');
 const authService = require('../services/authService');
+const reclamacaoService = require('../services/reclamacaoService');
 
 var supermarketController = {};
 
@@ -470,6 +471,41 @@ supermarketController.exibirAvaliacoes = async function (req, res) {
     } catch (err) {
         console.error(err);
         res.status(500).send('Erro ao carregar avaliações.');
+    }
+};
+
+/**
+ * Lista reclamações associadas ao supermercado autenticado.
+ */
+supermarketController.listarReclamacoes = async function (req, res) {
+    try {
+        const estadoFiltro = req.query.estado || null;
+        const reclamacoes = await reclamacaoService.listarDoSupermercado(req.supermercado._id, estadoFiltro);
+
+        res.render('supermercado/reclamacoes', {
+            title: 'Reclamações',
+            reclamacoes,
+            estadoFiltro,
+            supermercado: req.supermercado,
+            success: req.query.success,
+            error: req.query.error
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Erro ao carregar reclamações.');
+    }
+};
+
+/**
+ * Responde a uma reclamação associada ao supermercado autenticado.
+ */
+supermarketController.responderReclamacao = async function (req, res) {
+    try {
+        await reclamacaoService.responderComoSupermercado(req.supermercado._id, req.params.reclamacaoId, req.body);
+
+        res.redirect('/supermercado/reclamacoes?success=Resposta registada');
+    } catch (err) {
+        res.redirect('/supermercado/reclamacoes?error=' + encodeURIComponent(err.message || 'Erro ao responder.'));
     }
 };
 

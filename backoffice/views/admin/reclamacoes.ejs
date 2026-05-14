@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body class="bg-light">
+    <%- include('../partials/navbar') %>
+
+    <main class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1">Livro de Reclamações</h1>
+                <p class="text-muted small mb-0">Monitorização global das reclamações submetidas pelos clientes.</p>
+            </div>
+            <a href="/admin/dashboard" class="btn btn-sm btn-light border">Voltar</a>
+        </div>
+
+        <% if (success) { %>
+            <div class="alert alert-success small"><%= success %></div>
+        <% } %>
+        <% if (error) { %>
+            <div class="alert alert-danger small"><%= error %></div>
+        <% } %>
+
+        <% const estados = {
+            pendente: 'Pendente',
+            em_analise: 'Em análise',
+            resolvida: 'Resolvida'
+        }; %>
+
+        <div class="card border-0 shadow-sm mb-3 p-3">
+            <form action="/admin/reclamacoes" method="GET" class="row g-2 align-items-center">
+                <div class="col-md-8">
+                    <select name="estado" class="form-select border-dark-subtle" onchange="this.form.submit()">
+                        <option value="">Todos os estados</option>
+                        <% Object.keys(estados).forEach(function(estado) { %>
+                            <option value="<%= estado %>" <%= estadoFiltro === estado ? 'selected' : '' %>>
+                                <%= estados[estado] %>
+                            </option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="col-md-4 text-end">
+                    <% if (estadoFiltro) { %>
+                        <a href="/admin/reclamacoes" class="btn btn-sm btn-link text-dark fw-bold text-decoration-none">LIMPAR FILTRO</a>
+                    <% } %>
+                </div>
+            </form>
+        </div>
+
+        <% if (reclamacoes && reclamacoes.length > 0) { %>
+            <div class="d-flex flex-column gap-3">
+                <% reclamacoes.forEach(function(r) { %>
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-start gap-3">
+                            <div>
+                                <div class="fw-bold"><%= r.assunto %></div>
+                                <div class="text-muted small">
+                                    <%= new Date(r.criadoEm).toLocaleString('pt-PT') %>
+                                    · <%= r.categoria %>
+                                    <% if (r.supermercadoId) { %>
+                                        · <%= r.supermercadoId.nome %>
+                                    <% } else { %>
+                                        · Suporte geral
+                                    <% } %>
+                                </div>
+                            </div>
+                            <span class="badge <%= r.estado === 'resolvida' ? 'bg-success' : (r.estado === 'em_analise' ? 'bg-warning text-dark' : 'bg-secondary') %>">
+                                <%= estados[r.estado] || r.estado %>
+                            </span>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-lg-7">
+                                    <div class="small text-muted text-uppercase fw-bold mb-1">Cliente</div>
+                                    <div class="small mb-3">
+                                        <strong><%= r.clienteId ? r.clienteId.nome : 'Cliente removido' %></strong>
+                                        <% if (r.clienteId && r.clienteId.email) { %>
+                                            <span class="text-muted">· <%= r.clienteId.email %></span>
+                                        <% } %>
+                                    </div>
+
+                                    <% if (r.encomendaId) { %>
+                                        <div class="small text-muted text-uppercase fw-bold mb-1">Encomenda</div>
+                                        <div class="small mb-3">
+                                            #<%= r.encomendaId._id.toString().slice(-6).toUpperCase() %>
+                                            · <%= Number(r.encomendaId.valorTotal || 0).toFixed(2) %>€
+                                            · <%= r.encomendaId.estado.replace('_', ' ') %>
+                                        </div>
+                                    <% } %>
+
+                                    <div class="small text-muted text-uppercase fw-bold mb-1">Descrição</div>
+                                    <p class="small mb-3"><%= r.descricao %></p>
+
+                                    <% if (r.respostaSupermercado) { %>
+                                        <div class="bg-light border rounded p-2 small mb-2">
+                                            <strong>Resposta do supermercado:</strong> <%= r.respostaSupermercado %>
+                                        </div>
+                                    <% } %>
+                                    <% if (r.respostaAdmin) { %>
+                                        <div class="bg-light border rounded p-2 small">
+                                            <strong>Resposta do administrador:</strong> <%= r.respostaAdmin %>
+                                        </div>
+                                    <% } %>
+                                </div>
+
+                                <div class="col-lg-5">
+                                    <form action="/admin/reclamacoes/<%= r._id %>/responder" method="POST" class="border rounded p-3 bg-light">
+                                        <label class="form-label small fw-bold">Estado</label>
+                                        <select name="estado" class="form-select form-select-sm mb-2">
+                                            <% Object.keys(estados).forEach(function(estado) { %>
+                                                <option value="<%= estado %>" <%= r.estado === estado ? 'selected' : '' %>>
+                                                    <%= estados[estado] %>
+                                                </option>
+                                            <% }) %>
+                                        </select>
+
+                                        <label class="form-label small fw-bold">Resposta do administrador</label>
+                                        <textarea name="resposta" class="form-control form-control-sm mb-3" rows="4" required><%= r.respostaAdmin || '' %></textarea>
+
+                                        <button type="submit" class="btn btn-dark btn-sm w-100 fw-bold">Guardar resposta</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <div class="card border-0 shadow-sm p-5 text-center text-muted">
+                Não existem reclamações para o filtro selecionado.
+            </div>
+        <% } %>
+    </main>
+</body>
+
+</html>

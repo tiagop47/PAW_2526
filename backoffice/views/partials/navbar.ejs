@@ -21,8 +21,11 @@
                 <nav class="navegacao-links d-none d-lg-flex align-items-center gap-4">
                     <% if (user) { %>
                         <% if (user.role==='supermercados' ) { %>
-                            <% } %>
-                                <% } %>
+                            <a href="/supermercado/reclamacoes" class="text-dark small fw-bold text-decoration-none">Reclamações</a>
+                        <% } else if (user.role==='administrador') { %>
+                            <a href="/admin/reclamacoes" class="text-dark small fw-bold text-decoration-none">Reclamações</a>
+                        <% } %>
+                    <% } %>
                 </nav>
 
                 <div class="area-utilizador d-flex align-items-center gap-2">

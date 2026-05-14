@@ -1,4 +1,5 @@
 const adminService = require('../services/adminService');
+const reclamacaoService = require('../services/reclamacaoService');
 
 var adminController = {};
 
@@ -428,6 +429,40 @@ adminController.exibirFatura = async function (req, res) {
         supermercado: encomenda.supermercadoId,
         layout: false
     });
+};
+
+/**
+ * Lista todas as reclamações recebidas no sistema.
+ */
+adminController.listarReclamacoes = async function (req, res) {
+    try {
+        const estadoFiltro = req.query.estado || null;
+        const reclamacoes = await reclamacaoService.listarTodas(estadoFiltro);
+
+        res.render('admin/reclamacoes', {
+            title: 'Livro de Reclamações',
+            reclamacoes,
+            estadoFiltro,
+            success: req.query.success,
+            error: req.query.error
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Erro ao carregar reclamações.');
+    }
+};
+
+/**
+ * Responde a uma reclamação como administrador.
+ */
+adminController.responderReclamacao = async function (req, res) {
+    try {
+        await reclamacaoService.responderComoAdmin(req.params.reclamacaoId, req.body);
+
+        res.redirect('/admin/reclamacoes?success=Resposta registada');
+    } catch (err) {
+        res.redirect('/admin/reclamacoes?error=' + encodeURIComponent(err.message || 'Erro ao responder.'));
+    }
 };
 
 module.exports = adminController;

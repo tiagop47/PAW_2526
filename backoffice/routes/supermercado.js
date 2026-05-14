@@ -57,6 +57,10 @@ router.post('/editar', supermarketController.atualizarSupermercado);
 // Avaliações
 router.get('/avaliacoes', supermarketController.exibirAvaliacoes);
 
+// Reclamações
+router.get('/reclamacoes', supermarketController.listarReclamacoes);
+router.post('/reclamacoes/:reclamacaoId/responder', supermarketController.responderReclamacao);
+
 // Perfil
 router.get('/perfil', supermarketController.exibirPerfil);
 

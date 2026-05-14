@@ -443,8 +443,13 @@ supermarketService.atualizarEstadoEncomenda = async function (
 
   if (estado === "confirmada") order.confirmadaEm = new Date();
 
-  order.estado = estado;
-  const guardada = await order.save();
+  let guardada;
+  if (estado === "entregue") {
+    guardada = await orderService.marcarComoEntregue(order);
+  } else {
+    order.estado = estado;
+    guardada = await order.save();
+  }
 
   // Notificar o cliente via socket
   try {

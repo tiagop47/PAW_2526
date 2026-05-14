@@ -308,9 +308,19 @@ orderService.confirmarRececaoCliente = async function (encomenda) {
     if (encomenda.estado !== 'aguarda_validacao') {
         throw new Error('Encomenda não disponível para confirmação de receção.');
     }
+    return orderService.marcarComoEntregue(encomenda);
+};
+
+orderService.marcarComoEntregue = async function (encomenda) {
+    const jaEstavaEntregue = encomenda.estado === 'entregue';
+
     encomenda.estado = 'entregue';
     const guardada = await encomenda.save();
-    await atribuirCupoesFidelidade(encomenda.clienteId);
+
+    if (!jaEstavaEntregue) {
+        await atribuirCupoesFidelidade(encomenda.clienteId);
+    }
+
     return guardada;
 };
 

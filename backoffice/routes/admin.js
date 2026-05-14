@@ -30,6 +30,10 @@ router.get('/encomendas', adminController.monitorizarEncomendas);
 router.get('/encomendas/:orderId', adminController.exibirDetalhesEncomenda);
 router.get('/encomendas/:orderId/fatura', adminController.exibirFatura);
 
+// Livro de Reclamações
+router.get('/reclamacoes', adminController.listarReclamacoes);
+router.post('/reclamacoes/:reclamacaoId/responder', adminController.responderReclamacao);
+
 // Gestão de Categorias
 router.get('/categorias', adminController.exibirCategorias);
 router.post('/categorias', adminController.criarCategoria);
