@@ -394,10 +394,13 @@ adminService.getProdutoById = async function (id) {
 };
 
 /**
- * Desativa um produto do sistema (Soft Delete).
+ * Alterna o bloqueio de um produto (bloquear/desbloquear).
  */
-adminService.eliminarProduto = async function (id) {
-    return Product.findByIdAndUpdate(id, { ativo: false });
+adminService.alternarBloqueioProduto = async function (id) {
+    const produto = await Product.findById(id);
+    if (!produto) throw new Error('Produto não encontrado.');
+    produto.ativo = !produto.ativo;
+    return produto.save();
 };
 
 adminService.getSupermercadoById = async function (id) {

@@ -112,6 +112,8 @@ orderApiController.validarCupao = async function (req, res) {
         res.json({ 
             sucesso: true, 
             percentagemDesconto: cupao.percentagemDesconto,
+            tipoDesconto: cupao.tipoDesconto || 'percentagem',
+            valorDesconto: cupao.valorDesconto || 0,
             cupaoId: cupao._id 
         });
     } catch (err) {

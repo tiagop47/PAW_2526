@@ -1,6 +1,13 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { CartItem } from '../models/cart-item.dto';
 
+export interface CupaoCarrinho {
+  codigo: string;
+  tipoDesconto: 'percentagem' | 'valor';
+  percentagem: number;
+  valor: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -11,7 +18,7 @@ export class CartService {
   items = signal<CartItem[]>(this.loadFromStorage());
 
   /** Dados do cupão ativo */
-  cupao = signal<{ codigo: string; percentagem: number } | null>(this.loadCupao());
+  cupao = signal<CupaoCarrinho | null>(this.loadCupao());
 
   /** Custo de entrega ou levantamento atual */
   custoEntrega = signal<number>(0);
@@ -39,7 +46,13 @@ export class CartService {
   discountValue = computed(() => {
     const subtotal = this.subtotalPrice();
     const cupaoAtual = this.cupao();
-    return cupaoAtual ? subtotal * (cupaoAtual.percentagem / 100) : 0;
+    if (!cupaoAtual) return 0;
+
+    if (cupaoAtual.tipoDesconto === 'valor') {
+      return Math.min(subtotal, cupaoAtual.valor);
+    }
+
+    return subtotal * (cupaoAtual.percentagem / 100);
   });
 
   /** Valor total do IVA incluído */
@@ -134,8 +147,8 @@ export class CartService {
     localStorage.removeItem(this.STORAGE_KEY + '_cupao');
   }
 
-  applyCoupon(codigo: string, percentagem: number) {
-    this.cupao.set({ codigo, percentagem });
+  applyCoupon(cupao: CupaoCarrinho) {
+    this.cupao.set(cupao);
     this.saveToStorage();
   }
 
@@ -163,7 +176,7 @@ export class CartService {
     }
   }
 
-  private loadCupao(): { codigo: string; percentagem: number } | null {
+  private loadCupao(): CupaoCarrinho | null {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY + '_cupao');
       return data ? JSON.parse(data) : null;

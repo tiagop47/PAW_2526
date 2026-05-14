@@ -554,7 +554,9 @@ supermarketService.obterPromocoesHome = async function () {
   const cupoes = cupoesBD.map(c => ({
     _id: c._id,
     codigo: c.codigo,
+    tipoDesconto: c.tipoDesconto || 'percentagem',
     percentagemDesconto: c.percentagemDesconto,
+    valorDesconto: c.valorDesconto || 0,
     prazo: c.prazo,
     ativo: c.ativo,
     supermercadoId: c.supermercadoId ? c.supermercadoId._id : null,
@@ -574,7 +576,7 @@ supermarketService.getCupoesSupermercado = async function (supermercadoId) {
     supermercadoId,
     ativo: true,
     prazo: { $gte: new Date() },
-  }).select("_id codigo percentagemDesconto prazo");
+  }).select("_id codigo tipoDesconto percentagemDesconto valorDesconto prazo");
 };
 
 supermarketService.listarCategorias = async function () {

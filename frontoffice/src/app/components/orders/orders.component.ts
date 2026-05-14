@@ -1,21 +1,38 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { OrderService } from '../../services/order.service';
 import { NotificationService } from '../../services/notification.service';
 import { Order } from '../../models/order';
 import { OrderItemDTO } from '../../models/order.dto';
+import { getPageNumbers, getTotalPages, paginate } from '../../utils/pagination';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css',
 })
 export class OrdersComponent implements OnInit {
   orders: Order[] = [];
   loading = true;
+  currentPage = 1;
+  pageSize = 5;
+  pageSizeOptions = [5, 10, 20];
+
+  get totalPages(): number {
+    return getTotalPages(this.orders.length, this.pageSize);
+  }
+
+  get paginatedOrders(): Order[] {
+    return paginate(this.orders, this.currentPage, this.pageSize);
+  }
+
+  get pageNumbers(): number[] {
+    return getPageNumbers(this.orders.length, this.pageSize);
+  }
 
   verDetalhes(orderId: string): void {
     this.router.navigate(['/order', orderId]);
@@ -36,6 +53,7 @@ export class OrdersComponent implements OnInit {
     this.orderService.listarEncomendas().subscribe({
       next: (encomendas) => {
         this.orders = encomendas;
+        this.currentPage = 1;
         this.loading = false;
       },
       error: () => {
@@ -80,5 +98,17 @@ export class OrdersComponent implements OnInit {
       return '';
     }
     return item.produtoId.imagem;
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) {
+      return;
+    }
+
+    this.currentPage = page;
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 1;
   }
 }

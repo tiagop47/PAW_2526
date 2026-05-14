@@ -216,7 +216,9 @@ async function atribuirCupoesCliente(user) {
     try {
         const [cupaoBoasVindas] = await Coupon.create([{
             codigo: codigoBoasVindas,
+            tipoDesconto: 'percentagem',
             percentagemDesconto: 10,
+            origem: 'boas_vindas',
             prazo: prazo30Dias,
             supermercadoId: user.supermercadoFavorito
         }], { session });

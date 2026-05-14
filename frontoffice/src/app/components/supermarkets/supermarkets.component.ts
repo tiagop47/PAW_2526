@@ -28,6 +28,7 @@ export class SupermarketsComponent implements OnInit {
   ) {}
 
   allSupermarkets: SupermarketDTO[] = [];
+  filteredSupermarkets: SupermarketDisplay[] = [];
   availableZones: string[] = [];
   selectedZone: string = '';
   supermercadoNoMapa: string | null = null;
@@ -36,7 +37,7 @@ export class SupermarketsComponent implements OnInit {
     return this.authService.currentUser?.supermercadoFavorito || null;
   }
 
-  get filteredSupermarkets(): SupermarketDisplay[] {
+  private atualizarSupermercadosFiltrados(): void {
     const favId = this.favoritoId;
 
     const filtered = this.allSupermarkets.filter((s) => {
@@ -48,7 +49,7 @@ export class SupermarketsComponent implements OnInit {
       ? L.latLng(favorito.localizacaoGeo.coordinates[1], favorito.localizacaoGeo.coordinates[0])
       : null;
 
-    return filtered.map((s) => {
+    this.filteredSupermarkets = filtered.map((s) => {
       let distRef: number | null = null;
 
       if (pFav && s._id !== favId && s.localizacaoGeo?.coordinates) {
@@ -69,12 +70,14 @@ export class SupermarketsComponent implements OnInit {
       this.availableZones = Array.from(
         new Set(data.map((s) => s.localizacao).filter(Boolean)),
       ).sort();
+      this.atualizarSupermercadosFiltrados();
     });
   }
 
   onZoneChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
     this.selectedZone = select.value;
+    this.atualizarSupermercadosFiltrados();
   }
 
   navigateToMercado(id: string): void {

@@ -8,11 +8,34 @@ const CouponSchema = new mongoose.Schema({
         uppercase: true,
         trim: true
     },
+    tipoDesconto: {
+        type: String,
+        enum: ['percentagem', 'valor'],
+        default: 'percentagem'
+    },
     percentagemDesconto: {
         type: Number,
-        required: [true, 'A percentagem de desconto é obrigatória'],
+        required: function () {
+            return this.tipoDesconto !== 'valor';
+        },
         min: [1, 'A percentagem mínima é 1%'],
         max: [100, 'A percentagem máxima é 100%']
+    },
+    valorDesconto: {
+        type: Number,
+        required: function () {
+            return this.tipoDesconto === 'valor';
+        },
+        min: [0.01, 'O valor mínimo é 0.01€']
+    },
+    origem: {
+        type: String,
+        enum: ['supermercado', 'boas_vindas', 'fidelidade'],
+        default: 'supermercado'
+    },
+    clienteId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     },
     supermercadoId: {
         type: mongoose.Schema.Types.ObjectId,

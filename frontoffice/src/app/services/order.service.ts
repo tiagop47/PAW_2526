@@ -34,6 +34,8 @@ export class OrderService {
       percentagemDesconto: number;
       supermercadoId: string | null;
       supermercado: string | null;
+      tipoDesconto?: 'percentagem' | 'valor';
+      valorDesconto?: number;
       expirado: boolean;
     }[]
   > {
@@ -46,6 +48,8 @@ export class OrderService {
           percentagemDesconto: number;
           supermercadoId: string | null;
           supermercado: string | null;
+          tipoDesconto?: 'percentagem' | 'valor';
+          valorDesconto?: number;
           expirado: boolean;
         }[];
       }>(`${API_URL}/users/cupoes`)
@@ -55,8 +59,20 @@ export class OrderService {
   validarCupao(
     codigo: string,
     supermercadoId: string,
-  ): Observable<{ sucesso: boolean; percentagemDesconto: number; cupaoId: string }> {
-    return this.http.post<{ sucesso: boolean; percentagemDesconto: number; cupaoId: string }>(
+  ): Observable<{
+    sucesso: boolean;
+    percentagemDesconto: number;
+    tipoDesconto: 'percentagem' | 'valor';
+    valorDesconto: number;
+    cupaoId: string;
+  }> {
+    return this.http.post<{
+      sucesso: boolean;
+      percentagemDesconto: number;
+      tipoDesconto: 'percentagem' | 'valor';
+      valorDesconto: number;
+      cupaoId: string;
+    }>(
       `${this.endpoint}/validar-cupao`,
       {
         codigo,

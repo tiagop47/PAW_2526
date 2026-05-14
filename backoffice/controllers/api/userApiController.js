@@ -15,7 +15,7 @@ userApiController.obterEstatisticas = async function (req, res) {
 
 userApiController.atualizarPerfil = async function (req, res) {
     try {
-        if (req.userPerfil !== req.userPerfil._id.toString()) {
+        if (req.user.id !== req.userPerfil._id.toString()) {
             return res.status(403).json({ sucesso: false, erro: 'Sem permissão para editar este perfil.' });
         }
 
@@ -25,6 +25,10 @@ userApiController.atualizarPerfil = async function (req, res) {
             if (req.body[campo] !== undefined) {
                 updates[campo] = req.body[campo];
             }
+        }
+
+        if (updates.supermercadoFavorito === '') {
+            updates.supermercadoFavorito = null;
         }
 
         // Atualizar usando o documento já carregado
@@ -56,7 +60,10 @@ userApiController.meusCupoes = async function (req, res) {
         const cupoes = (cliente.cupoes || []).map(c => ({
             _id: c._id,
             codigo: c.codigo,
+            tipoDesconto: c.tipoDesconto || 'percentagem',
             percentagemDesconto: c.percentagemDesconto,
+            valorDesconto: c.valorDesconto || 0,
+            origem: c.origem || 'supermercado',
             supermercadoId: c.supermercadoId?._id?.toString() || null,
             supermercado: c.supermercadoId?.nome || null,
             prazo: c.prazo,

@@ -6,6 +6,15 @@ import { CouponDTO } from '../models/coupon.dto';
 
 export interface UserStats {
   totalEncomendas: number;
+  fidelidade: {
+    totalGasto: number;
+    patamar: number;
+    valorCupao: number;
+    cupoesGanhos: number;
+    progressoAtual: number;
+    faltam: number;
+    percentagem: number;
+  };
   produtosMaisComprados: {
     _id: string;
     nome: string;

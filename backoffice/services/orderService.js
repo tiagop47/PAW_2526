@@ -9,6 +9,8 @@ const bcrypt = require('bcrypt');
 const config = require('../config/config');
 
 const orderService = {};
+const VALOR_PATAMAR_FIDELIDADE = 100;
+const VALOR_CUPAO_FIDELIDADE = 5;
 
 /**
  * Repõe o stock dos produtos de uma encomenda cancelada.
@@ -101,9 +103,9 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
     }
 
     const produtoIds = produtos.map(p => p.produtoId);
-    const produtosDB = await Product.find({ _id: { $in: produtoIds }, supermercadoId });
+    const produtosDB = await Product.find({ _id: { $in: produtoIds }, supermercadoId, ativo: true });
 
-    if (produtosDB.length !== produtoIds.length) throw new Error('Produtos inválidos ou de lojas diferentes.');
+    if (produtosDB.length !== produtoIds.length) throw new Error('Um ou mais produtos não estão disponíveis nesta loja.');
 
     const produtosEncomenda = [];
     let valorSubtotal = 0;
@@ -141,6 +143,10 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
             // Ignoramos esta verificação se for o "Consumidor Final" genérico (venda de caixa sem identificação)
             const cliente = await User.findById(clienteId);
             if (cliente && cliente.email !== 'consumidor.final@paw.com') {
+                if (!cliente.cupoes.includes(cupao._id)) {
+                    throw new Error('Não tens este cupão disponível na tua conta.');
+                }
+
                 const jaUsou = await Order.findOne({ 
                     clienteId, 
                     cupaoId: cupao._id, 
@@ -152,7 +158,7 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
                 }
             }
 
-            descontoValor = (valorSubtotal * cupao.percentagemDesconto) / 100;
+            descontoValor = calcularDescontoCupao(cupao, valorSubtotal);
             cupaoAplicado = cupao;
         }
     }
@@ -303,7 +309,9 @@ orderService.confirmarRececaoCliente = async function (encomenda) {
         throw new Error('Encomenda não disponível para confirmação de receção.');
     }
     encomenda.estado = 'entregue';
-    return encomenda.save();
+    const guardada = await encomenda.save();
+    await atribuirCupoesFidelidade(encomenda.clienteId);
+    return guardada;
 };
 
 orderService.listarEncomendasCliente = async function (clienteId) {
@@ -335,11 +343,87 @@ orderService.obterEstatisticasCliente = async function (clienteId) {
         }
     ]);
 
+    const fidelidade = await calcularProgressoFidelidade(clienteId);
+
     return {
         totalEncomendas: stats[0].total[0]?.count || 0,
-        produtosMaisComprados: stats[0].maisComprados
+        produtosMaisComprados: stats[0].maisComprados,
+        fidelidade
     };
 };
+
+function calcularDescontoCupao(cupao, subtotal) {
+    if (cupao.tipoDesconto === 'valor') {
+        return Math.min(subtotal, cupao.valorDesconto || 0);
+    }
+
+    return (subtotal * (cupao.percentagemDesconto || 0)) / 100;
+}
+
+async function calcularTotalEntregueCliente(clienteId) {
+    const resultado = await Order.aggregate([
+        {
+            $match: {
+                clienteId: new mongoose.Types.ObjectId(clienteId),
+                estado: 'entregue'
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                total: { $sum: '$valorTotal' }
+            }
+        }
+    ]);
+
+    return resultado[0]?.total || 0;
+}
+
+async function calcularProgressoFidelidade(clienteId) {
+    const totalGasto = await calcularTotalEntregueCliente(clienteId);
+    const cupoesGanhos = Math.floor(totalGasto / VALOR_PATAMAR_FIDELIDADE);
+    const progressoAtual = totalGasto % VALOR_PATAMAR_FIDELIDADE;
+
+    return {
+        totalGasto,
+        patamar: VALOR_PATAMAR_FIDELIDADE,
+        valorCupao: VALOR_CUPAO_FIDELIDADE,
+        cupoesGanhos,
+        progressoAtual,
+        faltam: VALOR_PATAMAR_FIDELIDADE - progressoAtual,
+        percentagem: Math.min(100, (progressoAtual / VALOR_PATAMAR_FIDELIDADE) * 100)
+    };
+}
+
+async function atribuirCupoesFidelidade(clienteId) {
+    if (!clienteId) return;
+
+    const fidelidade = await calcularProgressoFidelidade(clienteId);
+    const cupoesJaCriados = await Coupon.countDocuments({
+        clienteId,
+        origem: 'fidelidade'
+    });
+
+    const cupoesEmFalta = fidelidade.cupoesGanhos - cupoesJaCriados;
+    if (cupoesEmFalta <= 0) return;
+
+    const prazo = new Date();
+    prazo.setMonth(prazo.getMonth() + 6);
+
+    for (let i = 0; i < cupoesEmFalta; i++) {
+        const codigo = `FID${Date.now()}${Math.floor(Math.random() * 1000)}`;
+        const cupao = await Coupon.create({
+            codigo,
+            tipoDesconto: 'valor',
+            valorDesconto: VALOR_CUPAO_FIDELIDADE,
+            origem: 'fidelidade',
+            clienteId,
+            prazo
+        });
+
+        await User.findByIdAndUpdate(clienteId, { $addToSet: { cupoes: cupao._id } });
+    }
+}
 
 function calcularDistancia(lat1, lon1, lat2, lon2) {
     const R = 6371;

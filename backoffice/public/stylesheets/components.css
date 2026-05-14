@@ -30,6 +30,7 @@
 /* Tabela base */
 .tabela-limpa {
   width: 100%;
+  table-layout: fixed;
   background: #fff;
   border: 1px solid var(--borda);
   border-radius: 4px;
@@ -39,6 +40,19 @@
 .tabela-limpa td {
   text-align: center !important;
   padding: 12px !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Tabelas Bootstrap no admin sem scroll lateral */
+.tabela-admin {
+  table-layout: fixed;
+  width: 100%;
+}
+.tabela-admin th,
+.tabela-admin td {
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .tabela-limpa th {

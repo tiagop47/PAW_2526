@@ -1,6 +1,10 @@
 <div class="map-wrapper border rounded shadow-sm overflow-hidden position-relative">
   <div #mapContainer class="map-container"></div>
 
+  <div *ngIf="statusMapa" class="map-status">
+    {{ statusMapa }}
+  </div>
+
   <div class="legend-container">
     <div class="legend-item">
       <div class="legend-dot legend-dot--filled"></div>

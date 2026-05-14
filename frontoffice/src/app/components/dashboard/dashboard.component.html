@@ -22,6 +22,9 @@
                     class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                     <span><i class="bi bi-box-seam me-2"></i>As Minhas Encomendas</span>
                 </a>
+                <a routerLink="/livro-reclamacoes" class="list-group-item list-group-item-action">
+                    <i class="bi bi-journal-text me-2"></i>Livro de Reclamações
+                </a>
                 <a routerLink="/avaliacoes" class="list-group-item list-group-item-action">
                     <i class="bi bi-star me-2"></i>As Minhas Avaliações
                 </a>
@@ -31,6 +34,7 @@
                 <a routerLink="/settings" class="list-group-item list-group-item-action">
                     <i class="bi bi-gear me-2"></i>Configurações da Conta
                 </a>
+
             </div>
         </div>
 
@@ -45,6 +49,7 @@
                         Ainda não existem compras registadas.
                     </div>
 
+                    <div class="table-responsive">
                     <table *ngIf="stats.produtosMaisComprados.length > 0" class="table table-hover mb-0 align-middle">
                         <thead class="table-light">
                             <tr>
@@ -63,11 +68,41 @@
                             </tr>
                         </tbody>
                     </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4" *ngIf="stats.fidelidade">
+                <div class="card-header bg-white fw-bold">
+                    Cupão Fidelidade
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                        <div>
+                            <div class="fw-bold">
+                                Cupão de {{ stats.fidelidade.valorCupao | currency:'EUR' }}
+                            </div>
+                            <div class="small text-muted">
+                                Faltam {{ stats.fidelidade.faltam | currency:'EUR' }} em compras para o próximo cupão.
+                            </div>
+                        </div>
+                        <span class="badge bg-dark">{{ stats.fidelidade.cupoesGanhos }} ganhos</span>
+                    </div>
+
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-dark" role="progressbar"
+                            [style.width.%]="stats.fidelidade.percentagem"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-2 extra-small text-muted">
+                        <span>{{ stats.fidelidade.progressoAtual | currency:'EUR' }}</span>
+                        <span>{{ stats.fidelidade.patamar | currency:'EUR' }}</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Meus Cupões -->
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-header bg-white fw-bold">
                     Os Meus Cupões
                 </div>
@@ -76,39 +111,41 @@
                         Não tem cupões atribuídos de momento.
                     </div>
 
-                    <table *ngIf="cupoes.length > 0" class="table table-hover mb-0 align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Código</th>
-                                <th>Desconto</th>
-                                <th>Supermercado/Pessoal</th>
-                                <th>Validade</th>
-                                <th class="text-end pe-3">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let c of cupoes" [class.table-secondary]="c.expirado || !c.ativo">
-                                <td class="ps-3"><code class="fw-bold">{{ c.codigo }}</code></td>
-                                <td>{{ c.percentagemDesconto }}%</td>
-                                <td class="small">
-                                    @if (c.supermercadoId) {
-                                        {{ c.supermercado}}
-                                    } @else {
-                                        Cupão Cliente
-                                    }
-                                </td>
-
-                                <td class="small">{{ c.prazo | date:'dd/MM/yyyy' }}</td>
-                                <td class="text-end pe-3">
-                                    <span *ngIf="c.expirado" class="badge bg-secondary">Expirado</span>
-                                    <span *ngIf="!c.expirado && c.ativo" class="badge bg-dark">Ativo</span>
-                                    <span *ngIf="!c.expirado && !c.ativo" class="badge bg-secondary">Inativo</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table *ngIf="cupoes.length > 0" class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Código</th>
+                                    <th>Desconto</th>
+                                    <th class="d-none d-md-table-cell">Supermercado/Pessoal</th>
+                                    <th class="d-none d-sm-table-cell">Validade</th>
+                                    <th class="text-end pe-3">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let c of cupoes" [class.table-secondary]="c.expirado || !c.ativo">
+                                    <td class="ps-3"><code class="fw-bold text-dark">{{ c.codigo }}</code></td>
+                                    <td>{{ getCupaoLabel(c) }}</td>
+                                    <td class="small d-none d-md-table-cell">
+                                        @if (c.supermercadoId) {
+                                            {{ c.supermercado}}
+                                        } @else {
+                                            Cupão Cliente
+                                        }
+                                    </td>
+                                    <td class="small d-none d-sm-table-cell">{{ c.prazo | date:'dd/MM/yyyy' }}</td>
+                                    <td class="text-end pe-3">
+                                        <span *ngIf="c.expirado" class="badge bg-secondary">Expirado</span>
+                                        <span *ngIf="!c.expirado && c.ativo" class="badge bg-dark">Ativo</span>
+                                        <span *ngIf="!c.expirado && !c.ativo" class="badge bg-secondary">Inativo</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+
         </div>
 
     </div>

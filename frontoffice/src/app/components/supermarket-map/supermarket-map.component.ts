@@ -56,20 +56,21 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
   private circleRaio?: L.Circle;
   private mapaIniciado: boolean = false;
   private centroAtual?: [number, number];
+  statusMapa: string | null = null;
 
   private readonly COORD_PADRAO: [number, number] = [41.1579, -8.6291];
   private readonly ZOOM_PADRAO = 12;
 
   private readonly blackIcon = L.divIcon({
     className: 'custom-marker',
-    html: `<div style="background-color: #333; width: 16px; height: 16px; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>`,
+    html: '',
     iconSize: [16, 16],
     iconAnchor: [8, 8],
   });
 
   private readonly favoriteIcon = L.divIcon({
     className: 'favorite-marker',
-    html: `<div style="background-color: #0d6efd; width: 20px; height: 20px; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(13,110,253,0.4);"></div>`,
+    html: '',
     iconSize: [20, 20],
     iconAnchor: [10, 10],
   });
@@ -185,20 +186,12 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
         const distanceKm = centro.distanceTo(clickPos) / 1000;
 
         if (distanceKm > this.raioMaximoKm) {
+          this.mostrarEstado(`Fora do raio de entrega (${this.raioMaximoKm.toFixed(1)}km).`);
           this.erroSelecao.emit(`Fora do raio de entrega (${this.raioMaximoKm.toFixed(1)}km).`);
           return;
         }
 
-        if (this.markerSelecao) {
-          this.markerSelecao.setLatLng(clickPos);
-        } else {
-          this.markerSelecao = L.marker(clickPos, { 
-            icon: this.favoriteIcon,
-            interactive: false 
-          }).addTo(this.layersGroup);
-        }
-
-        this.localizacaoSelecionada.emit({ lat: clickPos.lat, lng: clickPos.lng });
+        this.selecionarLocalizacao(clickPos);
       });
     });
 
@@ -246,6 +239,28 @@ export class SupermarketMapComponent implements OnInit, AfterViewInit, OnDestroy
     if (bounds.length > 0) {
       this.map.fitBounds(L.latLngBounds(bounds), { padding: [50, 50] });
     }
+  }
+
+  private selecionarLocalizacao(pos: L.LatLng): void {
+    if (this.markerSelecao) {
+      this.markerSelecao.setLatLng(pos);
+    } else {
+      this.markerSelecao = L.marker(pos, {
+        icon: this.favoriteIcon,
+        interactive: false,
+      }).addTo(this.layersGroup);
+    }
+
+    this.localizacaoSelecionada.emit({ lat: pos.lat, lng: pos.lng });
+  }
+
+  private mostrarEstado(message: string): void {
+    this.statusMapa = message;
+    setTimeout(() => {
+      if (this.statusMapa === message) {
+        this.statusMapa = null;
+      }
+    }, 3500);
   }
 
 private criarPopup(s: SupermarketDTO, pos: L.LatLng, pFav: L.LatLng | null, isFav: boolean): string {

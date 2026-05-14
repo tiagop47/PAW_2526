@@ -40,7 +40,9 @@ supermercadoApiController.getCupoes = async function (req, res) {
     const cupoesFormatados = (cupoes || []).map((c) => ({
       _id: c._id,
       codigo: c.codigo,
+      tipoDesconto: c.tipoDesconto || "percentagem",
       percentagemDesconto: c.percentagemDesconto,
+      valorDesconto: c.valorDesconto || 0,
       supermercadoId: req.supermercado._id.toString(),
       supermercado: req.supermercado.nome,
       sLocalizacao: req.supermercado.localizacao,
