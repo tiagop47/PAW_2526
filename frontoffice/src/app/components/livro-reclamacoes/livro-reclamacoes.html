@@ -1,0 +1,110 @@
+<div class="container my-5">
+  <div class="row mb-4">
+    <div class="col">
+      <h2 class="border-bottom pb-2">Livro de Reclamações</h2>
+      <p class="text-muted small mb-0">Contacte diretamente o suporte sobre encomendas, produtos ou supermercados.</p>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <div class="fw-bold">Nova Reclamação</div>
+      <span class="badge bg-dark">{{ reclamacoes.length }}</span>
+    </div>
+
+    <div class="card-body">
+      <div *ngIf="message" class="alert alert-success small py-2">{{ message }}</div>
+      <div *ngIf="error" class="alert alert-danger small py-2">{{ error }}</div>
+
+      <form [formGroup]="reclamacaoForm" (ngSubmit)="enviar()" class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label small fw-bold">Supermercado</label>
+        <select class="form-select form-select-sm" formControlName="supermercadoId">
+          <option value="">Suporte geral</option>
+          <option *ngFor="let sm of supermercados" [value]="sm._id">{{ sm.nome }}</option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label small fw-bold">Encomenda</label>
+        <select class="form-select form-select-sm" formControlName="encomendaId">
+          <option value="">Sem encomenda associada</option>
+          <option *ngFor="let encomenda of encomendas" [value]="encomenda.id">
+            {{ encomenda.criadoEm | date:'dd/MM/yyyy' }} · {{ encomenda.valorTotal | currency:'EUR' }}
+          </option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label small fw-bold">Categoria</label>
+        <select class="form-select form-select-sm" formControlName="categoria">
+          <option value="produto">Produto</option>
+          <option value="entrega">Entrega</option>
+          <option value="pagamento">Pagamento</option>
+          <option value="atendimento">Atendimento</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+
+      <div class="col-md-8">
+        <label class="form-label small fw-bold">Assunto</label>
+        <input type="text" class="form-control form-control-sm" formControlName="assunto" maxlength="80">
+      </div>
+
+      <div class="col-12">
+        <label class="form-label small fw-bold">Descrição</label>
+        <textarea class="form-control form-control-sm" rows="3" formControlName="descricao"></textarea>
+      </div>
+
+      <div class="col-12 d-flex justify-content-end">
+        <button type="submit" class="btn btn-dark btn-sm px-4 fw-bold" [disabled]="submitting || reclamacaoForm.invalid">
+          <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+          Enviar Reclamação
+        </button>
+      </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header bg-white fw-bold">As Minhas Reclamações</div>
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center text-muted small py-3">
+        A carregar reclamações...
+      </div>
+
+      <div *ngIf="!loading && reclamacoes.length === 0" class="text-center text-muted small py-3">
+        Ainda não existem reclamações registadas.
+      </div>
+
+      <div *ngIf="!loading && reclamacoes.length > 0" class="list-group list-group-flush">
+        <div *ngFor="let r of reclamacoes" class="list-group-item px-0">
+          <div class="d-flex justify-content-between gap-3">
+            <div>
+              <div class="fw-bold small">{{ r.assunto }}</div>
+              <div class="extra-small text-muted">
+                {{ categoriaLabel(r.categoria) }}
+                <span *ngIf="r.supermercadoId"> · {{ r.supermercadoId.nome }}</span>
+                <span> · {{ r.criadoEm | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+            </div>
+            <span class="badge align-self-start" [ngClass]="estadoBadge(r.estado)">
+              {{ estadoLabel(r.estado) }}
+            </span>
+          </div>
+
+          <p class="small text-muted mt-2 mb-2">{{ r.descricao }}</p>
+
+          <div *ngIf="r.respostaSupermercado || r.respostaAdmin" class="bg-light border rounded p-2 small">
+            <div *ngIf="r.respostaSupermercado" class="mb-1">
+              <strong>Supermercado:</strong> {{ r.respostaSupermercado }}
+            </div>
+            <div *ngIf="r.respostaAdmin">
+              <strong>Suporte:</strong> {{ r.respostaAdmin }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

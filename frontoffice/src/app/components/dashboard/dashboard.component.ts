@@ -45,4 +45,10 @@ export class DashboardComponent implements OnInit {
       error: () => this.cupoes = []
     });
   }
+
+  getCupaoLabel(cupao: CouponDTO): string {
+    return cupao.tipoDesconto === 'valor'
+      ? `${(cupao.valorDesconto || 0).toFixed(2)}€`
+      : `${cupao.percentagemDesconto}%`;
+  }
 }

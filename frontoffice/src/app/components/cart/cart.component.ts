@@ -12,7 +12,9 @@ import { SupermarketMapComponent } from '../supermarket-map/supermarket-map.comp
 
 interface CupaoDisponivel {
   codigo: string;
-  percentagemDesconto: number;
+  tipoDesconto: 'percentagem' | 'valor';
+  percentagemDesconto?: number;
+  valorDesconto?: number;
 }
 
 @Component({
@@ -121,7 +123,12 @@ export class CartComponent implements OnInit {
     this.orderService.meusCupoes().subscribe((cupoes) => {
       this.cupoesCliente = cupoes
         .filter((c) => !c.expirado && (c.supermercadoId === null || c.supermercadoId === this.supermercadoId))
-        .map((c) => ({ codigo: c.codigo, percentagemDesconto: c.percentagemDesconto }));
+        .map((c) => ({
+          codigo: c.codigo,
+          tipoDesconto: c.tipoDesconto || 'percentagem',
+          percentagemDesconto: c.percentagemDesconto,
+          valorDesconto: c.valorDesconto || 0,
+        }));
 
       if (this.supermercadoId) {
         this.supermarketService.getCupoes(this.supermercadoId).subscribe((res) => {
@@ -130,7 +137,9 @@ export class CartComponent implements OnInit {
             .filter((c) => !this.cupoesCliente.some((cc) => cc.codigo === c.codigo))
             .map((c) => ({
               codigo: c.codigo,
+              tipoDesconto: c.tipoDesconto || 'percentagem',
               percentagemDesconto: c.percentagemDesconto,
+              valorDesconto: c.valorDesconto || 0,
             }));
         });
       }
@@ -145,7 +154,14 @@ export class CartComponent implements OnInit {
 
     this.orderService.validarCupao(cupao.codigo, this.supermercadoId).subscribe({
       next: (res) => {
-        if (res.sucesso) this.cartService.applyCoupon(cupao.codigo, res.percentagemDesconto);
+        if (res.sucesso) {
+          this.cartService.applyCoupon({
+            codigo: cupao.codigo,
+            tipoDesconto: res.tipoDesconto || 'percentagem',
+            percentagem: res.percentagemDesconto || 0,
+            valor: res.valorDesconto || 0,
+          });
+        }
       },
       error: (err) => this.notificationService.showError(err.error?.erro || 'Cupão inválido.'),
     });
@@ -155,6 +171,12 @@ export class CartComponent implements OnInit {
     this.cartService.clearCart();
     this.cupoesCliente = [];
     this.cupoesSupermercado = [];
+  }
+
+  getCupaoLabel(cupao: CupaoDisponivel): string {
+    return cupao.tipoDesconto === 'valor'
+      ? `-${(cupao.valorDesconto || 0).toFixed(2)}€`
+      : `-${cupao.percentagemDesconto || 0}%`;
   }
 
   toggleMapa(): void {

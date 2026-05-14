@@ -129,7 +129,7 @@
                      (click)="selecionarCupao(c)">
                   <span class="fw-bold font-monospace">{{ c.codigo }}</span>
                   <div class="d-flex align-items-center gap-2">
-                    <span class="fw-bold">-{{ c.percentagemDesconto }}%</span>
+                    <span class="fw-bold">{{ getCupaoLabel(c) }}</span>
                     <i *ngIf="cartService.cupao()?.codigo === c.codigo" class="bi bi-check2-circle text-success"></i>
                   </div>
                 </div>
@@ -147,7 +147,7 @@
                      (click)="selecionarCupao(c)">
                   <span class="fw-bold font-monospace">{{ c.codigo }}</span>
                   <div class="d-flex align-items-center gap-2">
-                    <span class="fw-bold">-{{ c.percentagemDesconto }}%</span>
+                    <span class="fw-bold">{{ getCupaoLabel(c) }}</span>
                     <i *ngIf="cartService.cupao()?.codigo === c.codigo" class="bi bi-check2-circle text-success"></i>
                   </div>
                 </div>

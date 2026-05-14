@@ -10,6 +10,7 @@ import { AvaliacoesComponent } from './components/avaliacoes/avaliacoes.componen
 import { SettingsComponent } from './components/settings/settings.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { SupermarketsComponent } from './components/supermarkets/supermarkets.component';
+import { LivroReclamacoes } from './components/livro-reclamacoes/livro-reclamacoes';
 import { GuestGuard } from './guards/guest.guard';
 import { AuthGuard } from './guards/auth.guard';
 import { DetalhesEncomenda } from './components/detalhes-encomenda/detalhes-encomenda';
@@ -27,6 +28,7 @@ export const routes: Routes = [
   { path: 'cart', component: CartComponent },
   { path: 'orders', component: OrdersComponent, canActivate: [AuthGuard] },
   { path: 'order/:id', component: DetalhesEncomenda, canActivate: [AuthGuard] },
+  { path: 'livro-reclamacoes', component: LivroReclamacoes, canActivate: [AuthGuard] },
   { path: 'avaliacoes', component: AvaliacoesComponent, canActivate: [AuthGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' },

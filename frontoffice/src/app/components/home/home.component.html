@@ -42,7 +42,7 @@
                             <div
                                 class="d-flex justify-content-between align-items-center bg-white border border-secondary border-dashed p-2 rounded">
                                 <div>
-                                    <div class="fw-bold font-monospace small text-dark">{{ c.codigo }}</div>
+                                    <div class="fw-bold font-monospace small text-dark">Use o código "{{ c.codigo }}" </div>
                                     <div *ngIf="c.supermercado !== null;  else semSupermercado"
                                         class="extra-small text-muted">
                                         <p>Dísponivel em {{ c.sLocalizacao }}</p>
@@ -62,7 +62,5 @@
         </div>
     </div>
 
-    <!-- Reutilização do componente product-list (auto-contido com filtros) -->
     <app-product-list></app-product-list>
-
 </div>
