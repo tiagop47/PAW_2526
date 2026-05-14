@@ -341,14 +341,14 @@ adminController.listarProdutos = async function (req, res) {
 };
 
 /**
- * Elimina um produto do sistema.
+ * Alterna o bloqueio de um produto (bloquear/desbloquear).
  */
-adminController.eliminarProduto = async function (req, res) {
+adminController.alternarBloqueioProduto = async function (req, res) {
     try {
-        await adminService.eliminarProduto(req.params.productId);
-        res.redirect('/admin/produtos?success=Produto eliminado com sucesso');
+        await adminService.alternarBloqueioProduto(req.params.productId);
+        res.redirect('/admin/produtos');
     } catch (err) {
-        res.status(500).send('Erro ao eliminar produto.');
+        res.status(500).send('Erro ao alterar estado do produto.');
     }
 };
 

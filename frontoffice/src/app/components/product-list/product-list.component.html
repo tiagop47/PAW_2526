@@ -30,6 +30,7 @@
           <option value="price_desc">Caro para Barato</option>
         </select>
       </div>
+
     </div>
   </div>
 
@@ -38,12 +39,17 @@
     <div class="col">
       <h2 class="h6 fw-bold mb-0 text-uppercase text-muted">Produtos Disponíveis</h2>
     </div>
+    <div class="col-auto" *ngIf="!loading && filteredProducts.length > 0">
+      <span class="extra-small text-muted">
+        {{ filteredProducts.length }} produtos · página {{ currentPage }} de {{ totalPages }}
+      </span>
+    </div>
   </div>
   <hr class="mt-1 mb-4 opacity-10">
 
   <!-- Grelha de Produtos -->
   <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
-    <div *ngFor="let product of filteredProducts" class="col">
+    <div *ngFor="let product of paginatedProducts" class="col">
       <div class="card h-100 border shadow-sm">
         <div class="p-3 text-center bg-white">
           <img [src]="product.imagem"
@@ -69,6 +75,22 @@
       </div>
     </div>
   </div>
+
+  <nav *ngIf="!loading && filteredProducts.length > pageSize" class="mt-4" aria-label="Paginação de produtos">
+    <ul class="pagination pagination-sm justify-content-center mb-0">
+      <li class="page-item" [class.disabled]="currentPage === 1">
+        <button class="page-link" type="button" (click)="goToPage(currentPage - 1)">Anterior</button>
+      </li>
+
+      <li *ngFor="let page of pageNumbers" class="page-item" [class.active]="page === currentPage">
+        <button class="page-link" type="button" (click)="goToPage(page)">{{ page }}</button>
+      </li>
+
+      <li class="page-item" [class.disabled]="currentPage === totalPages">
+        <button class="page-link" type="button" (click)="goToPage(currentPage + 1)">Seguinte</button>
+      </li>
+    </ul>
+  </nav>
 
   <!-- Alerta de Vazio -->
   <div *ngIf="!loading && filteredProducts.length === 0" class="text-center p-5 bg-light rounded border mt-4">

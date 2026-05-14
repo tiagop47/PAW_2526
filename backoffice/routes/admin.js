@@ -38,7 +38,7 @@ router.post('/categorias/eliminar/:categoriaId', adminController.eliminarCategor
 // Moderação de Produtos
 router.get('/produtos', adminController.listarProdutos);
 router.get('/produtos/detalhes/:productId', adminController.exibirDetalhesProduto);
-router.post('/produtos/eliminar/:productId', adminController.eliminarProduto);
+router.post('/produtos/bloquear/:productId', adminController.alternarBloqueioProduto);
 
 router.param('userId', async (req, res, next, id) => {
     try {

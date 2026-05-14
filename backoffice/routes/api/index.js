@@ -8,6 +8,7 @@ const avaliacaoRoutes = require('./avaliacaoRoutes');
 const estafetaApiRoutes = require('./estafetaApiRoutes');
 const orderRoutes = require('./orderRoutes');
 const userRoutes = require('./userRoutes');
+const reclamacaoRoutes = require('./reclamacaoRoutes');
 
 router.use('/products', productRoutes);
 router.use('/supermercados', supermercadosRoutes);
@@ -16,5 +17,6 @@ router.use('/avaliacoes', avaliacaoRoutes);
 router.use('/estafeta', estafetaApiRoutes);
 router.use('/orders', orderRoutes);
 router.use('/users', userRoutes);
+router.use('/reclamacoes', reclamacaoRoutes);
 
 module.exports = router;

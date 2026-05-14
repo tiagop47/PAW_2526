@@ -6,6 +6,7 @@ import { ProductService } from '../../services/product.service';
 import { SupermarketService } from '../../services/supermarket.service';
 import { ProductDTO } from '../../models/product.dto';
 import { CategoryDTO } from '../../models/category.dto';
+import { getPageNumbers, getTotalPages, paginate } from '../../utils/pagination';
 
 @Component({
   selector: 'app-product-list',
@@ -31,6 +32,20 @@ export class ProductListComponent implements OnInit {
   searchQuery = '';
   selectedCategory = '';
   sortBy = 'discount';
+  currentPage = 1;
+  readonly pageSize = 8;
+
+  get totalPages(): number {
+    return getTotalPages(this.filteredProducts.length, this.pageSize);
+  }
+
+  get paginatedProducts(): ProductDTO[] {
+    return paginate(this.filteredProducts, this.currentPage, this.pageSize);
+  }
+
+  get pageNumbers(): number[] {
+    return getPageNumbers(this.filteredProducts.length, this.pageSize);
+  }
 
   abrirDetalhe(productId: string): void {
     this.router.navigate(['/product', productId]);
@@ -46,6 +61,7 @@ export class ProductListComponent implements OnInit {
   }
 
   onFilterChange(): void {
+    this.currentPage = 1;
     this.applyFilters({
       query: this.searchQuery,
       categoryId: this.selectedCategory,
@@ -90,5 +106,16 @@ export class ProductListComponent implements OnInit {
     }
 
     this.filteredProducts = list;
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages;
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) {
+      return;
+    }
+
+    this.currentPage = page;
   }
 }

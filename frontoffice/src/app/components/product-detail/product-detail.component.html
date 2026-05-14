@@ -18,53 +18,6 @@
             <p class="text-muted mb-4 small">Taxa de Iva Aplicável {{ produtoBase.iva }} %</p>
             <p class="text-muted mb-4 small" *ngIf="produtoBase.descricao">{{ produtoBase.descricao }}</p>
 
-            <div class="p-3 bg-light border-start border-primary border-4 mb-4">
-                <div class="fw-bold small text-uppercase mb-1">Disponibilidade</div>
-                <div *ngIf="ofertas.length === 1; else varios" class="small text-muted">
-                    Este artigo encontra-se disponível em <strong>apenas uma superfície comercial</strong>
-                </div>
-                <ng-template #varios>
-                    <p class="small text-muted">
-                        Este artigo encontra-se disponível em <strong>{{ofertas.length}} superfícies
-                            comerciais</strong>.
-                    </p>
-                </ng-template>
-            </div>
-
-            <div class="mt-4">
-                <h5 class="fw-bold mb-3 border-bottom pb-2">Comparação de Preços</h5>
-                <div class="table-responsive border">
-                    <table class="table table-hover align-middle mb-0 bg-white">
-                        <thead class="table-light">
-                            <tr class="extra-small text-uppercase text-muted">
-                                <th class="ps-4">Supermercado</th>
-                                <th>Localização</th>
-                                <th class="text-end">Preço</th>
-                                <th class="text-end pe-4">Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody class="small">
-                            <tr *ngFor="let o of ofertas">
-                                <td class="ps-4">
-                                    <div class="fw-bold">{{ o.supermercadoNome }}</div>
-                                </td>
-                                <td class="text-muted">{{ o.supermercadoLocalizacao }}</td>
-                                <td class="text-end fw-bold">
-                                    <span class="h6 mb-0 fw-bold">{{ o.preco | currency:'EUR' }}</span>
-                                </td>
-                                <td class="text-end pe-4">
-                                    <button class="btn btn-outline-primary btn-sm px-4 fw-bold"
-                                        (click)="adicionarAoCarrinho(o)" [disabled]="o.stockDisponivel <= 0">
-                                        ADICIONAR
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p class="extra-small text-muted mt-3 italic">* Os preços apresentados já incluem IVA à taxa legal
-                    em vigor.
-                </p>
-            </div>
+            <app-preco-comparacao [produtoBase]="produtoBase"></app-preco-comparacao>
         </div>
     </div>

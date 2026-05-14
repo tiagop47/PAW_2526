@@ -37,7 +37,7 @@
             </div>
 
             <div class="card border-0 shadow-sm">
-                <div class="table-responsive">
+                <div>
                     <table class="tabela-limpa mb-0">
                         <thead>
                             <tr>
@@ -46,6 +46,7 @@
                                 <th>Supermercado</th>
                                 <th>Categoria</th>
                                 <th>Preço</th>
+                                <th>Estado</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -63,23 +64,24 @@
                                             <%= produto.supermercadoId ? produto.supermercadoId.nome : '—' %>
                                         </td>
                                         <td>
-                                            <span class="badge bg-secondary opacity-75 fw-normal">
-                                                <%= produto.categoriaId ? produto.categoriaId.nome : '—' %>
-                                            </span>
+                                            <%= produto.categoriaId ? produto.categoriaId.nome : '—' %>
                                         </td>
                                         <td class="fw-bold">
                                             <%= produto.preco.toFixed(2) %>€
                                         </td>
+                                        <td class="text-muted small">
+                                            <%= produto.ativo ? 'Ativo' : 'Bloqueado' %>
+                                        </td>
                                         <td>
                                             <div class="d-flex gap-1">
-                                                <!-- Botão Ver Detalhes (encaminha para a vista de detalhes do supermercado) -->
                                                 <a href="/admin/produtos/detalhes/<%= produto._id %>"
                                                     class="btn btn-sm btn-light border text-dark">Detalhes</a>
 
-                                                <form action="/admin/produtos/eliminar/<%= produto._id %>" method="POST"
-                                                    onsubmit="return confirm('Confirmar eliminação definitiva do produto?')">
-                                                    <button type="submit"
-                                                        class="btn btn-sm btn-light border text-dark">Eliminar</button>
+                                                <form action="/admin/produtos/bloquear/<%= produto._id %>" method="POST"
+                                                    onsubmit="return confirm('<%= produto.ativo ? 'Bloquear o produto? Deixará de aparecer nas lojas.' : 'Desbloquear o produto?' %>')">
+                                                    <button type="submit" class="btn btn-sm btn-light border text-dark">
+                                                        <%= produto.ativo ? 'Bloquear' : 'Desbloquear' %>
+                                                    </button>
                                                 </form>
                                             </div>
                                         </td>
@@ -87,7 +89,7 @@
                                     <% }); %>
                                         <% } else { %>
                                             <tr>
-                                                <td colspan="6" class="text-center py-4 text-muted">Nenhum produto
+                                                <td colspan="7" class="text-center py-4 text-muted">Nenhum produto
                                                     listado no sistema.</td>
                                             </tr>
                                             <% } %>
