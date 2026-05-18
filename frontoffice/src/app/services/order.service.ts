@@ -20,7 +20,7 @@ export class OrderService {
     metodoPagamento: string;
     moradaEntrega?: string;
     codigoCupao?: string;
-    coordenadasEntrega?: [number, number]; // [longitude, latitude] para GeoJSON
+    coordenadasEntrega?: { lat: number; lng: number };
   }): Observable<Order> {
     return this.http
       .post<OrderResponseDTO>(this.endpoint, dados)

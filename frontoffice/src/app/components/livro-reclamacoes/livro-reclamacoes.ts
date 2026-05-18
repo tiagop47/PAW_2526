@@ -41,6 +41,26 @@ export class LivroReclamacoes implements OnInit {
 
   ngOnInit(): void {
     this.carregarDados();
+    this.setupFiltroEncomendas();
+  }
+
+  setupFiltroEncomendas(): void {
+    // Sempre que o supermercado mudar, filtramos ou resetamos a encomenda
+    this.reclamacaoForm.get('supermercadoId')?.valueChanges.subscribe((smId) => {
+      const encomendaCtrl = this.reclamacaoForm.get('encomendaId');
+      if (encomendaCtrl?.value) {
+        const encomenda = this.encomendas.find((e) => e.id === encomendaCtrl.value);
+        if (encomenda && smId && encomenda.supermercado._id !== smId) {
+          encomendaCtrl.setValue('');
+        }
+      }
+    });
+  }
+
+  get encomendasFiltradas(): Order[] {
+    const smId = this.reclamacaoForm.get('supermercadoId')?.value;
+    if (!smId) return this.encomendas;
+    return this.encomendas.filter((e) => e.supermercado._id === smId);
   }
 
   carregarDados(): void {

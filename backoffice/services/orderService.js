@@ -70,6 +70,54 @@ async function gerarNumeroFatura(supermercadoId) {
     return `FT ${anoAtual}/${sequencial}`;
 }
 
+/**
+ * Valida se um cupão é aplicável a um determinado supermercado e cliente.
+ */
+orderService.validarCupao = async function (codigo, supermercadoId, clienteId) {
+    if (!codigo || !supermercadoId) {
+        throw new Error('Código e supermercadoId são obrigatórios.');
+    }
+
+    const cupao = await Coupon.findOne({ codigo: codigo.toUpperCase().trim(), ativo: true });
+    
+    if (!cupao) {
+        throw new Error('Cupão inválido ou inativo.');
+    }
+
+    if (new Date(cupao.prazo) < new Date()) {
+        throw new Error('Este cupão já expirou.');
+    }
+
+    if (cupao.supermercadoId && cupao.supermercadoId.toString() !== supermercadoId.toString()) {
+        throw new Error('Este cupão não é válido para este supermercado.');
+    }
+
+    if (clienteId) {
+        const cliente = await User.findById(clienteId);
+        if (!cliente || !cliente.cupoes.includes(cupao._id)) {
+            throw new Error('Não tens este cupão disponível na tua conta.');
+        }
+
+        const jaUsou = await Order.findOne({ 
+            clienteId, 
+            cupaoId: cupao._id, 
+            estado: { $ne: 'cancelada' } 
+        });
+
+        if (jaUsou) {
+            throw new Error('Este cupão já foi utilizado por si.');
+        }
+    }
+
+    return { 
+        sucesso: true, 
+        percentagemDesconto: cupao.percentagemDesconto,
+        tipoDesconto: cupao.tipoDesconto || 'percentagem',
+        valorDesconto: cupao.valorDesconto || 0,
+        cupaoId: cupao._id 
+    };
+};
+
 orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
     let { supermercadoId, produtos, metodoEntrega, moradaEntrega, coordenadasEntrega, codigoCupao, origem, metodoPagamento } = dadosEncomenda;
 
@@ -84,13 +132,15 @@ orderService.criarEncomenda = async function (clienteId, dadosEncomenda) {
 
     // Validação de Raio de Entrega
     if (metodoEntrega === 'entrega_domicilio') {
-        if (!coordenadasEntrega[0] || !coordenadasEntrega[1]) {
+        if (!coordenadasEntrega || coordenadasEntrega.lat === undefined || coordenadasEntrega.lng === undefined) {
             throw new Error('Coordenadas de entrega são obrigatórias para entrega ao domicílio.');
         }
 
         const dist = calcularDistancia(
             supermercado.localizacaoGeo.coordinates[1],
             supermercado.localizacaoGeo.coordinates[0],
+            coordenadasEntrega.lat,
+            coordenadasEntrega.lng
         );
 
         if (dist > supermercado.raioEntregaKm) {

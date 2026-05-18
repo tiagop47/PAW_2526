@@ -83,42 +83,12 @@ orderApiController.validarCupao = async function (req, res) {
         const clienteId = req.user.id;
         const { codigo, supermercadoId } = req.body;
 
-        if (!codigo || !supermercadoId) {
-            return res.status(400).json({ sucesso: false, erro: 'Código e supermercadoId são obrigatórios.' });
-        }
-
-        const Coupon = require('../../models/CupomModel');
-        const User = require('../../models/UserModel');
-
-        const cupao = await Coupon.findOne({ codigo: codigo.toUpperCase().trim(), ativo: true });
-        
-        if (!cupao) {
-            return res.status(400).json({ sucesso: false, erro: 'Cupão inválido ou inativo.' });
-        }
-
-        if (new Date(cupao.prazo) < new Date()) {
-            return res.status(400).json({ sucesso: false, erro: 'Este cupão já expirou.' });
-        }
-
-        if (cupao.supermercadoId && cupao.supermercadoId.toString() !== supermercadoId) {
-            return res.status(400).json({ sucesso: false, erro: 'Este cupão não é válido para este supermercado.' });
-        }
-
-        const cliente = await User.findById(clienteId);
-        if (!cliente.cupoes.includes(cupao._id)) {
-            return res.status(400).json({ sucesso: false, erro: 'Não tens este cupão disponível na tua conta.' });
-        }
-
-        res.json({ 
-            sucesso: true, 
-            percentagemDesconto: cupao.percentagemDesconto,
-            tipoDesconto: cupao.tipoDesconto || 'percentagem',
-            valorDesconto: cupao.valorDesconto || 0,
-            cupaoId: cupao._id 
-        });
+        const resultado = await orderService.validarCupao(codigo, supermercadoId, clienteId);
+        res.json(resultado);
     } catch (err) {
         res.status(400).json({ sucesso: false, erro: err.message });
     }
 };
+
 
 module.exports = orderApiController;

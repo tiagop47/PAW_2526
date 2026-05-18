@@ -16,7 +16,11 @@ authController.login = async function (req, res) {
 
 authController.registar = async function (req, res) {
     try {
-        const { nome, email, password, nif, telefone, morada, supermercadoFavorito } = req.body;
+        const { nome, email, password, nif, telefone, morada, supermercadoFavorito, "g-recaptcha-response": recaptchaResponse } = req.body;
+
+        // Validação do reCAPTCHA
+        await authService.verificarCaptcha(recaptchaResponse);
+
         const dadosCliente = { nome, email, password, nif, telefone, morada, role: "clientes" };
 
         // Se o cliente escolheu um supermercado favorito, guardamos a referência

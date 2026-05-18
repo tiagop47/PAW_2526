@@ -52,7 +52,8 @@ authMiddleware.injetarUserNasViews = async function (req, res, next) {
     const user = authMiddleware.descodificarToken(req, res);
     res.locals.user = user;
     
-    if (user && user.role === 'supermercados') {
+    // Só injetamos dados extras se NÃO for API e for um supermercado
+    if (user && user.role === 'supermercados' && !req.originalUrl.startsWith('/api')) {
         try {
             const supermercado = await supermarketService.getSupermercado(user.id);
             if (supermercado) {

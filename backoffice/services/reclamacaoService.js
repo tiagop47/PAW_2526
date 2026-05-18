@@ -22,11 +22,25 @@ reclamacaoService.criarParaCliente = async function (clienteId, dados) {
     if (encomendaId) {
         const encomenda = await Order.findOne({ _id: encomendaId, clienteId });
         if (!encomenda) {
-            const err = new Error('Encomenda não encontrada.');
+            const err = new Error('Encomenda não encontrada ou não pertence a este utilizador.');
             err.status = 404;
             throw err;
         }
-        supermercadoFinal = supermercadoFinal || encomenda.supermercadoId;
+
+        // Validação crucial: Se o cliente forneceu um supermercadoId, 
+        // garantir que a encomenda pertence de facto a esse supermercado.
+        if (supermercadoId && encomenda.supermercadoId.toString() !== supermercadoId.toString()) {
+            const err = new Error('A encomenda selecionada não pertence ao supermercado indicado.');
+            err.status = 400;
+            throw err;
+        }
+
+        supermercadoFinal = encomenda.supermercadoId;
+    }
+
+    if (!supermercadoFinal && !encomendaId) {
+        // Se for uma reclamação geral sobre a plataforma, pode não ter supermercado
+        // mas o sistema PAW foca em supermercados, por isso validamos se pelo menos um existe
     }
 
     const reclamacao = await Reclamacao.create({

@@ -29,7 +29,7 @@
         <label class="form-label small fw-bold">Encomenda</label>
         <select class="form-select form-select-sm" formControlName="encomendaId">
           <option value="">Sem encomenda associada</option>
-          <option *ngFor="let encomenda of encomendas" [value]="encomenda.id">
+          <option *ngFor="let encomenda of encomendasFiltradas" [value]="encomenda.id">
             {{ encomenda.criadoEm | date:'dd/MM/yyyy' }} · {{ encomenda.valorTotal | currency:'EUR' }}
           </option>
         </select>

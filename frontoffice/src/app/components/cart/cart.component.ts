@@ -227,7 +227,7 @@ export class CartComponent implements OnInit {
       moradaEntrega: this.isEntregaDomicilio ? this.moradaEntrega : undefined,
       coordenadasEntrega:
         this.isEntregaDomicilio && this.coordenadas
-          ? ([this.coordenadas.lng, this.coordenadas.lat] as [number, number])
+          ? { lat: this.coordenadas.lat, lng: this.coordenadas.lng }
           : undefined,
     };
 
@@ -238,6 +238,8 @@ export class CartComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erro no Servidor:', err);
+        const mensagemErro = err.error?.error || err.error?.erro || 'Ocorreu um erro ao processar a encomenda. Por favor, tente novamente.';
+        this.notificationService.showError(mensagemErro);
         this.processando = false;
       },
     });
