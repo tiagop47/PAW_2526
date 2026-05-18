@@ -12,9 +12,16 @@ const Coupon = require('../models/CupomModel');
 const authService = {};
 
 authService.verificarCaptcha = async function (recaptchaResponse) {
+    const secretKey = config.CAPTCHA_API_SECRET;
+
+    // Se a chave não estiver configurada no servidor, ignoramos a validação (dev/ambiente sem captcha)
+    if (!secretKey) {
+        console.warn("Aviso: CAPTCHA_API_SECRET não configurado. Validação de CAPTCHA ignorada.");
+        return true;
+    }
+
     if (!recaptchaResponse) throw new Error("Erro de segurança: Token não encontrado.");
 
-    const secretKey = config.CAPTCHA_API_SECRET;
     const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaResponse}`;
 
     const googleResponse = await fetch(verifyUrl, { method: "POST" });

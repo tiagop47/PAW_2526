@@ -40,6 +40,10 @@ export class AuthService {
     return this.http.post<RegisterDTO>(this.endpoint + 'registar', data);
   }
 
+  getCaptchaKey(): Observable<{ siteKey: string | null }> {
+    return this.http.get<{ siteKey: string | null }>(this.endpoint + 'captcha-key');
+  }
+
   updateProfile(data: Partial<UserDTO>): Observable<UserDTO> {
     const userId = this.currentUserSubject.value?._id;
 

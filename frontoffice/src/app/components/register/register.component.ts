@@ -18,6 +18,8 @@ export class RegisterComponent implements OnInit {
   supermercados: SupermarketDTO[] = [];
   errorMessage: string = '';
   registerForm!: FormGroup;
+  captchaSiteKey: string | null = null;
+  captchaResponse: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -41,18 +43,59 @@ export class RegisterComponent implements OnInit {
       next: (markets) => (this.supermercados = markets),
       error: (err) => console.error('Erro ao carregar supermercados:', err),
     });
+
+    this.carregarCaptcha();
+  }
+
+  carregarCaptcha() {
+    this.authService.getCaptchaKey().subscribe(res => {
+      if (res.siteKey) {
+        this.captchaSiteKey = res.siteKey;
+        this.renderizarCaptcha();
+      }
+    });
+  }
+
+  renderizarCaptcha() {
+    const script = document.createElement('script');
+    script.src = `https://www.google.com/recaptcha/api.js?render=${this.captchaSiteKey}`;
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      // No v3 não renderizamos widget, apenas preparamos o ambiente
+      console.log('reCAPTCHA v3 carregado');
+    };
   }
 
   onSubmit() {
     if (this.registerForm.valid) {
-      this.authService.register(this.registerForm.value as RegisterDTO).subscribe({
-        next: () => {
-          this.router.navigate(['/login']);
-        },
-        error: (err) => {
-          this.errorMessage = err.error?.error || 'Erro ao criar conta.';
-        },
-      });
+      const realizarRegisto = (token?: string) => {
+        const dados: any = { ...this.registerForm.value };
+        if (token) {
+          dados['g-recaptcha-response'] = token;
+        }
+
+        this.authService.register(dados as RegisterDTO).subscribe({
+          next: () => {
+            this.router.navigate(['/login']);
+          },
+          error: (err) => {
+            this.errorMessage = err.error?.error || 'Erro ao criar conta.';
+          },
+        });
+      };
+
+      if (this.captchaSiteKey) {
+        (window as any).grecaptcha.ready(() => {
+          (window as any).grecaptcha.execute(this.captchaSiteKey, { action: 'registar' }).then((token: string) => {
+            realizarRegisto(token);
+          });
+        });
+      } else {
+        realizarRegisto();
+      }
     }
   }
 }

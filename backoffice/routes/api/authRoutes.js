@@ -126,4 +126,16 @@ router.post('/registar', authController.registar);
  */
 router.get('/cliente', authController.buscarClientePorEmail);
 
+/**
+ * @swagger
+ * /api/auth/captcha-key:
+ *   get:
+ *     summary: Obtém a chave pública do reCAPTCHA
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Chave obtida com sucesso
+ */
+router.get('/captcha-key', authController.getCaptchaKey);
+
 module.exports = router;

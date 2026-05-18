@@ -70,4 +70,9 @@ authController.buscarClientePorEmail = async function (req, res) {
     }
 };
 
+authController.getCaptchaKey = function (req, res) {
+    const config = require('../../config/config');
+    res.json({ siteKey: config.CAPTCHA_API_KEY || null });
+};
+
 module.exports = authController;
